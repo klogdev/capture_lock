@@ -1,12 +1,12 @@
 #ifndef READ_DATA_H_
 #define READ_DATA_H_
 
-#include <vector>
-#include <unordered_map>
-// #include "types.h"
+#include "base/camera.h"
 #include "base/image.h"
 #include "base/point3d.h"
-#include "base/camera.h"
+#include "util/types.h"
+#include <unordered_map>
+#include <vector>
 
 namespace colmap {
 
@@ -36,21 +36,6 @@ class ReadData{
 
     uint32_t num_added_points3D_ = 0;
 };
-
-////////////////////////////////////////////////////////////////////////////////
-// Accessors
-////////////////////////////////////////////////////////////////////////////////
-const std::unordered_map<camera_t, class Camera>& ReadData::Cameras() const{
-   return cameras_; 
-}
-
-const std::unordered_map<image_t, class Image>& ReadData::Images() const{
-   return images_; 
-}
-
-const std::unordered_map<point3D_t, class Point3D>& ReadData::Points3D() const{
-   return points3D_; 
-}
 
 }  // namespace colmap
 

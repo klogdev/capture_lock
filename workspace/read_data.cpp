@@ -254,4 +254,19 @@ void ReadData::ReadPoints3DText(const std::string& path) {
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Accessors
+////////////////////////////////////////////////////////////////////////////////
+const std::unordered_map<camera_t, class Camera>& ReadData::Cameras() const {
+  return cameras_;
+}
+
+const std::unordered_map<image_t, class Image>& ReadData::Images() const {
+  return images_;
+}
+
+const std::unordered_map<point3D_t, class Point3D>& ReadData::Points3D() const {
+  return points3D_;
+}
+
 }  // namespace colmap

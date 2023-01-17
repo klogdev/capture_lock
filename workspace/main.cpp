@@ -1,24 +1,30 @@
-#include <vector>
-#include <string>
-#include <random>
-#include <iostream>
+#include "base/camera.h"
+#include "base/image.h"
+#include "base/point2d.h"
+#include "base/point3d.h"
 #include "read_data.h"
-#include "image.h"
-#include "camera.h"
-#include "point2d.h"
-#include "point3d.h"
+#include "util/types.h"
 #include <cmath>
-#include "types.h"
+#include <iostream>
+#include <random>
+#include <string>
+#include <vector>
 
-long int random()
-{
-    std::random_device rd; // obtain a random number from hardware
-    std::mt19937 gen(rd()); // seed the generator
-    std::uniform_int_distribution<> distr(25, 63); // define the range
+namespace {
 
-    
-    int idx =  distr(gen) ; // generate numbers
-    return idx;
+using ::colmap::Camera;
+using ::colmap::Image;
+using ::colmap::Point2D;
+using ::colmap::Point3D;
+using ::colmap::ReadData;
+
+long int UniformLongRandom() {
+  std::random_device rd;   // obtain a random number from hardware
+  std::mt19937 gen(rd());  // seed the generator
+  std::uniform_int_distribution<> distr(25, 63);  // define the range
+
+  int idx = distr(gen);  // generate numbers
+  return idx;
 }
 
 //calculate reprojection error
@@ -26,6 +32,7 @@ double ProjDiff(Eigen::Vector2d Orig2D, Eigen::Vector3d Proj2D){
     return std::abs(pow(Orig2D[0] - Proj2D[0]/Proj2D[2], 2) + pow(Orig2D[1] - Proj2D[1]/Proj2D[2], 2));
 }
 
+}  // namespace
 
 //check exe file of COLMAP, read image files from argument
 int main(int argc, char** argv){
@@ -45,43 +52,45 @@ int main(int argc, char** argv){
     ReadData read_point3d = ReadData(point3d_file);
     int n = read_image.Images().size();  //number of images by access member data
 
-    long idx1 = random();
-    long idx2 = random();
-    
-    //image instances and corresponding data already set in image class
-    //images_ is a map of images
-    read_image.ReadImagesText(filename); //filename initialized in constructor
-    Image Image1 = read_image.Images()[idx1]; //check image_t == image_id??
-    Image Image2 = read_image.Images()[idx2];
+    long idx1 = UniformLongRandom();
+    long idx2 = UniformLongRandom();
 
+    // image instances and corresponding data already set in image class
+    // images_ is a map of images
+    //  TODO: read_image.ReadImagesText(filename); //filename initialized in
+    //  constructor
+    Image Image1 = read_image.Images().at(idx1);  // check image_t == image_id??
+    Image Image2 = read_image.Images().at(idx2);
+
+#if 0
     //set boolean when read 3d idx from image.txt
     while (! read_image.Images()[idx1].HasPoint3D()){
-        idx1 = random();
+        idx1 = UniformLongRandom();
     }
 
     while (! read_image.Images()[idx2].HasPoint3D() || idx2 == idx1){
-        idx2 = random();
+        idx2 = UniformLongRandom();
     }
-
-    //create camera for image1&2, read camera paras
-    read_camera.ReadCamerasText(filename);
+#endif
+    // create camera for image1&2, read camera paras
+    //  TODO: read_camera.ReadCamerasText(filename);
     int camera_id1 = Image1.CameraId();
     int camera_id2 = Image2.CameraId();
-    Camera camera1 = read_camera.Cameras()[camera_id1];
-    Camera camera2 = read_camera.Cameras()[camera_id2];
-    std::vector<size_t> cam_para = camera1.Params();//check def of params??
+    Camera camera1 = read_camera.Cameras().at(camera_id1);
+    Camera camera2 = read_camera.Cameras().at(camera_id2);
+    std::vector<double> cam_para = camera1.Params();  // check def of params??
     std::vector<size_t> cam_focal = camera1.FocalLengthIdxs();
 
     Eigen::Matrix3d calibration = camera1.CalibrationMatrix();
 
     //read 3d, find consistent in point3D_, which is a member variable of ReadData
     //Test 3d point's reprojection for camera 1
-    uint32_t Cam1Point2D_id = random();
+    uint32_t Cam1Point2D_id = UniformLongRandom();
     Point2D Cam1Point = Image1.Points2D()[Cam1Point2D_id];
     //call correspond 3d point from its attr
     //point2d need add point3d accessors
     uint32_t Cam1Point3D_id = Cam1Point.Point3DId();
-    Point3D Cam1Point3D = read_point3d.Points3D()[Cam1Point3D_id];
+    Point3D Cam1Point3D = read_point3d.Points3D().at(Cam1Point3D_id);
 
     Eigen::Vector3d Cam1Point3D_Vec = Cam1Point3D.XYZ();
     Eigen::Matrix3x4d Image1ProjMat = Image1.ProjectionMatrix();
