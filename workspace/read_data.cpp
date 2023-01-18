@@ -90,28 +90,28 @@ void ReadData::ReadImagesText(const std::string& path) {
     StringTrim(&line);
     std::stringstream line_stream2(line);
 
-    std::vector<Point2D> points2D_arr;
-    std::vector<uint32_t> point3D_ids;
+    std::vector<Eigen::Vector2d> points2D;
+    std::vector<point3D_t> point3D_ids;
 
     if (!line.empty()) {
       while (!line_stream2.eof()) {  //not the end of file/line
-        Point2D point; //new instance of point2d
+        Eigen::Vector2d point;
 
         std::getline(line_stream2, item, ' ');
-        // point.X() = std::stold(item);
+        point.X() = std::stold(item);
 
-        // std::getline(line_stream2, item, ' ');
-        // point.Y() = std::stold(item);
+        std::getline(line_stream2, item, ' ');
+        point.Y() = std::stold(item);
 
-        // points2D_arr.push_back(point);
+        points2D_arr.push_back(point);
 
-        // std::getline(line_stream2, item, ' ');
-        // if (item == "-1") {
-        //   point3D_ids.push_back(kInvalidPoint3DId);
-        // } else {
-        //   point3D_ids.push_back(std::stoll(item)); //specify 3d's id
-        //   point.point3D_id_ = std::stoll(item); //set the point3d's id for curr 2d point
-        // }
+        std::getline(line_stream2, item, ' ');
+        if (item == "-1") {
+          point3D_ids.push_back(kInvalidPoint3DId);
+        } else {
+          point3D_ids.push_back(std::stoll(item)); //specify 3d's id
+          point.point3D_id_ = std::stoll(item); //set the point3d's id for curr 2d point
+        }
       }
     }
 
