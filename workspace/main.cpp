@@ -2,7 +2,7 @@
 #include "base/image.h"
 #include "base/point2d.h"
 #include "base/point3d.h"
-#include "read_data.h"
+#include "base/reconstruction.h"
 #include "util/types.h"
 #include <cmath>
 #include <iostream>
@@ -16,12 +16,12 @@ using ::colmap::Camera;
 using ::colmap::Image;
 using ::colmap::Point2D;
 using ::colmap::Point3D;
-using ::colmap::ReadData;
+using ::colmap::Reconstruction;
 
-long int UniformLongRandom() {
+long int UniformLongRandom(long int NumImages) {
   std::random_device rd;   // obtain a random number from hardware
   std::mt19937 gen(rd());  // seed the generator
-  std::uniform_int_distribution<> distr(25, 63);  // define the range
+  std::uniform_int_distribution<> distr(0, NumImages);  // define the range
 
   int idx = distr(gen);  // generate numbers
   return idx;
@@ -50,10 +50,10 @@ int main(int argc, char** argv){
     ReadData read_image = ReadData(image_file);
     ReadData read_camera = ReadData(camera_file);
     ReadData read_point3d = ReadData(point3d_file);
-    int n = read_image.Images().size();  //number of images by access member data
+    long int n = read_image.Images().size();  //number of images by access member data
 
-    long idx1 = UniformLongRandom();
-    long idx2 = UniformLongRandom();
+    long int idx1 = UniformLongRandom();
+    long int idx2 = UniformLongRandom();
 
     // image instances and corresponding data already set in image class
     // images_ is a map of images
@@ -85,11 +85,11 @@ int main(int argc, char** argv){
 
     //read 3d, find consistent in point3D_, which is a member variable of ReadData
     //Test 3d point's reprojection for camera 1
-    uint32_t Cam1Point2D_id = UniformLongRandom();
+    camera_t Cam1Point2D_id = UniformLongRandom();
     Point2D Cam1Point = Image1.Points2D()[Cam1Point2D_id];
     //call correspond 3d point from its attr
     //point2d need add point3d accessors
-    uint32_t Cam1Point3D_id = Cam1Point.Point3DId();
+    camera_t Cam1Point3D_id = Cam1Point.Point3DId();
     Point3D Cam1Point3D = read_point3d.Points3D().at(Cam1Point3D_id);
 
     Eigen::Vector3d Cam1Point3D_Vec = Cam1Point3D.XYZ();
