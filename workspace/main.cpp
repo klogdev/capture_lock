@@ -21,7 +21,7 @@ using ::colmap::Reconstruction;
 long int UniformLongRandom(long int NumImages) {
   std::random_device rd;   // obtain a random number from hardware
   std::mt19937 gen(rd());  // seed the generator
-  std::uniform_int_distribution<> distr(0, NumImages);  // define the range
+  std::uniform_int_distribution<> distr(1, NumImages);  // define the range
 
   int idx = distr(gen);  // generate numbers
   return idx;
@@ -55,8 +55,8 @@ int main(int argc, char** argv){
 
     // image instances and corresponding data already set in image class
     // images_ is a map of images
-    //  TODO: read_image.ReadImagesText(filename); //filename initialized in
-    //  constructor
+    // TODO: read_image.ReadImagesText(filename); //filename initialized in
+    // constructor
     Image Image1 = read_text.Images().at(idx1);  // check image_t == image_id??
     Image Image2 = read_text.Images().at(idx2);
 
