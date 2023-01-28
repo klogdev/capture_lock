@@ -5,6 +5,14 @@
 #include "feature/image_sift.h"
 #include "feature/sift.h"
 
+struct MatchedVec
+{
+    /* data */
+    std::vector<Eigen::Vector2d>& KeyPts1;
+    std::vector<Eigen::Vector2d>& KeyPts2;
+};
+
+
 std::vector<std::pair<int, int>> FindMatches(Image& Image1, Image& Image2){
     //Image class is defined under feature/image_sift
     Image1_gray = Image1.channels == 1 ? Image1 : rgb_to_grayscale(Image1);
@@ -16,7 +24,21 @@ std::vector<std::pair<int, int>> FindMatches(Image& Image1, Image& Image2){
     //here the int pairs are indices in KeyPoints vectors
     std::vector<std::pair<int, int>> Matches = sift::find_keypoint_matches(KeyPoints1, KeyPoints2);
 
-    return Matches;
+    MatchedVec MatchVectors;
+
+    for(int i = 0; i < Matches.size(); i++){
+        int KeyIdx1 = Matches[i].first;
+        int KeyIdx2 = Matches[i].second;
+        sift::KeyPoint CurrKey1 = Keypoints1[KeyIdx1];
+        sift::KeyPoint CurrKey2 = Keypoints2[KeyIdx2];
+        Eigen::Vector2d Pt1(CurrKey1.x, CurrKey1.y);
+        Eigen::Vector2d Pt1(CurrKey2.x, CurrKey2.y);
+
+        MatchVectors.KeyPts1.push_back(Pt1);
+        MatchVectors.KeyPts2.push_back(Pt2);
+    }
+
+    return MatchVectors;
 }
 
 int main(int argc, char** argv){
