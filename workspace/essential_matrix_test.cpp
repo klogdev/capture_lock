@@ -1,3 +1,5 @@
+#include <Eigen/Core>
+
 #include "base/essential_matrix.h"
 #include "base/pose.h"
 #include "estimators/pose.h"
@@ -5,6 +7,6 @@
 
 #include "feature_sift_test.h"
 
-std::vector<Eigen::Vector2d>& FromSIFTtoVec(){
+std::vector<Eigen::Matrix3d> EssentialMatrixFromFivePts(){
     
 }
