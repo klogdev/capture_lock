@@ -7,6 +7,12 @@ link_directories("/usr/local/lib/colmap/")
 #     read_data PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 # target_link_libraries(read_data Eigen3::Eigen glog ${COLMAP_LIBRARIES})
 
+add_executable(feature_sift feature_sift_test.cpp)
+target_include_directories(
+  feature_sift PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  feature_sift PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
+
 add_executable(main_cli main.cpp)
 target_include_directories(
   main_cli PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
