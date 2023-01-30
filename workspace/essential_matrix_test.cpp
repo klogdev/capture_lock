@@ -8,8 +8,8 @@
 #include "feature/image_sift.h"
 #include "feature_sift_test.h"
 
-std::vector<Eigen::Matrix3d> EssentialMatrixFromFivePts(Image Image1, Image Image2){
-    std::vector<MatchedVec>& Matches = FindMatches(Image1, Image2);
+std::vector<Eigen::Matrix3d> EssentialMatrixFromFivePts(Image& Image1, Image& Image2){
+    std::vector<MatchedVec> Matches = FindMatches(Image1, Image2);
 
     std::vector<Eigen::Vector2d> KeyPoints1;
     std::vector<Eigen::Vector2d> KeyPoints2;
@@ -19,7 +19,7 @@ std::vector<Eigen::Matrix3d> EssentialMatrixFromFivePts(Image Image1, Image Imag
         KeyPoints2.push_back(match.KeyPt2);
     }
 
-    EssentialMatrixFivePointEstimator Estimator = EssentialMatrixFivePointEstimator();
+    colmap::EssentialMatrixFivePointEstimator Estimator = colmap::EssentialMatrixFivePointEstimator();
     std::vector<Eigen::Matrix3d> CandidateMatrices = Estimator.Estimate(KeyPoints1, KeyPoints2);
 
     return CandidateMatrices;
