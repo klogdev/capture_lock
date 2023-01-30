@@ -9,7 +9,13 @@
 #include "feature_sift_test.h"
 
 std::vector<Eigen::Matrix3d> EssentialMatrixFromFivePts(Image& Image1, Image& Image2){
-    std::vector<MatchedVec> Matches = FindMatches(Image1, Image2);
+    std::vector<MatchedVec> Matches;
+    // TODO: This FindMatches() is defined in another file containing main()
+    // function. Then it cannot be added into this module, because an executable
+    // cannot target_link another executable. You can define some 
+    // utils.h/utils.cpp for these functions and then use "add_library" in CMake
+    // config to include them.
+    // = FindMatches(image1, image2);
 
     std::vector<Eigen::Vector2d> KeyPoints1;
     std::vector<Eigen::Vector2d> KeyPoints2;

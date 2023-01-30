@@ -50,8 +50,7 @@ int main(int argc, char** argv){
     Image Image1(argv[1]);
     Image Image2(argv[2]);
     std::string file_path = argv[4];
-    ;
-    std::vector<MatchedVec>TestMatches = FindMatches(Image1, Image2);
+    std::vector<MatchedVec> TestMatches = FindMatches(Image1, Image2);
 
     std::ofstream file(file_path, std::ios::trunc);
     file << "tested output of the matched points" << std::endl;
