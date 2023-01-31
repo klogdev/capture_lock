@@ -12,6 +12,7 @@
 Image::Image(std::string file_path)
 {
     unsigned char *img_data = stbi_load(file_path.c_str(), &width, &height, &channels, 0);
+    std::cout << file_path << std::endl;
     if (img_data == nullptr) {
         const char *error_msg = stbi_failure_reason();
         std::cerr << "Failed to load image: " << file_path.c_str() << "\n";
