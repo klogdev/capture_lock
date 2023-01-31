@@ -2,7 +2,7 @@
 #include "base/pose.h"
 #include "feature/sift.h"
 #include "feature/image_sift.h"
-#include "feature_sift_test.h"
+#include "test_util.h"
 #include "optim/ransac.h"
 
 #include "estimators/pose.h"
@@ -17,7 +17,7 @@ size_t GetNumInliers(const colmap::RANSACOptions& ransac_options,
     // cannot target_link another executable. You can define some 
     // utils.h/utils.cpp for these functions and then use "add_library" in CMake
     // config to include them.
-    // = FindMatches(image1, image2);
+    Matches = FindMatches(image1, image2);
 
     std::vector<Eigen::Vector2d> key_points1;
     std::vector<Eigen::Vector2d> key_points2;
