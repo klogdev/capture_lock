@@ -9,6 +9,7 @@ test_util.cpp
 target_link_libraries(
   test_util PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
 
+
 add_executable(feature_sift feature_sift_test.cpp)
 target_include_directories(
   feature_sift PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
