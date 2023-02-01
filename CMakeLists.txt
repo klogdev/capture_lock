@@ -9,4 +9,9 @@ find_package(Eigen3 REQUIRED)
 find_package(Ceres REQUIRED)
 find_package(gflags REQUIRED)
 find_package(COLMAP REQUIRED)
+find_package(OpenCV REQUIRED)
+find_package(absl REQUIRED)
+
+set(absl_LIBRARIES absl::base absl::strings absl::random_random)
+
 add_subdirectory(workspace)
