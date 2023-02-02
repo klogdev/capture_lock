@@ -18,7 +18,9 @@ int main(int argc, char** argv){
     //initialize the Image class by its path (feature/image_sift)
     Image Image1(argv[1]);
     Image Image2(argv[2]);
-    std::string file_path = argv[4];
+    
+    std::string file_path = argv[3];
+    
     std::vector<MatchedVec> TestMatches = FindMatches(Image1, Image2);
 
     std::ofstream file(file_path, std::ios::trunc);

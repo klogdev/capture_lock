@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cassert>
 #include <utility>
+#include <opencv2/opencv.hpp>
 
 #include "image_sift.h"
 #define STB_IMAGE_IMPLEMENTATION
@@ -11,19 +12,27 @@
 
 Image::Image(std::string file_path)
 {
-    unsigned char *img_data = stbi_load(file_path.c_str(), &width, &height, &channels, 0);
-    std::cout << file_path << std::endl;
+    cv::Mat image = cv::imread(file_path, cv::IMREAD_COLOR);
+    unsigned char *img_data = image.data;
+    width = image.cols;
+    height = image.rows;
+    channels = image.channels();
+    //stbi_load(file_path.c_str(), &width, &height, &channels, 0);
+    
     if (img_data == nullptr) {
-        const char *error_msg = stbi_failure_reason();
-        std::cerr << "Failed to load image: " << file_path.c_str() << "\n";
-        std::cerr << "Error msg (stb_image): " << error_msg << "\n";
+        //const char *error_msg = stbi_failure_reason();
+        std::cerr << "Failed to load image: " << file_path << "\n";
+        //std::cerr << "Error msg (stb_image): " << error_msg << "\n";
         std::exit(1);
     }
 
+    
     size = width * height * channels;
     data = new float[size]; 
-    for (int x = 0; x < width; x++) {
-        for (int y = 0; y < height; y++) {
+    
+    //opencv has dimension of h*w*c
+    for (int y = 0; y < height; y++) {
+        for (int x = 0; x < width; x++) {
             for (int c = 0; c < channels; c++) {
                 int src_idx = y*width*channels + x*channels + c;
                 int dst_idx = c*height*width + y*width + x;
@@ -31,9 +40,11 @@ Image::Image(std::string file_path)
             }
         }
     }
+
+    
     if (channels == 4)
         channels = 3; //ignore alpha channel
-    stbi_image_free(img_data);
+    //stbi_image_free(img_data);
 }
 
 Image::Image(int w, int h, int c)
@@ -127,9 +138,9 @@ bool Image::save(std::string file_path)
             }
         }
     }
-    bool success = stbi_write_jpg(file_path.c_str(), width, height, channels, out_data, 100);
-    if (!success)
-        std::cerr << "Failed to save image: " << file_path << "\n";
+    // bool success = stbi_write_jpg(file_path.c_str(), width, height, channels, out_data, 100);
+    // if (!success)
+    //     std::cerr << "Failed to save image: " << file_path << "\n";
 
     delete[] out_data;
     return true;

@@ -10,7 +10,7 @@ add_library(img STATIC
             image_sift.cpp
 )
 
-target_link_libraries(img PRIVATE stb_image)
+target_link_libraries(img PRIVATE stb_image PUBLIC ${OpenCV_LIBRARIES})
 
 add_library(sift STATIC
             sift.cpp
