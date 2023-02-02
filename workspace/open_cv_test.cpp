@@ -2,6 +2,7 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 #include <iostream>
+#include "test_util.h"
 
 int main(int argc, char** argv)
 {
@@ -19,11 +20,10 @@ int main(int argc, char** argv)
         std::cout << "Could not read the image: " << argv[1] << std::endl;
         return 1;
     }
-    cv::imshow("Display window", image);
-    int k = cv::waitKey(0); // Wait for a keystroke in the window
-    if(k == 's')
-    {
-        cv::imwrite("test.png", image);
-    }
+    
+    cv::Mat crop_image = CentralCrop(image, 480, 640);
+
+    std::cout << "cropped image shape " << crop_image.cols << " " 
+                << crop_image.rows << " " << crop_image.channels() << std::endl;
     return 0;
 }

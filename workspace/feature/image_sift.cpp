@@ -12,7 +12,15 @@
 
 Image::Image(std::string file_path)
 {
-    cv::Mat image = cv::imread(file_path, cv::IMREAD_COLOR);
+    cv::Mat orig_image = cv::imread(file_path, cv::IMREAD_COLOR);
+    //hard coded crop 
+    int center_x = (orig_image.cols)/2;
+    int center_y = (orig_image.rows)/2;
+    int final_w = 640;
+    int final_h = 480;
+    cv::Rect MyRoI(center_x-final_w/2, center_y-final_h/2, final_h, final_w);
+    cv::Mat image = orig_image(MyRoI);
+
     unsigned char *img_data = image.data;
     width = image.cols;
     height = image.rows;

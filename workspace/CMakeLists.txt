@@ -48,4 +48,4 @@ target_include_directories(
   "${OpenCV_INCLUDE_DIRS}")
 target_link_libraries(
   opencv_test PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${OpenCV_LIBRARIES}
-  ${absl_LIBRARIES})
+  ${absl_LIBRARIES} test_util)

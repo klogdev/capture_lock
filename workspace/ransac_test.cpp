@@ -12,11 +12,7 @@ size_t GetNumInliers(const colmap::RANSACOptions& ransac_options,
                     Image& image1, Image& image2,
                     Eigen::Vector4d* qvec, Eigen::Vector3d* tvec){
     std::vector<MatchedVec> Matches;
-    // TODO: This FindMatches() is defined in another file containing main()
-    // function. Then it cannot be added into this module, because an executable
-    // cannot target_link another executable. You can define some 
-    // utils.h/utils.cpp for these functions and then use "add_library" in CMake
-    // config to include them.
+    
     Matches = FindMatches(image1, image2);
 
     std::vector<Eigen::Vector2d> key_points1;
@@ -26,7 +22,7 @@ size_t GetNumInliers(const colmap::RANSACOptions& ransac_options,
         key_points1.push_back(match.KeyPt1);
         key_points2.push_back(match.KeyPt2);
     }
-
+    std::cout << "no segfault before call estimate" << std::endl;
     size_t num_inliers = colmap::EstimateRelativePose(ransac_options, key_points1,
                                             key_points2, qvec, tvec);
     return num_inliers;
@@ -43,8 +39,10 @@ int main(int argc, char** argv){
     Image Image1(argv[1]);
     Image Image2(argv[2]);
     colmap::RANSACOptions ransac_options = colmap::RANSACOptions();
-    Eigen::Vector4d* qvec;
-    Eigen::Vector3d* tvec;
+    ransac_options.max_error = 0.05;
+
+    Eigen::Vector4d* qvec(0);
+    Eigen::Vector3d* tvec(0);
 
     size_t inliers = GetNumInliers(ransac_options,
                             Image1, Image2, qvec, tvec);
