@@ -41,3 +41,11 @@ target_include_directories(
 target_link_libraries(
   library_test PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${OpenCV_LIBRARIES}
   ${absl_LIBRARIES})
+
+add_executable(opencv_test open_cv_test.cpp)
+target_include_directories(
+  opencv_test PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}" 
+  "${OpenCV_INCLUDE_DIRS}")
+target_link_libraries(
+  opencv_test PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${OpenCV_LIBRARIES}
+  ${absl_LIBRARIES})

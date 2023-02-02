@@ -11,17 +11,19 @@ int main(int argc, char** argv)
         std::cout << " " << argv[0] << "need a image file path" << std::endl;
     }
 
-    Mat img = cv::imread(argv[1], IMREAD_COLOR);
-    if(img.empty())
+    cv::Mat image = cv::imread(argv[1], cv::IMREAD_COLOR);
+    std::cout << "cv image shape " << image.cols << " " << image.rows << " "
+              << image.channels() << std::endl;
+    if(image.empty())
     {
-        std::cout << "Could not read the image: " << image_path << std::endl;
+        std::cout << "Could not read the image: " << argv[1] << std::endl;
         return 1;
     }
-    cv::imshow("Display window", img);
+    cv::imshow("Display window", image);
     int k = cv::waitKey(0); // Wait for a keystroke in the window
     if(k == 's')
     {
-        cv::imwrite("test.png", img);
+        cv::imwrite("test.png", image);
     }
     return 0;
 }
