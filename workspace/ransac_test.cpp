@@ -22,9 +22,11 @@ size_t GetNumInliers(const colmap::RANSACOptions& ransac_options,
         key_points1.push_back(match.KeyPt1);
         key_points2.push_back(match.KeyPt2);
     }
-    std::cout << "no segfault before call estimate" << std::endl;
-    size_t num_inliers = colmap::EstimateRelativePose(ransac_options, key_points1,
-                                            key_points2, qvec, tvec);
+    std::cout << "no segfault before call estimate " 
+              << " num_of_matches " << Matches.size() << std::endl;
+    size_t num_inliers = 
+        colmap::EstimateRelativePose(ransac_options, key_points1, key_points2, 
+                                     qvec, tvec);
     return num_inliers;
 }
 
@@ -41,11 +43,11 @@ int main(int argc, char** argv){
     colmap::RANSACOptions ransac_options = colmap::RANSACOptions();
     ransac_options.max_error = 0.05;
 
-    Eigen::Vector4d* qvec(0);
-    Eigen::Vector3d* tvec(0);
+    Eigen::Vector4d qvec = Eigen::Vector4d(0, 0, 0, 1);
+    Eigen::Vector3d tvec = Eigen::Vector3d::Zero();
 
     size_t inliers = GetNumInliers(ransac_options,
-                            Image1, Image2, qvec, tvec);
+                            Image1, Image2, &qvec, &tvec);
     std::cout << inliers << std::endl;
 
     return 0;
