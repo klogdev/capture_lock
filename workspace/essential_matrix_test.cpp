@@ -8,6 +8,7 @@
 #include "feature/image_sift.h"
 #include "test_util.h"
 
+//test fn of Five Points method, return all possible Essential Matrices
 std::vector<Eigen::Matrix3d> EssentialMatrixFromFivePts(Image& image1, Image& image2){
     std::vector<MatchedVec> Matches;
     

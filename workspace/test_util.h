@@ -1,6 +1,7 @@
 #include <Eigen/Core>
 #include <opencv2/opencv.hpp>
 
+#include "util/types.h"
 #include "feature/image_sift.h"
 #include "feature/sift.h"
 
@@ -14,3 +15,5 @@ struct MatchedVec
 std::vector<MatchedVec> FindMatches(Image& Image1, Image& Image2);
 
 cv::Mat CentralCrop(cv::Mat OriginalImage, int final_h, int final_w);
+
+Eigen::Matrix3x4d ProjMatFromQandT(Eigen::Vector4d& qvec, Eigen::Vector3d& tvec);

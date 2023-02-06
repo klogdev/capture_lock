@@ -5,6 +5,7 @@
 
 #include "feature/image_sift.h"
 #include "feature/sift.h"
+
 #include "test_util.h"
 
 std::vector<MatchedVec> FindMatches(Image& Image1, Image& Image2){
@@ -48,3 +49,18 @@ cv::Mat CentralCrop(cv::Mat OriginalMat, int final_h, int final_w){
 
     return image_crop;
 }
+
+// Eigen::Matrix3x4d ProjMatFromQandT(Eigen::Vector4d& qvec, Eigen::Vector3d& tvec){
+//     Eigen::Matrix3d rot_matrix = QuaternionToRotationMatrix(NormalizeQuaternion(qvec));
+//     std::cout << "this is rotation matrix" << std::endl;
+//     std::cout << rot_matrix << std::endl;
+//     std::cout << "this is t-vector " << tvec << std::endl;
+//     Eigen::Matrix3x4d proj_matrix;
+//     proj_matrix.block(0,0,3,3) = rot_matrix;
+//     proj_matrix.block(0,3,3,1) = tvec;
+
+//     std::cout << "this is projection matrix" << std::endl;
+//     std::cout << proj_matrix << std::endl;
+    
+//     return proj_matrix;
+// }
