@@ -1,9 +1,9 @@
 #include <Eigen/Core>
 #include <opencv2/opencv.hpp>
 
-#include "util/types.h"
 #include "feature/image_sift.h"
 #include "feature/sift.h"
+#include "util/types.h"
 
 struct MatchedVec
 {

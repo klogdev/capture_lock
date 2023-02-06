@@ -6,6 +6,8 @@ add_library(test_util STATIC
 test_util.h
 test_util.cpp
 )
+target_include_directories(
+  test_util PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
   test_util PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
 
