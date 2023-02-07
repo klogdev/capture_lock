@@ -54,8 +54,8 @@ int main(int argc, char** argv){
     read_text.ReadText(file_path);
 
     //hard coded w/ specify camera 1
-    colmap::Camera Camera1 = read_text.Cameras().at(1);
-    Eigen::Matrix3d Calibration = Camera1.CalibrationMatrix();
+    colmap::Camera camera1 = read_text.Cameras().at(1);
+    Eigen::Matrix3d calibration = camera1.CalibrationMatrix();
 
     colmap::RANSACOptions ransac_options = colmap::RANSACOptions();
     ransac_options.max_error = 0.05;
@@ -66,19 +66,35 @@ int main(int argc, char** argv){
     Eigen::Vector4d qvec2 = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec2 = Eigen::Vector3d::Zero();
     
-    Eigen::Matrix3x4d proj_mat1 = ProjMatFromQandT(qvec1, tvec1);
+    Eigen::Matrix3x4d proj_mat1 = calibration*ProjMatFromQandT(qvec1, tvec1);
 
     size_t inliers = GetNumInliers(ransac_options,
                             key_points1, key_points2, &qvec2, &tvec2);
 
-    Eigen::Matrix3x4d proj_mat2 = ProjMatFromQandT(qvec2, tvec2);
-
-    std::cout << inliers << std::endl;
+    Eigen::Matrix3x4d proj_mat2 = calibration*ProjMatFromQandT(qvec2, tvec2);
 
     std::vector<Eigen::Vector3d> points3d = colmap::TriangulatePoints(proj_mat1, proj_mat2,
                                                                     key_points1, key_points2);
 
-    std::cout << points3d.size() << std::endl;                                                                
+    std::cout << "number of 2d points " << key_points2.size() << std::endl;
+    std::cout << "number of 3d points " << points3d.size() << std::endl;
+
+    colmap::AbsolutePoseEstimationOptions absolute_options = colmap::AbsolutePoseEstimationOptions();
+    absolute_options.ransac_options.max_error = 0.05;
+    Eigen::Vector4d qvec_abs = Eigen::Vector4d(0, 0, 0, 1);
+    Eigen::Vector3d tvec_abs = Eigen::Vector3d::Zero();
+    std::vector<char> inlier_mask;
+    bool abs_pose = colmap::EstimateAbsolutePose(absolute_options, key_points2,
+                                                points3d, &qvec_abs, &tvec_abs,
+                                                &camera1, &inliers, &inlier_mask);
+
+    if (abs_pose){
+        std::cout << "absolute rotation " << qvec_abs << std::endl;
+        std::cout << "absolute translation " << tvec_abs << std::endl;
+    }
+    else {
+        std::cout << "absolute pose estimate unsuccesful" << std::endl;
+    }
 
     return 0;
 }
