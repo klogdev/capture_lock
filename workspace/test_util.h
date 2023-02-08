@@ -21,4 +21,4 @@ Eigen::Matrix3x4d ProjMatFromQandT(Eigen::Vector4d& qvec, Eigen::Vector3d& tvec)
 //calculate reprojection error
 double QvecSquareErr(Eigen::Vector4d qvec1, Eigen::Vector4d qvec2);
 
-double TvecSquareErr(Eigen::Vector3d tvec1, Eigen::Vector4d tvec2);
+double TvecSquareErr(Eigen::Vector3d tvec1, Eigen::Vector3d tvec2);
