@@ -17,3 +17,8 @@ std::vector<MatchedVec> FindMatches(Image& Image1, Image& Image2);
 cv::Mat CentralCrop(cv::Mat OriginalImage, int final_h, int final_w);
 
 Eigen::Matrix3x4d ProjMatFromQandT(Eigen::Vector4d& qvec, Eigen::Vector3d& tvec);
+
+//calculate reprojection error
+double QvecSquareErr(Eigen::Vector4d qvec1, Eigen::Vector4d qvec2);
+
+double TvecSquareErr(Eigen::Vector3d tvec1, Eigen::Vector4d tvec2);

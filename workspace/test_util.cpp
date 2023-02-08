@@ -2,6 +2,7 @@
 #include <string>
 #include <fstream>
 #include <Eigen/Core>
+#include <cmath>
 
 #include "feature/image_sift.h"
 #include "feature/sift.h"
@@ -55,15 +56,31 @@ cv::Mat CentralCrop(cv::Mat OriginalMat, int final_h, int final_w){
 
 Eigen::Matrix3x4d ProjMatFromQandT(Eigen::Vector4d& qvec, Eigen::Vector3d& tvec){
     Eigen::Matrix3d rot_matrix = colmap::QuaternionToRotationMatrix(colmap::NormalizeQuaternion(qvec));
-    std::cout << "this is rotation matrix" << std::endl;
+    std::cout << "(test) this is rotation matrix" << std::endl;
     std::cout << rot_matrix << std::endl;
-    std::cout << "this is t-vector " << tvec << std::endl;
+    std::cout << "(test) this is t-vector " << tvec << std::endl;
     Eigen::Matrix3x4d proj_matrix;
     proj_matrix.block(0,0,3,3) = rot_matrix;
     proj_matrix.block(0,3,3,1) = tvec;
 
-    std::cout << "this is projection matrix" << std::endl;
+    std::cout << "(test) this is projection matrix" << std::endl;
     std::cout << proj_matrix << std::endl;
     
     return proj_matrix;
+}
+
+double QvecSquareErr(Eigen::Vector4d qvec1, Eigen::Vector4d qvec2){
+    double error = 0.0;
+    for (int i = 0; i < qvec1.size(); i++){
+        error += std::abs(pow(qvec1(i) - qvec2(i), 2));
+    }
+    return error;
+}
+
+double TvecSquareErr(Eigen::Vector3d tvec1, Eigen::Vector3d tvec2){
+    double error = 0.0;
+    for (int i = 0; i < tvec1.size(); i++){
+        error += std::abs(pow(tvec1(i) - tvec2(i), 2));
+    }
+    return error;
 }
