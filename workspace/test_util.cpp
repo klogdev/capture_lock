@@ -69,7 +69,7 @@ Eigen::Matrix3x4d ProjMatFromQandT(Eigen::Vector4d& qvec, Eigen::Vector3d& tvec)
     return proj_matrix;
 }
 
-double QvecSquareErr(Eigen::Vector4d qvec1, Eigen::Vector4d qvec2){
+double QvecSquareErr(const Eigen::Vector4d qvec1, const Eigen::Vector4d qvec2){
     double error = 0.0;
     for (int i = 0; i < qvec1.size(); i++){
         error += std::abs(pow(qvec1(i) - qvec2(i), 2));
@@ -77,7 +77,7 @@ double QvecSquareErr(Eigen::Vector4d qvec1, Eigen::Vector4d qvec2){
     return error;
 }
 
-double TvecSquareErr(Eigen::Vector3d tvec1, Eigen::Vector3d tvec2){
+double TvecSquareErr(const Eigen::Vector3d tvec1, const Eigen::Vector3d tvec2){
     double error = 0.0;
     for (int i = 0; i < tvec1.size(); i++){
         error += std::abs(pow(tvec1(i) - tvec2(i), 2));

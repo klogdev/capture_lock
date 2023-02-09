@@ -87,6 +87,11 @@ int main(int argc, char** argv){
     Eigen::Vector3d tvec1 = Eigen::Vector3d::Zero();
     Eigen::Vector4d qvec2 = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec2 = Eigen::Vector3d::Zero();
+    //calculate d_quat and tvec norm
+    // Eigen::QuaternionBase<Eigen::Vector4d> QBase;
+    // Eigen::Vector4d qvec1_inv = QBase.inverse(qvec1);
+    // double delta_q = qvec2*qvec1_inv;
+    double delta_t = (tvec_rel2 - tvec2).norm();
 
     Eigen::Matrix3x4d proj_mat1 = calibration*ProjMatFromQandT(qvec1, tvec1);
 
@@ -95,7 +100,9 @@ int main(int argc, char** argv){
 
     //calculate error respect to g.t.
     std::cout << "squared error of qvec " << QvecSquareErr(qvec_rel2,qvec2) << std::endl;
+    //std::cout << "delta q " << delta_q << std::endl;
     std::cout << "squared error of tvec " << TvecSquareErr(tvec_rel2,tvec2) << std::endl;
+    std::cout << "norm of tvec " << delta_t << std::endl;
 
     Eigen::Matrix3x4d proj_mat2 = calibration*ProjMatFromQandT(qvec2, tvec2);
 
