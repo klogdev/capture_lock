@@ -1,3 +1,4 @@
+#include <math.h>
 #include "base/essential_matrix.h"
 #include "base/reconstruction.h"
 #include "base/camera.h"
@@ -12,6 +13,8 @@
 
 #include "optim/ransac.h"
 #include "estimators/pose.h"
+
+const double PI = 3.1415926;
 
 //call EstimateRelativePose from estimators/pose
 size_t GetNumInliers(const colmap::RANSACOptions& ransac_options,
@@ -88,9 +91,21 @@ int main(int argc, char** argv){
     Eigen::Vector4d qvec2 = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec2 = Eigen::Vector3d::Zero();
     //calculate d_quat and tvec norm
-    // Eigen::QuaternionBase<Eigen::Vector4d> QBase;
-    // Eigen::Vector4d qvec1_inv = QBase.inverse(qvec1);
-    // double delta_q = qvec2*qvec1_inv;
+    Eigen::Quaterniond q_eigen1;
+    q_eigen1.w() = qvec1(0);
+    q_eigen1.x() = qvec1(1);
+    q_eigen1.y() = qvec1(2);
+    q_eigen1.z() = qvec1(3);
+    Eigen::Quaterniond rotated_q_eigen1 = q_eigen1.inverse();
+    Eigen::Quaterniond q_eigen2;
+    q_eigen2.w() = qvec2(0);
+    q_eigen2.x() = qvec2(1);
+    q_eigen2.y() = qvec2(2);
+    q_eigen2.z() = qvec2(3);
+    
+    Eigen::AngleAxisd aa(q_eigen2 * rotated_q_eigen1);
+    std::cout << "angle of delta_q " << aa.angle() * 180 / PI << std::endl;
+    std::cout << "axis of dq " << aa.axis() << std::endl;
     double delta_t = (tvec_rel2 - tvec2).norm();
 
     Eigen::Matrix3x4d proj_mat1 = calibration*ProjMatFromQandT(qvec1, tvec1);
