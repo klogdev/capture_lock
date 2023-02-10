@@ -12,6 +12,19 @@ int main(int argc, char** argv){
     cv::Mat image = cv::imread("/tmp/datasets/test/STanager-Shapiro-ML.jpg");
     std::cout << "cv image shape " << image.cols << " " << image.rows << " "
               << image.channels() << std::endl;
+    
+    cv::Point center(100, 100);
+    cv::Point dx(15, 0);
+    cv::Point dy(0, 15);
+    cv::Point line1_start = center - dx;
+    cv::Point line1_end = center + dx;
+    cv::Point line2_start = center - dy;
+    cv::Point line2_end = center + dy;
+    cv::line(image, line1_start, line1_end, cv::Scalar(0, 255, 0), 
+            /*thickness=*/2, /*lineType=*/cv::LINE_AA);
+    cv::line(image, line2_start, line2_end, cv::Scalar(0, 0, 255), 
+            /*thickness=*/2, /*lineType=*/cv::LINE_AA);
+    cv::imwrite("/tmp/datasets/test/STanager-Shapiro-ML-plot.jpg", image);
   }
 
   {
