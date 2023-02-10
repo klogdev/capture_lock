@@ -9,7 +9,7 @@
 
 int main(int argc, char** argv){
   {
-    cv::Mat image = cv::imread("/tmp/datasets/test/STanager-Shapiro-ML.jpg");
+    cv::Mat image = cv::imread("/tmp2/images/P1180325.JPG");
     std::cout << "cv image shape " << image.cols << " " << image.rows << " "
               << image.channels() << std::endl;
     
@@ -24,7 +24,7 @@ int main(int argc, char** argv){
             /*thickness=*/2, /*lineType=*/cv::LINE_AA);
     cv::line(image, line2_start, line2_end, cv::Scalar(0, 0, 255), 
             /*thickness=*/2, /*lineType=*/cv::LINE_AA);
-    cv::imwrite("/tmp/datasets/test/STanager-Shapiro-ML-plot.jpg", image);
+    cv::imwrite("/tmp2/325_point.JPG", image);
   }
 
   {

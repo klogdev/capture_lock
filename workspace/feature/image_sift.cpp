@@ -25,12 +25,10 @@ Image::Image(std::string file_path)
     width = image.cols;
     height = image.rows;
     channels = image.channels();
-    //stbi_load(file_path.c_str(), &width, &height, &channels, 0);
     
     if (img_data == nullptr) {
         //const char *error_msg = stbi_failure_reason();
         std::cerr << "Failed to load image: " << file_path << "\n";
-        //std::cerr << "Error msg (stb_image): " << error_msg << "\n";
         std::exit(1);
     }
 
@@ -51,8 +49,7 @@ Image::Image(std::string file_path)
 
     
     if (channels == 4)
-        channels = 3; //ignore alpha channel
-    //stbi_image_free(img_data);
+        channels = 3; 
 }
 
 Image::Image(int w, int h, int c)
