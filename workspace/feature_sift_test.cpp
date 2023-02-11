@@ -19,8 +19,8 @@ int main(int argc, char** argv){
     Image image1(argv[1]);
     Image image2(argv[2]);
     //get cv mat separately for plot
-    cv::Mat image_cv1 = CentralCrop(cv::imread(argv[1]),480,640);
-    cv::Mat image_cv2 = CentralCrop(cv::imread(argv[2]),480,640);
+    cv::Mat image_cv1 = CentralCrop(cv::imread(argv[1]),800,600);
+    cv::Mat image_cv2 = CentralCrop(cv::imread(argv[2]),800,600);
     
     std::string file_path = argv[3];
     
@@ -31,20 +31,17 @@ int main(int argc, char** argv){
     int num_plot_pts = 10;
 
     for (int i = 0; i < num_plot_pts-1; i++){
-        for (int j = i+1; j < num_plot_pts; j++){
-            cv::Point line1_start(test_matches[i].KeyPt1(0), test_matches[i].KeyPt1(1));
-            cv::Point line1_end(test_matches[j].KeyPt1(0), test_matches[j].KeyPt1(1));
-            cv::Point line2_start(test_matches[i].KeyPt2(0), test_matches[i].KeyPt2(1));
-            cv::Point line2_end(test_matches[j].KeyPt2(0), test_matches[j].KeyPt2(1));
-            cv::line(image_cv1, line1_start, line1_end, cv::Scalar(0, i, j), 
-            /*thickness=*/2, /*lineType=*/cv::LINE_AA);
-            cv::line(image_cv2, line2_start, line2_end, cv::Scalar(0, i, j), 
-            /*thickness=*/2, /*lineType=*/cv::LINE_AA);
-        }
+        cv::Point line1_start(test_matches[i].KeyPt1(0), test_matches[i].KeyPt1(1));
+        cv::Point line1_end(test_matches[i].KeyPt2(0), test_matches[i].KeyPt2(1));
+    
+        cv::line(image_cv1, line1_start, line1_end, cv::Scalar(0, i, 255), 
+        /*thickness=*/2, /*lineType=*/cv::LINE_AA);
+        cv::line(image_cv2, line1_start, line1_end, cv::Scalar(0, 255, i), 
+        /*thickness=*/2, /*lineType=*/cv::LINE_AA);
     }
 
-    cv::imwrite("/tmp2/325_point.JPG", image_cv1);
-    cv::imwrite("/tmp2/326_point.JPG", image_cv2);
+    cv::imwrite("/tmp2/317_point.JPG", image_cv1);
+    cv::imwrite("/tmp2/318_point.JPG", image_cv2);
 
     std::ofstream file(file_path, std::ios::trunc);
     file << "tested output of the matched points" << std::endl;

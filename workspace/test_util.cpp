@@ -43,12 +43,12 @@ std::vector<MatchedVec> FindMatches(Image& Image1, Image& Image2){
     return MatchVectors;
 }
 
-cv::Mat CentralCrop(cv::Mat OriginalMat, int final_h, int final_w){
+cv::Mat CentralCrop(cv::Mat OriginalMat, int final_w, int final_h){
     int center_x = (OriginalMat.cols)/2;
     int center_y = (OriginalMat.rows)/2;
 
-    //React(x_left,y_left,w,h)
-    cv::Rect MyRoI(center_x-final_w/2, center_y-final_h/2,final_h,final_w);
+    //Rect(x_left,y_left,w,h)
+    cv::Rect MyRoI(center_x-final_w/2, center_y-final_h/2,final_w,final_h);
     cv::Mat image_crop = OriginalMat(MyRoI);
 
     return image_crop;

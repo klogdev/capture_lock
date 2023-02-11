@@ -90,7 +90,32 @@ int main(int argc, char** argv){
     Eigen::Vector3d tvec1 = Eigen::Vector3d::Zero();
     Eigen::Vector4d qvec2 = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec2 = Eigen::Vector3d::Zero();
-    //calculate d_quat and tvec norm
+
+    //calculate d_quat and tvec norm for COLMAP g.t.
+    Eigen::Quaterniond q_eigen1_gt;
+    q_eigen1_gt.w() = qvec1_gt(0);
+    q_eigen1_gt.x() = qvec1_gt(1);
+    q_eigen1_gt.y() = qvec1_gt(2);
+    q_eigen1_gt.z() = qvec1_gt(3);
+    Eigen::Quaterniond rotated_q_eigen1gt = q_eigen1_gt.inverse();
+    Eigen::Quaterniond q_eigen2_gt;
+    q_eigen2_gt.w() = qvec2_gt(0);
+    q_eigen2_gt.x() = qvec2_gt(1);
+    q_eigen2_gt.y() = qvec2_gt(2);
+    q_eigen2_gt.z() = qvec2_gt(3);
+    
+    Eigen::AngleAxisd aa_gt(q_eigen2_gt * rotated_q_eigen1gt);
+    std::cout << "angle of delta_q: " << aa_gt.angle() * 180 / PI << std::endl;
+    std::cout << "axis of dq: " << aa_gt.axis() << std::endl;
+    double delta_t_gt = (tvec1_gt - tvec2_gt).norm();
+    std::cout << "norm of tvec ground truth " << delta_t_gt << std::endl;
+
+    Eigen::Matrix3x4d proj_mat1 = calibration*ProjMatFromQandT(qvec1, tvec1);
+
+    size_t inliers = GetNumInliers(ransac_options,
+                            key_points1, key_points2, &qvec2, &tvec2);
+
+    //calculate d_quat and tvec norm for ransac estimate
     Eigen::Quaterniond q_eigen1;
     q_eigen1.w() = qvec1(0);
     q_eigen1.x() = qvec1(1);
@@ -104,20 +129,14 @@ int main(int argc, char** argv){
     q_eigen2.z() = qvec2(3);
     
     Eigen::AngleAxisd aa(q_eigen2 * rotated_q_eigen1);
-    std::cout << "angle of delta_q " << aa.angle() * 180 / PI << std::endl;
-    std::cout << "axis of dq " << aa.axis() << std::endl;
-    double delta_t = (tvec_rel2 - tvec2).norm();
-
-    Eigen::Matrix3x4d proj_mat1 = calibration*ProjMatFromQandT(qvec1, tvec1);
-
-    size_t inliers = GetNumInliers(ransac_options,
-                            key_points1, key_points2, &qvec2, &tvec2);
+    std::cout << "angle of delta_q: " << aa.angle() * 180 / PI << std::endl;
+    std::cout << "axis of dq: " << aa.axis() << std::endl;
+    double delta_t = (tvec1 - tvec2).norm();
+    std::cout << "norm of tvec estimate " << delta_t << std::endl;
 
     //calculate error respect to g.t.
     std::cout << "squared error of qvec " << QvecSquareErr(qvec_rel2,qvec2) << std::endl;
-    //std::cout << "delta q " << delta_q << std::endl;
     std::cout << "squared error of tvec " << TvecSquareErr(tvec_rel2,tvec2) << std::endl;
-    std::cout << "norm of tvec " << delta_t << std::endl;
 
     Eigen::Matrix3x4d proj_mat2 = calibration*ProjMatFromQandT(qvec2, tvec2);
 
