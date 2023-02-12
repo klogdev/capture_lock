@@ -19,8 +19,12 @@ int main(int argc, char** argv){
     Image image1(argv[1]);
     Image image2(argv[2]);
     //get cv mat separately for plot
-    cv::Mat image_cv1 = CentralCrop(cv::imread(argv[1]),800,600);
-    cv::Mat image_cv2 = CentralCrop(cv::imread(argv[2]),800,600);
+    // cv::Mat image_cv1 = CentralCrop(cv::imread(argv[1]),800,600);
+    // cv::Mat image_cv2 = CentralCrop(cv::imread(argv[2]),800,600);
+
+    //get cv mat separately for plot
+    cv::Mat image_cv1 = ResizeDown(cv::imread(argv[1]),800,600);
+    cv::Mat image_cv2 = ResizeDown(cv::imread(argv[2]),800,600);
     
     std::string file_path = argv[3];
     

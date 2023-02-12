@@ -19,7 +19,10 @@ Image::Image(std::string file_path)
     int final_w = 800;
     int final_h = 600;
     cv::Rect MyRoI(center_x-final_w/2, center_y-final_h/2, final_w, final_h);
-    cv::Mat image = orig_image(MyRoI);
+    //cv::Mat image = orig_image(MyRoI);
+    //hard coded resize
+    cv::Mat image;
+    cv::resize(orig_image, image, cv::Size(final_w, final_h), cv::INTER_LINEAR);
 
     unsigned char *img_data = image.data;
     width = image.cols;

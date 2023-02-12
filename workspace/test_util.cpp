@@ -43,15 +43,21 @@ std::vector<MatchedVec> FindMatches(Image& Image1, Image& Image2){
     return MatchVectors;
 }
 
-cv::Mat CentralCrop(cv::Mat OriginalMat, int final_w, int final_h){
-    int center_x = (OriginalMat.cols)/2;
-    int center_y = (OriginalMat.rows)/2;
+cv::Mat CentralCrop(cv::Mat orignal_image, int final_w, int final_h){
+    int center_x = (orignal_image.cols)/2;
+    int center_y = (orignal_image.rows)/2;
 
     //Rect(x_left,y_left,w,h)
     cv::Rect MyRoI(center_x-final_w/2, center_y-final_h/2,final_w,final_h);
-    cv::Mat image_crop = OriginalMat(MyRoI);
+    cv::Mat image_crop = orignal_image(MyRoI);
 
     return image_crop;
+}
+
+cv::Mat ResizeDown(cv::Mat orig_image, int final_w, int final_h){
+    cv::Mat image;
+    cv::resize(orig_image, image, cv::Size(final_w, final_h), cv::INTER_LINEAR);
+    return image;
 }
 
 Eigen::Matrix3x4d ProjMatFromQandT(Eigen::Vector4d& qvec, Eigen::Vector3d& tvec){
