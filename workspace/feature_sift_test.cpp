@@ -34,14 +34,25 @@ int main(int argc, char** argv){
 
     int num_plot_pts = 10;
 
-    for (int i = 0; i < num_plot_pts-1; i++){
+    for (int i = 0; i < test_matches.size(); i++){
         cv::Point line1_start(test_matches[i].KeyPt1(0), test_matches[i].KeyPt1(1));
         cv::Point line1_end(test_matches[i].KeyPt2(0), test_matches[i].KeyPt2(1));
     
-        cv::line(image_cv1, line1_start, line1_end, cv::Scalar(0, i, 255), 
+        cv::line(image_cv1, line1_start, line1_end, cv::Scalar(255, 0, 0), 
         /*thickness=*/2, /*lineType=*/cv::LINE_AA);
-        cv::line(image_cv2, line1_start, line1_end, cv::Scalar(0, 255, i), 
+        cv::line(image_cv2, line1_start, line1_end, cv::Scalar(255, 0, 0), 
         /*thickness=*/2, /*lineType=*/cv::LINE_AA);
+
+        cv::line(image_cv1, line1_start, line1_start, cv::Scalar(0, 0, 255), 
+        /*thickness=*/2, /*lineType=*/cv::LINE_AA);
+        cv::line(image_cv1, line1_end, line1_end, cv::Scalar(0, 255, 0), 
+        /*thickness=*/2, /*lineType=*/cv::LINE_AA);
+
+        cv::line(image_cv2, line1_start, line1_start, cv::Scalar(0, 0, 255), 
+        /*thickness=*/2, /*lineType=*/cv::LINE_AA);
+        cv::line(image_cv2, line1_end, line1_end, cv::Scalar(0, 255, 0), 
+        /*thickness=*/2, /*lineType=*/cv::LINE_AA);
+        
     }
 
     cv::imwrite("/tmp2/317_point.JPG", image_cv1);
