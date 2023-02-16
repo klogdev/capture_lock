@@ -1,4 +1,3 @@
-#include <math.h>
 #include "base/essential_matrix.h"
 #include "base/reconstruction.h"
 #include "base/camera.h"
