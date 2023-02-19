@@ -11,11 +11,19 @@ Image LoadImage(const std::string folder, const std::string image_name);
 colmap::Image SIFTtoCOLMAPImage(int image_id, std::vector<Eigen::Vector2d> features,
                                 const& colmap::Camera camera);
 
-std::vector<colmap::Point3D> IncrementOneImage(std::string image_path, 
-                                            const& colmap::Image);
+std::vector<colmap::Point3D> IncrementOneImage(std::string image_path,
+                                            int next_id,
+                                            const& colmap::Image last_image,
+                                            const& colmap::Camera camera);
 
+//generate sift keypoints from sift image
 std::vector<sift::Keypoint> GetKeyPoints(Image& image);
 
-std::vector<Eigen::Vector2d> SIFTPtsToVector(std::vector<sift::Keypoint> key_points);
+//get a hash map of <tuple,sift::keypoint>, use (i,j) pair to connect
+//with Point2D in colmap::Image
+std::unordered_map<std::pair<int,int>, sift::keypoint> SIFTPtsToHash(std::vector<sift::Keypoint> key_points);
+
+//convert i,j coord from SIFT points to eigen vector for the init of colmap::Image
+std::vector<Eigen::Vector2d> SIFTPtsToVec(std::vector<sift::Keypoint> key_points);
 
     

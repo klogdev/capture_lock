@@ -16,7 +16,7 @@ Image LoadImage(const std::string folder, const std::string image_name){
 }
 
 colmap::Image SIFTtoCOLMAPImage(int image_id, std::vector<Eigen::Vector2d> features,
-                                colmap::Camera camera){
+                                const& colmap::Camera camera){
     colmap::Image curr_image;
     curr_image.SetImageId(image_id);
     curr_image.SetCamera(camera);
@@ -30,19 +30,32 @@ std::vector<sift::Keypoint> GetKeyPoints(Image& image){
     return key_points;
 }
 
-std::vector<Eigen::Vector2d> SIFTPtsToVector(std::vector<sift::Keypoint> key_points){
-    std::vector<Eigen::Vector2d> key_vec;
+std::unordered_map<std::pair<int,int>, sift::keypoint> SIFTPtsToHash(std::vector<sift::Keypoint> key_points){
+    std::unordered_map<std::pair<int,int>, sift::keypoint> key_map;
 
     for(int i = 0; i < key_points.size(); i++){
-        int key_idx = key_points[i];
-        
-        sift::Keypoint CurrKey1 = KeyPoints1[KeyIdx1];
-        sift::Keypoint CurrKey2 = KeyPoints2[KeyIdx2];
-        Eigen::Vector2d Pt1(CurrKey1.x, CurrKey1.y);
-        Eigen::Vector2d Pt2(CurrKey2.x, CurrKey2.y);
+        std::pair<int,int> curr_idx;
+        curr_idx.first = key_points[i].i;
+        curr_idx.second = key_points[i].j;
+        key_map[curr_idx] = key_points[i];
+    }
+    return key_map;
 }
 
-std::vector<colmap::Point3D> IncrementOneImage(std::string image_path, 
-                                            const& colmap::Image){
+std::vector<Eigen::Vector2d> SIFTPtsToVec(std::vector<sift::Keypoint> key_points){
+    std::vector<Eigen::Vector2d> key_vec;
+    for (int i = 0; i < key_points.size(); i++){
+        Eigen::Vector2d curr_vec(key_points[i].i,key_points[i].j);
+    }
+    return key_vec;
+}
+
+std::vector<colmap::Point3D> IncrementOneImage(std::string image_path,
+                                            int next_id,
+                                            const& colmap::Image last_image,
+                                            const& colmap::Camera camera){
     Image new_image(image_path);
+    std::vector<sift::Keypoint> curr_keypts = sift::find_keypoints_and_descriptors(new_image);
+    colmap::Image new_cmp_image = SIFTtoCOLMAPImage(next_id, curr_keypts, camera);
+
 }
