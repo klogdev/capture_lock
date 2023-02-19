@@ -3,12 +3,12 @@
 #include <fstream>
 #include <Eigen/Core>
 
+#include <absl/random/random.h>
+#include <absl/strings/str_format.h>
 #include <opencv2/opencv.hpp>
-#include <absl/random/random.h>
-#include <absl/random/random.h>
 
 int main(int argc, char** argv){
-  {
+  if (0) {
     cv::Mat image = cv::imread("/tmp2/images/P1180325.JPG");
     std::cout << "cv image shape " << image.cols << " " << image.rows << " "
               << image.channels() << std::endl;
@@ -32,6 +32,19 @@ int main(int argc, char** argv){
     unsigned int index = absl::Uniform(bitgen, 0u, 10u);
     double fraction = absl::Uniform(bitgen, 0, 1.0);
     bool coin_flip = absl::Bernoulli(bitgen, 0.5);
+  }
+
+  {
+    const std::string image_directory =
+        "/tmp/datasets/colmap/south-building/images";
+    for (int index = 150; index <= 340; ++index) {
+      const std::string image_name = absl::StrFormat("P118%04d.JPG", index);
+      const std::string image_path =
+          absl::StrFormat("%s/%s", image_directory, image_name);
+      cv::Mat image = cv::imread(image_path);
+      std::cout << "image_path " << image_path << " " << (image.data != nullptr)
+                << std::endl;
+    }
   }
 
   return 0;
