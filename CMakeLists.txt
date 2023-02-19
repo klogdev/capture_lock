@@ -12,6 +12,7 @@ find_package(COLMAP REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(absl REQUIRED)
 
-set(absl_LIBRARIES absl::base absl::strings absl::random_random)
+set(absl_LIBRARIES 
+    absl::base absl::strings absl::random_random absl::str_format)
 
 add_subdirectory(workspace)

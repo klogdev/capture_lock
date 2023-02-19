@@ -11,11 +11,12 @@ target_include_directories(
 target_link_libraries(
   test_util PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
 
-  add_executable(reconstruction reconstruction_mapper_test.cpp)
-  target_include_directories(
-    reconstruction PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
-  target_link_libraries(
-    reconstruction PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift test_util)
+# TODO: not check in the file reconstruction_mapper_test.cpp ?
+#add_executable(reconstruction reconstruction_mapper_test.cpp)
+#target_include_directories(
+#reconstruction PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+#target_link_libraries(
+#reconstruction PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift test_util)
 
 
 add_executable(feature_sift feature_sift_test.cpp)
