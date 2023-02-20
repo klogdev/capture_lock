@@ -18,6 +18,7 @@ cv::Mat CentralCrop(cv::Mat orignal_image, int final_h, int final_w);
 
 cv::Mat ResizeDown(cv::Mat original_image, int final_h, int final_w);
 
+//equivalent to colmap::Image's ProjMatrix
 Eigen::Matrix3x4d ProjMatFromQandT(Eigen::Vector4d& qvec, Eigen::Vector3d& tvec);
 
 //calculate reprojection error

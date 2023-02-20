@@ -36,7 +36,7 @@ int main(int argc, char** argv){
 
   {
     const std::string image_directory =
-        "/tmp/datasets/colmap/south-building/images";
+        "/tmp2/images";
     for (int index = 150; index <= 340; ++index) {
       const std::string image_name = absl::StrFormat("P118%04d.JPG", index);
       const std::string image_path =
