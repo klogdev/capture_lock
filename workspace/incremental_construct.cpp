@@ -39,14 +39,13 @@ std::vector<Eigen::Vector2d> SIFTPtsToVec(std::vector<sift::Keypoint> key_points
     return key_vec;
 }
 
-std::vector<colmap::Point3D> IncrementOneImage(std::string image_path,
-                                            int next_id,
-                                            const colmap::Image& last_image,
-                                            colmap::Camera& camera,
-                                            std::unordered_map<int,colmap::Image>& global_image_map,
-                                            std::unordered_map<int,sift::Keypoint>& global_keypts_map,
-                                            std::unordered_map<int,Eigen::Vector3d>& global_3d_map
-                                            ){
+void IncrementOneImage(std::string image_path, int next_id,
+                        colmap::Image& last_image,
+                        colmap::Camera& camera,
+                        std::unordered_map<int,colmap::Image>& global_image_map,
+                        std::unordered_map<int,std::vector<sift::Keypoint>>& global_keypts_map,
+                        std::unordered_map<int,Eigen::Vector3d>& global_3d_map
+                        ){
     Image new_image(image_path);
     std::vector<sift::Keypoint> curr_key_points = GetKeyPoints(new_image);
     //covert sift keypts to eigen, should we only pick matched 2d pts for pose est??
@@ -120,14 +119,15 @@ std::vector<colmap::Point3D> IncrementOneImage(std::string image_path,
             colmap::point3D_t curr3d_id = last_image.Point2D(orig_idx1).Point3DId();//type conversion??
             //overlap the 3d point coord by the updated one
             global_3d_map[curr3d_id] = triangulate_3d[i];
-            new_cmp_image.Point2D(orig_idx2).SetPoint3DId(curr3d_id);
+            new_cmp_image.SetPoint3DForPoint2D(orig_idx2,curr3d_id);
         }
         else {
             int new_3d_id = curr_3d_len + 1;
             curr_3d_len++;
             global_3d_map[new_3d_id] = triangulate_3d[i];
-            last_image.Point2D(orig_idx1).SetPoint3DId(new_3d_id);
-            new_cmp_image.Point2D(orig_idx2).SetPoint3DId(new_3d_id);
+            last_image.SetPoint3DForPoint2D(orig_idx1,new_3d_id);
+            new_cmp_image.SetPoint3DForPoint2D(orig_idx2,new_3d_id);
         }
     }
+    global_image_map[next_id] = new_cmp_image;
 }

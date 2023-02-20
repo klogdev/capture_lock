@@ -11,13 +11,14 @@ target_include_directories(
 target_link_libraries(
   test_util PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
 
-# TODO: not check in the file reconstruction_mapper_test.cpp ?
-add_executable(increment incremental_construct.cpp)
+add_library(increment STATIC
+incremental_construct.h
+incremental_construct.cpp
+)
 target_include_directories(
-increment PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+  increment PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-increment PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift test_util)
-
+  increment PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
 
 add_executable(feature_sift feature_sift_test.cpp)
 target_include_directories(
