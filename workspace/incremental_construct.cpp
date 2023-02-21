@@ -10,12 +10,6 @@
 
 #include "incremental_construct.h"
 
-Image LoadImage(const std::string folder, const std::string image_name){
-    std::string abs_path = folder + image_name;
-    Image image(abs_path);
-    return image;
-}
-
 colmap::Image SIFTtoCOLMAPImage(int image_id, std::vector<Eigen::Vector2d> features,
                                 const colmap::Camera& camera){
     colmap::Image curr_image;
@@ -130,4 +124,5 @@ void IncrementOneImage(std::string image_path, int next_id,
         }
     }
     global_image_map[next_id] = new_cmp_image;
+    global_keypts_map[next_id] = curr_key_points;
 }

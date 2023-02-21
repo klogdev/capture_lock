@@ -7,8 +7,6 @@
 #include <string>
 #include "feature/sift.h"
 
-Image LoadImage(const std::string folder, const std::string image_name);
-
 colmap::Image SIFTtoCOLMAPImage(int image_id, std::vector<Eigen::Vector2d> features,
                                 const colmap::Camera& camera);
 
