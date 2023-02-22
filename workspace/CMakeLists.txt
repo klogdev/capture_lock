@@ -36,13 +36,14 @@ file_stream.cpp
 target_include_directories(
   stream PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  stream PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
+  stream PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES} img sift)
 
 add_executable(mapper mapper_main.cpp)
 target_include_directories(
   mapper PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  mapper PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift test_util)
+  mapper PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES}
+  img sift test_util stream init increment)
 
 add_executable(feature_sift feature_sift_test.cpp)
 target_include_directories(

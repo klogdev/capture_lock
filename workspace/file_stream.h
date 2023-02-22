@@ -6,4 +6,4 @@
 #include <absl/random/random.h>
 #include <absl/strings/str_format.h>
 
-std::vector<std::string> FilePathStream(std::string folder_dir);
+std::vector<std::string> FilePathStream(const std::string folder_dir);

@@ -29,18 +29,19 @@ int main(int argc, char** argv){
     std::vector<std::string> image_stream = FilePathStream(image_path);
 
     //start create map by init list of hashmaps
-    std::unordered_map<int,colmap::Image>& global_image_map;
-    std::unordered_map<int,std::vector<sift::Keypoint>>& global_keypts_map;
-    std::unordered_map<int,Eigen::Vector3d>& global_3d_map;
+    std::unordered_map<int,colmap::Image> global_image_map;
+    std::unordered_map<int,std::vector<sift::Keypoint>> global_keypts_map;
+    std::unordered_map<int,Eigen::Vector3d> global_3d_map;
 
     //triangulate first two 
     InitFirstPair(image_stream[0], image_stream[1], camera,
                 global_image_map,global_keypts_map,global_3d_map);
     //increment remaining frames
     for (int i = 2; i < image_stream.size(); i++){
-        IncrementOneImage(image_steam[i], i, global_image_map[i-1],camera,
+        IncrementOneImage(image_stream[i], i, global_image_map[i-1],camera,
                         global_image_map,global_keypts_map,global_3d_map);
     }
 
     std::cout << global_3d_map.size() << std::endl;
+    return 0;
 }
