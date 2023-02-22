@@ -60,6 +60,7 @@ cv::Mat ResizeDown(cv::Mat orig_image, int final_w, int final_h){
     return image;
 }
 
+
 Eigen::Matrix3x4d ProjMatFromQandT(Eigen::Vector4d& qvec, Eigen::Vector3d& tvec){
     Eigen::Matrix3d rot_matrix = colmap::QuaternionToRotationMatrix(colmap::NormalizeQuaternion(qvec));
     std::cout << "(test) this is rotation matrix" << std::endl;
