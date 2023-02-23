@@ -17,16 +17,22 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     //initialize the Image class by its path (feature/image_sift)
     Image image1(first_path);
     Image image2(second_path);
+    std::cout << first_path << std::endl;
+    std::cout << second_path << std::endl;
 
     std::vector<sift::Keypoint> key_points1 = GetKeyPoints(image1);
     std::vector<sift::Keypoint> key_points2 = GetKeyPoints(image2);
     std::vector<std::pair<int, int>> matches = sift::find_keypoint_matches(key_points1, key_points2);
 
+    std::cout << "size of match: " << matches.size() << std::endl;
+    std::cout << "size of key1: " << key_points1.size() << std::endl;
+    
     std::vector<Eigen::Vector2d> key_vec1 = SIFTPtsToVec(key_points1);
     colmap::Image cmp_image1 = SIFTtoCOLMAPImage(1, key_vec1, camera);
     std::vector<Eigen::Vector2d> key_vec2 = SIFTPtsToVec(key_points2);
     colmap::Image cmp_image2 = SIFTtoCOLMAPImage(2, key_vec2, camera);
 
+    std::cout << "size of key_vec1: " << key_vec1.size() << std::endl;
     //register the first frame as identity mat and zeo trans
     Eigen::Vector4d qvec1 = Eigen::Vector4d(1, 0, 0, 0);
     Eigen::Vector3d tvec1 = Eigen::Vector3d::Zero();
@@ -60,15 +66,17 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     for (int i = 0; i < matches.size(); i++){
         int curr_idx1 = matches[i].first;
         int curr_idx2 = matches[i].second;
+        std::cout << "curr pair " << i << ": " << curr_idx1 << ", " << curr_idx2 << std::endl;
         vec2d1_idx_map[i] = curr_idx1;
         vec2d2_idx_map[i] = curr_idx2;
         matched_vec1.push_back(key_vec1[curr_idx1]);
         matched_vec2.push_back(key_vec2[curr_idx2]);
     }
-
+    std::cout << "no seg fault before tri" << std::endl;
     std::vector<Eigen::Vector3d> triangulate_3d = colmap::TriangulatePoints(proj_mat1, proj_mat2,
                                                                     matched_vec1, matched_vec2);
 
+    std::cout << "no seg fault after tri" << std::endl;
     int curr_3d_len = 0;
     for (int i = 0; i < triangulate_3d.size(); i++){
         int orig_idx1 = vec2d1_idx_map[i];

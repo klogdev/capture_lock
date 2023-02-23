@@ -29,6 +29,7 @@ std::vector<Eigen::Vector2d> SIFTPtsToVec(std::vector<sift::Keypoint> key_points
     std::vector<Eigen::Vector2d> key_vec;
     for (int i = 0; i < key_points.size(); i++){
         Eigen::Vector2d curr_vec(key_points[i].i,key_points[i].j);
+        key_vec.push_back(curr_vec);
     }
     return key_vec;
 }

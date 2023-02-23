@@ -24,10 +24,9 @@ int main(int argc, char** argv){
     colmap::Reconstruction read_text = colmap::Reconstruction();
     read_text.ReadText(sparse_path);
     //assume we only have one camera
-    colmap::Camera camera = read_text.Cameras().at(1);//need to change focal, due to downsampling
+    colmap::Camera camera = read_text.Camera(1);//need to change focal, due to downsampling
 
     std::vector<std::string> image_stream = FilePathStream(image_path);
-
     //start create map by init list of hashmaps
     std::unordered_map<int,colmap::Image> global_image_map;
     std::unordered_map<int,std::vector<sift::Keypoint>> global_keypts_map;
@@ -36,6 +35,7 @@ int main(int argc, char** argv){
     //triangulate first two 
     InitFirstPair(image_stream[0], image_stream[1], camera,
                 global_image_map,global_keypts_map,global_3d_map);
+    std::cout << "no seg fault after first pair initialize" << std::endl;
     //increment remaining frames
     for (int i = 2; i < image_stream.size(); i++){
         IncrementOneImage(image_stream[i], i, global_image_map[i-1],camera,
