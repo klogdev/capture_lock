@@ -39,13 +39,29 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     cmp_image1.SetQvec(qvec1);
     cmp_image1.SetTvec(tvec1);
 
+    //collect matched vector before relative estimation
+    //as the ransac estimator requires both vectors have same size
+    std::unordered_map<int,int> vec2d1_idx_map; //map of idx of triangulation vector
+    std::unordered_map<int,int> vec2d2_idx_map; //to the idx of original vector
+    std::vector<Eigen::Vector2d> matched_vec1;
+    std::vector<Eigen::Vector2d> matched_vec2;
+
+    for (int i = 0; i < matches.size(); i++){
+        int curr_idx1 = matches[i].first;
+        int curr_idx2 = matches[i].second;
+        vec2d1_idx_map[i] = curr_idx1;
+        vec2d2_idx_map[i] = curr_idx2;
+        matched_vec1.push_back(key_vec1[curr_idx1]);
+        matched_vec2.push_back(key_vec2[curr_idx2]);
+    }
+
     //start relative pose estimation and register pose for the frame 2
     colmap::RANSACOptions ransac_options = colmap::RANSACOptions();
     ransac_options.max_error = 0.05;
     Eigen::Vector4d qvec2 = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec2 = Eigen::Vector3d::Zero();
     size_t num_inliers = 
-        colmap::EstimateRelativePose(ransac_options, key_vec1, key_vec2, 
+        colmap::EstimateRelativePose(ransac_options, matched_vec1, matched_vec2, 
                                      &qvec2, &tvec2);
     cmp_image2.SetQvec(qvec2);
     cmp_image2.SetTvec(tvec2);
@@ -58,25 +74,9 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     Eigen::Matrix3x4d proj_mat1 = calibration*extrinsic_mat1;
     Eigen::Matrix3x4d proj_mat2 = calibration*extrinsic_mat2;
 
-    std::unordered_map<int,int> vec2d1_idx_map; //map of idx of triangulation vector
-    std::unordered_map<int,int> vec2d2_idx_map; //to the idx of original vector
-    std::vector<Eigen::Vector2d> matched_vec1;
-    std::vector<Eigen::Vector2d> matched_vec2;
-
-    for (int i = 0; i < matches.size(); i++){
-        int curr_idx1 = matches[i].first;
-        int curr_idx2 = matches[i].second;
-        std::cout << "curr pair " << i << ": " << curr_idx1 << ", " << curr_idx2 << std::endl;
-        vec2d1_idx_map[i] = curr_idx1;
-        vec2d2_idx_map[i] = curr_idx2;
-        matched_vec1.push_back(key_vec1[curr_idx1]);
-        matched_vec2.push_back(key_vec2[curr_idx2]);
-    }
-    std::cout << "no seg fault before tri" << std::endl;
     std::vector<Eigen::Vector3d> triangulate_3d = colmap::TriangulatePoints(proj_mat1, proj_mat2,
                                                                     matched_vec1, matched_vec2);
 
-    std::cout << "no seg fault after tri" << std::endl;
     int curr_3d_len = 0;
     for (int i = 0; i < triangulate_3d.size(); i++){
         int orig_idx1 = vec2d1_idx_map[i];
@@ -93,4 +93,6 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     global_image_map[2] = cmp_image2;
     global_keypts_map[1] = key_points1;
     global_keypts_map[2] = key_points2;
+    std::cout << "num of 3d points from first pair is: " << 
+           global_3d_map.size() << std::endl;
 }

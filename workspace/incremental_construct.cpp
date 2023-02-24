@@ -53,40 +53,27 @@ void IncrementOneImage(std::string image_path, int next_id,
     std::vector<std::pair<int, int>> matches = sift::find_keypoint_matches(last_key_points, curr_key_points);
 
     std::vector<Eigen::Vector3d> matched3d_from2d;
+    std::vector<Eigen::Vector2d> matched2d_curr;
     for (int i = 0; i < matches.size(); i++){
         //assume key_points id of last image are consistent with the id
         //registered in points2d
-        colmap::point2D_t curr_2d_id = matches[i].first; //need type conversion
-        colmap::Point2D curr_2d = last_image.Point2D(curr_2d_id);
-        if (!curr_2d.HasPoint3D()){
+        colmap::point2D_t last_2d_id = matches[i].first; //need type conversion
+        colmap::Point2D last_2d = last_image.Point2D(last_2d_id);
+        if (!last_2d.HasPoint3D()){
             continue;
         }
-        colmap::point3D_t global_3d_key = curr_2d.Point3DId();
+
+        colmap::point3D_t global_3d_key = last_2d.Point3DId();
         Eigen::Vector3d from2d_to3d = global_3d_map[global_3d_key];//need type conversion?
         matched3d_from2d.push_back(from2d_to3d);
+        
+        colmap::point2D_t curr_2d_id = matches[i].second;
+        matched2d_curr.push_back(curr_keypts_vec[curr_2d_id]);
     }
+    std::cout << "curr size of 3d vector in image " << next_id << " is: " << matched3d_from2d.size() << std::endl;
 
-    //start absolute pose estimation
-    colmap::AbsolutePoseEstimationOptions absolute_options = colmap::AbsolutePoseEstimationOptions();
-    absolute_options.ransac_options.max_error = 0.05;
-    Eigen::Vector4d qvec_abs = Eigen::Vector4d(0, 0, 0, 1);
-    Eigen::Vector3d tvec_abs = Eigen::Vector3d::Zero();
-    std::vector<char> inlier_mask;
-    size_t inliers = matched3d_from2d.size(); //need check def
-    bool abs_pose = colmap::EstimateAbsolutePose(absolute_options, curr_keypts_vec,
-                                                matched3d_from2d, &qvec_abs, &tvec_abs,
-                                                &camera, &inliers, &inlier_mask);
-    new_cmp_image.SetQvec(qvec_abs);
-    new_cmp_image.SetTvec(tvec_abs);
-
-    //start triangulation
-    Eigen::Matrix3d calibration = camera.CalibrationMatrix();
-    Eigen::Matrix3x4d extrinsic_mat1 = last_image.ProjectionMatrix(); //under proj.cc, only compose extrinsic
-    Eigen::Matrix3x4d extrinsic_mat2 = new_cmp_image.ProjectionMatrix();
-
-    Eigen::Matrix3x4d proj_mat1 = calibration*extrinsic_mat1;
-    Eigen::Matrix3x4d proj_mat2 = calibration*extrinsic_mat2;
-
+    //collect matched vector before absolute estimation
+    //as the ransac estimator requires both vectors have same size
     std::unordered_map<int,int> vec2d1_idx_map; //map of idx of triangulation vector
     std::unordered_map<int,int> vec2d2_idx_map; //to the idx of original vector
     std::vector<Eigen::Vector2d> matched_vec1;
@@ -100,6 +87,31 @@ void IncrementOneImage(std::string image_path, int next_id,
         matched_vec1.push_back(last_keypts_vec[curr_idx1]);
         matched_vec2.push_back(curr_keypts_vec[curr_idx2]);
     }
+
+    //start absolute pose estimation
+    colmap::AbsolutePoseEstimationOptions absolute_options = colmap::AbsolutePoseEstimationOptions();
+    absolute_options.ransac_options.max_error = 0.05;
+    Eigen::Vector4d qvec_abs = Eigen::Vector4d(0, 0, 0, 1);
+    Eigen::Vector3d tvec_abs = Eigen::Vector3d::Zero();
+    std::vector<char> inlier_mask;
+    size_t inliers = matched3d_from2d.size(); //need check def
+    bool abs_pose = colmap::EstimateAbsolutePose(absolute_options, matched2d_curr,
+                                                matched3d_from2d, &qvec_abs, &tvec_abs,
+                                                &camera, &inliers, &inlier_mask);
+    new_cmp_image.SetQvec(qvec_abs);
+    new_cmp_image.SetTvec(tvec_abs);
+    std::cout << "number of 2d-3d pairs in " << next_id << " is: " 
+                << inliers << std::endl;
+    std::cout << "result of " << next_id << " 's pos estimation" 
+                << " is: " << abs_pose << std::endl;
+
+    //start triangulation
+    Eigen::Matrix3d calibration = camera.CalibrationMatrix();
+    Eigen::Matrix3x4d extrinsic_mat1 = last_image.ProjectionMatrix(); //under proj.cc, only compose extrinsic
+    Eigen::Matrix3x4d extrinsic_mat2 = new_cmp_image.ProjectionMatrix();
+
+    Eigen::Matrix3x4d proj_mat1 = calibration*extrinsic_mat1;
+    Eigen::Matrix3x4d proj_mat2 = calibration*extrinsic_mat2;
 
     //idx of triangulated pts are consistent with matched_vec,
     //they should be matched back to their original idx of matched vec

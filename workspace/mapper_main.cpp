@@ -11,6 +11,10 @@
 #include "incremental_construct.h"
 #include "init_first_pair.h"
 
+const double downscale_x = 800/3072;
+const double downscale_y = 600/2304;
+const double downscale_avg = (downscale_x + downscale_y)/2;
+
 int main(int argc, char** argv){
     if (argc < 3)
     {
@@ -25,6 +29,10 @@ int main(int argc, char** argv){
     read_text.ReadText(sparse_path);
     //assume we only have one camera
     colmap::Camera camera = read_text.Camera(1);//need to change focal, due to downsampling
+    double orig_x = camera.FocalLength();
+    //double orig_y = camera.FocalLengthY();
+    camera.SetFocalLength(orig_x*downscale_avg);
+    //camera.SetFocalLengthY(orig_y*downscale_y);
 
     std::vector<std::string> image_stream = FilePathStream(image_path);
     //start create map by init list of hashmaps
@@ -35,7 +43,7 @@ int main(int argc, char** argv){
     //triangulate first two 
     InitFirstPair(image_stream[0], image_stream[1], camera,
                 global_image_map,global_keypts_map,global_3d_map);
-    std::cout << "no seg fault after first pair initialize" << std::endl;
+                
     //increment remaining frames
     for (int i = 2; i < image_stream.size(); i++){
         IncrementOneImage(image_stream[i], i, global_image_map[i-1],camera,
