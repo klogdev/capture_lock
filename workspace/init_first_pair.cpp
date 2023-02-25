@@ -17,8 +17,6 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     //initialize the Image class by its path (feature/image_sift)
     Image image1(first_path);
     Image image2(second_path);
-    std::cout << first_path << std::endl;
-    std::cout << second_path << std::endl;
 
     std::vector<sift::Keypoint> key_points1 = GetKeyPoints(image1);
     std::vector<sift::Keypoint> key_points2 = GetKeyPoints(image2);
@@ -85,6 +83,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
         int new_3d_id = curr_3d_len + 1;
         curr_3d_len++;
         global_3d_map[new_3d_id] = triangulate_3d[i];
+        std::cout << i << " 's points of the first pair is: " << triangulate_3d[i] << std::endl;
         cmp_image1.SetPoint3DForPoint2D(orig_idx1,new_3d_id);
         cmp_image2.SetPoint3DForPoint2D(orig_idx2,new_3d_id);
         

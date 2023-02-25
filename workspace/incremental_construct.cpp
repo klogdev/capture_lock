@@ -90,7 +90,7 @@ void IncrementOneImage(std::string image_path, int next_id,
 
     //start absolute pose estimation
     colmap::AbsolutePoseEstimationOptions absolute_options = colmap::AbsolutePoseEstimationOptions();
-    absolute_options.ransac_options.max_error = 0.05;
+    absolute_options.ransac_options.max_error = 0.2;
     Eigen::Vector4d qvec_abs = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec_abs = Eigen::Vector3d::Zero();
     std::vector<char> inlier_mask;
