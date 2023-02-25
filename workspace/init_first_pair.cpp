@@ -83,7 +83,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
         int new_3d_id = curr_3d_len + 1;
         curr_3d_len++;
         global_3d_map[new_3d_id] = triangulate_3d[i];
-        std::cout << i << " 's points of the first pair is: " << triangulate_3d[i] << std::endl;
+        // std::cout << i << " 's points of the first pair is: " << triangulate_3d[i] << std::endl;
         cmp_image1.SetPoint3DForPoint2D(orig_idx1,new_3d_id);
         cmp_image2.SetPoint3DForPoint2D(orig_idx2,new_3d_id);
         
