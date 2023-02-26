@@ -70,7 +70,6 @@ void IncrementOneImage(std::string image_path, int next_id,
         colmap::point2D_t curr_2d_id = matches[i].second;
         matched2d_curr.push_back(curr_keypts_vec[curr_2d_id]);
     }
-    std::cout << "curr size of 3d vector in image " << next_id << " is: " << matched3d_from2d.size() << std::endl;
 
     //collect matched vector before absolute estimation
     //as the ransac estimator requires both vectors have same size
@@ -90,7 +89,7 @@ void IncrementOneImage(std::string image_path, int next_id,
 
     //start absolute pose estimation
     colmap::AbsolutePoseEstimationOptions absolute_options = colmap::AbsolutePoseEstimationOptions();
-    absolute_options.ransac_options.max_error = 1.0;
+    absolute_options.ransac_options.max_error = 0.1;
     Eigen::Vector4d qvec_abs = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec_abs = Eigen::Vector3d::Zero();
     std::vector<char> inlier_mask;
@@ -118,6 +117,8 @@ void IncrementOneImage(std::string image_path, int next_id,
     std::vector<Eigen::Vector3d> triangulate_3d = colmap::TriangulatePoints(proj_mat1, proj_mat2,
                                                                     matched_vec1, matched_vec2);
     
+    std::cout << "num of 3d in " << next_id << " image is: " << triangulate_3d.size() << std::endl; 
+    std::cout << "num of 2d in " << next_id << " image is: " << matched_vec1.size() << std::endl; 
     int curr_3d_len = global_3d_map.size();
     for (int i = 0; i < triangulate_3d.size(); i++){
         int orig_idx1 = vec2d1_idx_map[i];

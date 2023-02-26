@@ -21,9 +21,6 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     std::vector<sift::Keypoint> key_points1 = GetKeyPoints(image1);
     std::vector<sift::Keypoint> key_points2 = GetKeyPoints(image2);
     std::vector<std::pair<int, int>> matches = sift::find_keypoint_matches(key_points1, key_points2);
-
-    std::cout << "size of match: " << matches.size() << std::endl;
-    std::cout << "size of key1: " << key_points1.size() << std::endl;
     
     std::vector<Eigen::Vector2d> key_vec1 = SIFTPtsToVec(key_points1);
     colmap::Image cmp_image1 = SIFTtoCOLMAPImage(1, key_vec1, camera);
