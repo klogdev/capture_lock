@@ -30,14 +30,10 @@ int main(int argc, char** argv){
     read_text.ReadText(sparse_path);
     //assume we only have one camera
     colmap::Camera camera = read_text.Camera(1);//need to change focal, due to downsampling
-    double orig_focal = camera.FocalLength();
-    //double orig_y = camera.FocalLengthY();
-    camera.SetFocalLength(orig_focal*downscale_avg);
-    //camera.SetFocalLengthY(orig_y*downscale_y);
-    double principal_x = camera.PrincipalPointX();
-    double principal_y = camera.PrincipalPointY();
-    camera.SetPrincipalPointX(downscale_x*principal_x);
-    camera.SetPrincipalPointY(downscale_y*principal_y);
+    std::cout << "debug camera_model_info " << camera.ModelId() << " " 
+              << camera.ModelName() << " " << camera.Width() << " " 
+              << camera.Height() << " " << camera.ParamsToString() << std::endl;
+    camera.SetModelId(colmap::SimpleRadialCameraModel::model_id);
 
     std::vector<std::string> image_stream = FilePathStream(image_path);
     //start create map by init list of hashmaps
