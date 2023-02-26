@@ -28,7 +28,7 @@ int main(int argc, char** argv){
     colmap::Reconstruction read_text = colmap::Reconstruction();
     read_text.ReadText(sparse_path);
     //assume we only have one camera
-    colmap::Camera camera = read_text.Camera(1);//need to change focal, due to downsampling
+    colmap::Camera camera = read_text.Camera(2);//need to change focal, due to downsampling
     double orig_focal = camera.FocalLength();
     //double orig_y = camera.FocalLengthY();
     camera.SetFocalLength(orig_focal*downscale_avg);

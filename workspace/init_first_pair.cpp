@@ -30,8 +30,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     std::vector<Eigen::Vector2d> key_vec2 = SIFTPtsToVec(key_points2);
     colmap::Image cmp_image2 = SIFTtoCOLMAPImage(2, key_vec2, camera);
 
-    std::cout << "size of key_vec1: " << key_vec1.size() << std::endl;
-    //register the first frame as identity mat and zeo trans
+    //register the first frame as identity mat and zero trans
     Eigen::Vector4d qvec1 = Eigen::Vector4d(1, 0, 0, 0);
     Eigen::Vector3d tvec1 = Eigen::Vector3d::Zero();
     cmp_image1.SetQvec(qvec1);
@@ -64,6 +63,9 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     cmp_image2.SetQvec(qvec2);
     cmp_image2.SetTvec(tvec2);
 
+    std::cout << "rotation of first pair is: " << qvec2 << std::endl;
+    std::cout << "translation of first pair is: " << tvec2 << std::endl;
+
     //start triangulation
     Eigen::Matrix3d calibration = camera.CalibrationMatrix();
     Eigen::Matrix3x4d extrinsic_mat1 = cmp_image1.ProjectionMatrix(); //under proj.cc, only compose extrinsic
@@ -80,18 +82,36 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
         int orig_idx1 = vec2d1_idx_map[i];
         int orig_idx2 = vec2d2_idx_map[i];
         //all 3d points are new
-        int new_3d_id = curr_3d_len + 1;
+        int new_3d_id = curr_3d_len;
         curr_3d_len++;
         global_3d_map[new_3d_id] = triangulate_3d[i];
-        std::cout << i << " 's points of the first pair is: " << triangulate_3d[i] << std::endl;
+        //std::cout << i << " 's points of the first pair is: " << triangulate_3d[i] << std::endl;
         cmp_image1.SetPoint3DForPoint2D(orig_idx1,new_3d_id);
         cmp_image2.SetPoint3DForPoint2D(orig_idx2,new_3d_id);
         
     }
-    global_image_map[1] = cmp_image1;
-    global_image_map[2] = cmp_image2;
-    global_keypts_map[1] = key_points1;
-    global_keypts_map[2] = key_points2;
+    global_image_map[0] = cmp_image1;
+    global_image_map[1] = cmp_image2;
+    global_keypts_map[0] = key_points1;
+    global_keypts_map[1] = key_points2;
     std::cout << "num of 3d points from first pair is: " << 
            global_3d_map.size() << std::endl;
+
+    //sanity check of image 1's pose (0 indexed)
+    colmap::AbsolutePoseEstimationOptions absolute_options = colmap::AbsolutePoseEstimationOptions();
+    absolute_options.ransac_options.max_error = 1.0;
+    Eigen::Vector4d qvec_abs = Eigen::Vector4d(0, 0, 0, 1);
+    Eigen::Vector3d tvec_abs = Eigen::Vector3d::Zero();
+    std::vector<char> inlier_mask;
+    size_t inliers = triangulate_3d.size(); //need check def
+    bool abs_pose = colmap::EstimateAbsolutePose(absolute_options, matched_vec2,
+                                                triangulate_3d, &qvec_abs, &tvec_abs,
+                                                &camera, &inliers, &inlier_mask);
+                    
+    std::cout << "abs rotation of first pair is: " << qvec_abs << std::endl;
+    std::cout << "abs translation of first pair is: " << tvec_abs << std::endl;
+
+    std::cout << "number of 2d-3d pairs in first pair is: " 
+                << inliers << std::endl;
+    std::cout << "result of first pair's pos estimation is: " << abs_pose << std::endl;
 }
