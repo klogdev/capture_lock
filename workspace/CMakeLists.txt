@@ -45,6 +45,13 @@ target_link_libraries(
   mapper PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES}
   img sift test_util stream init increment)
 
+add_executable(ceres_gpt ceres_test.cpp)
+target_include_directories(
+  ceres_gpt PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  ceres_gpt PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES}
+  img sift test_util)
+
 add_executable(feature_sift feature_sift_test.cpp)
 target_include_directories(
   feature_sift PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")

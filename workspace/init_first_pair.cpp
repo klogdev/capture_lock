@@ -51,12 +51,13 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
 
     //start relative pose estimation and register pose for the frame 2
     colmap::RANSACOptions ransac_options = colmap::RANSACOptions();
-    ransac_options.max_error = 0.05;
+    ransac_options.max_error = 1.5;
     Eigen::Vector4d qvec2 = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec2 = Eigen::Vector3d::Zero();
     size_t num_inliers = 
         colmap::EstimateRelativePose(ransac_options, matched_vec1, matched_vec2, 
                                      &qvec2, &tvec2);
+    std::cout << "inliers from relative pose: " << num_inliers << std::endl;
     cmp_image2.SetQvec(qvec2);
     cmp_image2.SetTvec(tvec2);
 
