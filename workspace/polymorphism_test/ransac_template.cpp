@@ -1,4 +1,5 @@
 #include <random>
+#include "optim/random_sampler.h"
 
 struct RANSACOptions
 {
@@ -14,6 +15,8 @@ class RANSAC{
 
         template <typename X_t, typename Y_t>
         bool Estimate(std::vector<X_t>& X, std::vector<Y_t>& Y){
-            
+            colmap::CHECK_EQ(X.size(), Y.size());
+
+
         }
 }

@@ -3,7 +3,7 @@
 
 class ResidualCalculator{
     public:
-        virtual bool Evaluate(const std::vector<double>* residuals, const std::vector<double>* parameters) const = 0;
+        virtual bool Evaluate(const std::vector<double>* parameters, std::vector<double>* residuals) const = 0;
 };
 
 class ReprojectionError : public ResidualCalculator{
@@ -11,7 +11,7 @@ class ReprojectionError : public ResidualCalculator{
         ReprojectionError(Eigen::Vector2d point_2d, Eigen::Vector3d point_3d):
                     camera_point(point_2d), world_point(point_3d){}
     
-    virtual bool Evaluate(std::vector<double>* residuals, std::vector<double>* parameters) const override{
+    virtual bool Evaluate(const std::vector<double>* parameters, std::vector<double>* residuals) const override{
         //parameters should be a flattened vector with size 4x3
         Eigen::Vector3d project_3d;
         Eigen::Vector4d point3d_homo = Eigen::Vector4d::Identity();
