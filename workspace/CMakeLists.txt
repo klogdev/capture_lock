@@ -1,4 +1,5 @@
 add_subdirectory(feature)
+add_subdirectory(polymorphism_test)
 
 link_directories("/usr/local/lib/colmap/")
 

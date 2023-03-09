@@ -34,6 +34,7 @@ int main(int argc, char** argv){
               << camera.ModelName() << " " << camera.Width() << " " 
               << camera.Height() << " " << camera.ParamsToString() << std::endl;
     camera.SetModelId(colmap::SimpleRadialCameraModel::model_id);
+    camera.Rescale(downscale_x);
 
     std::vector<std::string> image_stream = FilePathStream(image_path);
     //start create map by init list of hashmaps
