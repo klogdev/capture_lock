@@ -3,6 +3,7 @@
 #include "base/image.h"
 #include "base/camera.h"
 #include "base/triangulation.h"
+#include "base/track.h"
 #include "estimators/pose.h"
 
 #include "feature/image_sift.h"
@@ -39,7 +40,8 @@ void IncrementOneImage(std::string image_path, int next_id,
                         colmap::Camera& camera,
                         std::unordered_map<int,colmap::Image>& global_image_map,
                         std::unordered_map<int,std::vector<sift::Keypoint>>& global_keypts_map,
-                        std::unordered_map<int,Eigen::Vector3d>& global_3d_map
+                        std::unordered_map<int,Eigen::Vector3d>& global_3d_map,
+                        colmap::Track global_track
                         ){
     Image new_image(image_path);
     std::vector<sift::Keypoint> curr_key_points = GetKeyPoints(new_image);
@@ -55,7 +57,7 @@ void IncrementOneImage(std::string image_path, int next_id,
     std::vector<Eigen::Vector3d> matched3d_from2d;
     std::vector<Eigen::Vector2d> matched2d_curr;
     for (int i = 0; i < matches.size(); i++){
-        //assume key_points id of last image are consistent with the id
+        //assume sift::key_points id of last image are consistent with the id
         //registered in points2d
         colmap::point2D_t last_2d_id = matches[i].first; //need type conversion
         colmap::Point2D last_2d = last_image.Point2D(last_2d_id);

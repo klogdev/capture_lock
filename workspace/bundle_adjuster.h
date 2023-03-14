@@ -16,12 +16,16 @@ class BundleAdjust_{
         void SetUp(ceres::LossFunction* loss_function);
 
         void AddImageToProblem(const colmap::image_t image_id,
-                         ceres::LossFunction* loss_function);
+                        colmap::Camera& camera,
+                        std::unordered_map<int,colmap::Image>& global_image_map,
+                        ceres::LossFunction* loss_function);
 
         void AddPointToProblem(const colmap::point3D_t point3D_id,
                                 ceres::LossFunction* loss_function);
         
     protected:
+        void ParameterizePoints();
+
         const colmap::BundleAdjustmentOptions options_;
         colmap::BundleAdjustmentConfig config_;
         std::unique_ptr<ceres::Problem> problem_;
