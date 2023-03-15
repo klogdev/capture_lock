@@ -4,6 +4,7 @@
 #include "base/image.h"
 #include "base/point2d.h"
 #include "base/camera_models.h"
+#include "base/cost_functions.h"
 
 BundleAdjust_::BundleAdjust_(const colmap::BundleAdjustmentOptions& options,
                                const colmap::BundleAdjustmentConfig& config)
@@ -54,8 +55,20 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
         Point3D& curr_3d = global_3d_map[point2D.Point3DId()];
         assert(curr_3d.Track().Length() > 1); //must have more than 1 obs, to have enough DoF
 
-        ceres::CostFunction* cost_function = nullptr;
-                colmap::BaseCameraModel camera_model = 
+        switch (camera.ModelId()) {
+            #define CAMERA_MODEL_CASE(CameraModel)                                   \
+            case CameraModel::kModelId:                                            \
+                cost_function =                                                      \
+                    BundleAdjustmentCostFunction<CameraModel>::Create(point2D.XY()); \
+                break;
+
+                    CAMERA_MODEL_SWITCH_CASES
+
+            #undef CAMERA_MODEL_CASE
+      }
+      problem_->AddResidualBlock(cost_function, loss_function, qvec_data,
+                                 tvec_data, point3D.XYZ().data(),
+                                 camera_params_data); 
     }
-    
+    colmap::SetQuaternionManifold(problem_.get(), qvec_data);
 }

@@ -66,7 +66,7 @@ void IncrementOneImage(std::string image_path, int next_id,
         }
 
         colmap::point3D_t global_3d_key = last_2d.Point3DId();
-        Eigen::Vector3d from2d_to3d = global_3d_map[global_3d_key];//need type conversion?
+        Eigen::Vector3d from2d_to3d = global_3d_map[global_3d_key].XYZ();//extract vector from point3d's attr
         matched3d_from2d.push_back(from2d_to3d);
         
         colmap::point2D_t curr_2d_id = matches[i].second;
@@ -103,7 +103,7 @@ void IncrementOneImage(std::string image_path, int next_id,
     new_cmp_image.SetTvec(tvec_abs);
     std::cout << "number of 2d-3d pairs in " << next_id << " is: " 
                 << inliers << std::endl;
-    std::cout << "result of " << next_id << " 's pos estimation" 
+    std::cout << "result of " << next_id << " 's pose estimation" 
                 << " is: " << abs_pose << std::endl;
 
     //start triangulation
@@ -128,13 +128,19 @@ void IncrementOneImage(std::string image_path, int next_id,
         if (last_image.Point2D(orig_idx1).HasPoint3D()){
             colmap::point3D_t curr3d_id = last_image.Point2D(orig_idx1).Point3DId();//type conversion??
             //overlap the 3d point coord by the updated one
-            global_3d_map[curr3d_id] = triangulate_3d[i];
+            colmap::Point3D curr_3d = global_3d_map[curr3d_id];
+            curr_3d.SetXYZ(triangulate_3d[i]);
+            curr_3d.Track().AddElment(last_id, orig_idx1);
+            curr_3d.Track().AddElment(next_id, orig_idx2);
             new_cmp_image.SetPoint3DForPoint2D(orig_idx2,curr3d_id);
         }
         else {
             int new_3d_id = curr_3d_len + 1;
             curr_3d_len++;
-            global_3d_map[new_3d_id] = triangulate_3d[i];
+            colmap::Point3D new_3d = global_3d_map[new_3d_id];
+            new_3d.SetXYZ(triangulate_3d[i]);
+            new_3d.Track().AddElment(last_id, orig_idx1);
+            new_3d.Track().AddElment(next_id, orig_idx2);
             last_image.SetPoint3DForPoint2D(orig_idx1,new_3d_id);
             new_cmp_image.SetPoint3DForPoint2D(orig_idx2,new_3d_id);
         }
