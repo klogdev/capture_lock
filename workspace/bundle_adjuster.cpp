@@ -3,6 +3,7 @@
 #include <ceres/ceres.h>
 #include "base/image.h"
 #include "base/point2d.h"
+#include "base/camera_models.h"
 
 BundleAdjust_::BundleAdjust_(const colmap::BundleAdjustmentOptions& options,
                                const colmap::BundleAdjustmentConfig& config)
@@ -33,6 +34,7 @@ BundleAdjust_::SetUp(ceres::LossFunction* loss_function){
 void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
                         colmap::Camera& camera,
                         std::unordered_map<int,colmap::Image>& global_image_map,
+                        std::unordered_map<int,colmap::Point3D>& global_3d_map,
                         ceres::LossFunction* loss_function){
     colmap::Image& image = global_image_map[image_id];
     image.NormalizeQvec();
@@ -46,7 +48,14 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
         if (!point_2d.HasPoint3D()){
             continue;
         }
-        
+        num_observations += 1;
+        point3D_num_observations_[point2D.Point3DId()] += 1;
+
+        Point3D& curr_3d = global_3d_map[point2D.Point3DId()];
+        assert(curr_3d.Track().Length() > 1); //must have more than 1 obs, to have enough DoF
+
+        ceres::CostFunction* cost_function = nullptr;
+                colmap::BaseCameraModel camera_model = 
     }
     
 }
