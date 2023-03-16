@@ -3,6 +3,7 @@
 #include "base/reconstruction.h"
 #include "base/image.h"
 #include "base/camera.h"
+#include "base/point3d.h"
 #include "base/triangulation.h"
 #include "base/camera_models.h"
 
@@ -40,7 +41,7 @@ int main(int argc, char** argv){
     //start create map by init list of hashmaps
     std::unordered_map<int,colmap::Image> global_image_map;
     std::unordered_map<int,std::vector<sift::Keypoint>> global_keypts_map;
-    std::unordered_map<int,Eigen::Vector3d> global_3d_map;
+    std::unordered_map<int,colmap::Point3D> global_3d_map;
 
     //triangulate first two 
     InitFirstPair(image_stream[0], image_stream[1], camera,

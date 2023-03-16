@@ -22,6 +22,9 @@ class BundleAdjust_{
                         ceres::LossFunction* loss_function);
 
         void AddPointToProblem(const colmap::point3D_t point3D_id,
+                                colmap::Camera& camera,
+                                std::unordered_map<int,colmap::Image>& global_image_map,
+                                std::unordered_map<int,colmap::Point3D>& global_3d_map,
                                 ceres::LossFunction* loss_function);
         
     protected:

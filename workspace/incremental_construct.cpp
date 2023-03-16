@@ -40,8 +40,7 @@ void IncrementOneImage(std::string image_path, int next_id,
                         colmap::Camera& camera,
                         std::unordered_map<int,colmap::Image>& global_image_map,
                         std::unordered_map<int,std::vector<sift::Keypoint>>& global_keypts_map,
-                        std::unordered_map<int,Eigen::Vector3d>& global_3d_map,
-                        colmap::Track global_track
+                        std::unordered_map<int,Eigen::Vector3d>& global_3d_map
                         ){
     Image new_image(image_path);
     std::vector<sift::Keypoint> curr_key_points = GetKeyPoints(new_image);

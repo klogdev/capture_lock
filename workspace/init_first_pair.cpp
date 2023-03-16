@@ -13,7 +13,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
                     colmap::Camera& camera,
                     std::unordered_map<int,colmap::Image>& global_image_map,
                     std::unordered_map<int,std::vector<sift::Keypoint>>& global_keypts_map,
-                    std::unordered_map<int,Eigen::Vector3d>& global_3d_map){
+                    std::unordered_map<int,colmap::Point3D>& global_3d_map){
     //initialize the Image class by its path (feature/image_sift)
     Image image1(first_path);
     Image image2(second_path);
@@ -82,7 +82,11 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
         //all 3d points are new
         int new_3d_id = curr_3d_len;
         curr_3d_len++;
-        global_3d_map[new_3d_id] = triangulate_3d[i];
+        colmap::Point3D new_3d;
+        new_3d.SetXYZ(triangulate_3d[i]);
+        new_3d.Track().AddElment(0, orig_idx1);
+        new_3d.Track().AddElment(1, orig_idx2);
+        global_3d_map[new_3d_id] = new_3d;
         cmp_image1.SetPoint3DForPoint2D(orig_idx1,new_3d_id);
         cmp_image2.SetPoint3DForPoint2D(orig_idx2,new_3d_id);
         
