@@ -6,12 +6,14 @@
 #include "base/point3d.h"
 #include "base/triangulation.h"
 #include "base/camera_models.h"
+#include "optim/bundle_adjustment.h"
 
 #include "feature/image_sift.h"
 #include "feature/sift.h"
 #include "file_stream.h"
 #include "incremental_construct.h"
 #include "init_first_pair.h"
+#include "bundle_adjuster.h"
 
 const double downscale_x = 768.0/3072;
 const double downscale_y = 576.0/2304;
@@ -53,6 +55,9 @@ int main(int argc, char** argv){
                         global_image_map,global_keypts_map,global_3d_map);
     }
 
-    std::cout << global_3d_map.size() << std::endl;
+    colmap::BundleAdjustmentOptions ba_options;
+    bool run_ba = GlobalBundleAdjuster(ba_options, global_image_map, global_3d_map);    
+
+    std::cout << "result of BA is: " << run_ba << std::endl;
     return 0;
 }

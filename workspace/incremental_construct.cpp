@@ -129,8 +129,8 @@ void IncrementOneImage(std::string image_path, int next_id,
             //overlap the 3d point coord by the updated one
             colmap::Point3D curr_3d = global_3d_map[curr3d_id];
             curr_3d.SetXYZ(triangulate_3d[i]);
-            curr_3d.Track().AddElment(last_id, orig_idx1);
-            curr_3d.Track().AddElment(next_id, orig_idx2);
+            curr_3d.Track().AddElement(last_id, orig_idx1);
+            curr_3d.Track().AddElement(next_id, orig_idx2);
             new_cmp_image.SetPoint3DForPoint2D(orig_idx2,curr3d_id);
         }
         else {
@@ -138,8 +138,8 @@ void IncrementOneImage(std::string image_path, int next_id,
             curr_3d_len++;
             colmap::Point3D new_3d = global_3d_map[new_3d_id];
             new_3d.SetXYZ(triangulate_3d[i]);
-            new_3d.Track().AddElment(last_id, orig_idx1);
-            new_3d.Track().AddElment(next_id, orig_idx2);
+            new_3d.Track().AddElement(last_id, orig_idx1);
+            new_3d.Track().AddElement(next_id, orig_idx2);
             last_image.SetPoint3DForPoint2D(orig_idx1,new_3d_id);
             new_cmp_image.SetPoint3DForPoint2D(orig_idx2,new_3d_id);
         }

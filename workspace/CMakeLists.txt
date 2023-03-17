@@ -12,6 +12,24 @@ target_include_directories(
 target_link_libraries(
   test_util PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
 
+add_library(ba STATIC
+bundle_adjuster.h
+bundle_adjuster.cpp
+)
+target_include_directories(
+  ba PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  ba PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
+
+add_library(ba_run STATIC
+global_bundle.h
+global_bundle.cpp
+)
+target_include_directories(
+  ba_run PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  ba_run PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
+
 add_library(increment STATIC
 incremental_construct.h
 incremental_construct.cpp

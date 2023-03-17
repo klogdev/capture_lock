@@ -28,11 +28,11 @@ class BundleAdjust_{
                                 ceres::LossFunction* loss_function);
         
     protected:
-        void ParameterizePoints();
+        void ParameterizePoints(std::unordered_map<int,colmap::Point3D>& global_point3d_map);
 
         const colmap::BundleAdjustmentOptions options_;
         colmap::BundleAdjustmentConfig config_;
         std::unique_ptr<ceres::Problem> problem_;
         ceres::Solver::Summary summary_;
-        std::unordered_map<point3D_t, size_t> point3D_num_observations_;
+        std::unordered_map<colmap::point3D_t, size_t> point3D_num_observations_;
 }

@@ -84,8 +84,8 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
         curr_3d_len++;
         colmap::Point3D new_3d;
         new_3d.SetXYZ(triangulate_3d[i]);
-        new_3d.Track().AddElment(0, orig_idx1);
-        new_3d.Track().AddElment(1, orig_idx2);
+        new_3d.Track().AddElement(0, orig_idx1);
+        new_3d.Track().AddElement(1, orig_idx2);
         global_3d_map[new_3d_id] = new_3d;
         cmp_image1.SetPoint3DForPoint2D(orig_idx1,new_3d_id);
         cmp_image2.SetPoint3DForPoint2D(orig_idx2,new_3d_id);

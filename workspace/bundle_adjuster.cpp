@@ -8,7 +8,7 @@
 
 //config: include all images&point should be setup in priori
 BundleAdjust_::BundleAdjust_(const colmap::BundleAdjustmentOptions& options,
-                               const colmap::BundleAdjustmentConfig& config)
+                            const colmap::BundleAdjustmentConfig& config)
     : options_(options), config_(config) {}
 
 BundleAdjust_::Solve(){
@@ -59,6 +59,7 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
         Point3D& curr_3d = global_3d_map[point2D.Point3DId()];
         assert(curr_3d.Track().Length() > 1); //must have more than 1 obs, to have enough DoF
 
+        //constant pose init by both 2d point and extrinsic, only intrinsic/3d point as parametes
         if (constant_pose) {
             switch (camera.ModelId()) {
         #define CAMERA_MODEL_CASE(colmap::CameraModel)                                 \
@@ -93,25 +94,30 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
                                     camera_params_data); 
         }
     }
-    if (! cosntant_pose){
+    
+    if (!constant_pose){
         colmap::SetQuaternionManifold(problem_.get(), qvec_data);
     }
+    
 }
 
 void BundleAdjuster_::AddPointToProblem(const colmap::point3D_t point3D_id,
-                                    colmap::Camera& camera,
-                                    std::unordered_map<int,colmap::Image>& global_image_map,
-                                    std::unordered_map<int,colmap::Point3D>& global_3d_map,
-                                    ceres::LossFunction* loss_function){
+                                        colmap::Camera& camera,
+                                        std::unordered_map<int,colmap::Image>& global_image_map,
+                                        std::unordered_map<int,colmap::Point3D>& global_3d_map,
+                                        ceres::LossFunction* loss_function){
     colmap::Point3D curr_3d = global_3d_map[point3D_id];
 
     if (point3D_num_observations_[point3D_id] == curr_3d.Track().Length())
         return;
 
     for (const auto& track_el: curr_3d.Track().Elements()){
+        if (config_.HasImage(track_el.image_id)) {
+            continue;
+        }
         point3D_num_observations_[point3D_id] += 1;
 
-        colmap::Image track_img = global_image_map[track_el.image_id];
+        colmap::Image track_image = global_image_map[track_el.image_id];
         const colmap::Point2D track_point_2d = track_image.Point2D(track_el.point2D_idx);
 
         ceres::CostFunction* cost_function = nullptr;
@@ -129,7 +135,7 @@ void BundleAdjuster_::AddPointToProblem(const colmap::point3D_t point3D_id,
             #undef CAMERA_MODEL_CASE
                 }
     problem_->AddResidualBlock(cost_function, loss_function,
-                               point3D.XYZ().data(), camera.ParamsData());
+                               curr_3d.XYZ().data(), camera.ParamsData());
     }
 }
 
