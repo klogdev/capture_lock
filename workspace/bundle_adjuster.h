@@ -35,4 +35,4 @@ class BundleAdjust_{
         std::unique_ptr<ceres::Problem> problem_;
         ceres::Solver::Summary summary_;
         std::unordered_map<colmap::point3D_t, size_t> point3D_num_observations_;
-}
+};

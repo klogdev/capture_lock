@@ -2,7 +2,7 @@
 #include "bundle_adjuster.h"
 #include "optim/bundle_adjustment.h"
 
-bool GlobalBundleAdjuster(const colmap::BundleAdjustmentOptions& ba_options
+bool GlobalBundleAdjuster(const colmap::BundleAdjustmentOptions& ba_options,
                         std::unordered_map<int,colmap::Image>& global_image_map,
                         std::unordered_map<int,colmap::Point3D>& global_3d_map){
     colmap::BundleAdjustmentConfig ba_config;
@@ -18,7 +18,7 @@ bool GlobalBundleAdjuster(const colmap::BundleAdjustmentOptions& ba_options
     ba_config.SetConstantPose(0);
 
     // Run bundle adjustment.
-  BundleAdjuster_ bundle_adjuster(ba_options, ba_config);
+  BundleAdjust_ bundle_adjuster(ba_options, ba_config);
   if (!bundle_adjuster.Solve()) {
     return false;
   }

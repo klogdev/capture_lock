@@ -14,6 +14,7 @@
 #include "incremental_construct.h"
 #include "init_first_pair.h"
 #include "bundle_adjuster.h"
+#include "global_bundle.h"
 
 const double downscale_x = 768.0/3072;
 const double downscale_y = 576.0/2304;
