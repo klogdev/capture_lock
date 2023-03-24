@@ -57,7 +57,7 @@ int main(int argc, char** argv){
     }
 
     colmap::BundleAdjustmentOptions ba_options;
-    bool run_ba = GlobalBundleAdjuster(ba_options, global_image_map, global_3d_map);    
+    bool run_ba = GlobalBundleAdjuster(ba_options, camera, global_image_map, global_3d_map);    
 
     std::cout << "result of BA is: " << run_ba << std::endl;
     return 0;

@@ -3,11 +3,11 @@
 
 enum class Residuals {Reprojection};
 
-class ResidualCalculator{
-    public:
-     virtual bool operator()(const std::array<double>* parameters,
-                           std::vector<double>* residuals) const = 0;
-};
+// class ResidualCalculator{
+//     public:
+//      virtual bool operator()(const std::array<double>* parameters,
+//                            std::vector<double>* residuals) const = 0;
+// };
 
 // class ReprojectionError : public ResidualCalculator{
 //     public:

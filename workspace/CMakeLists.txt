@@ -12,6 +12,14 @@ target_include_directories(
 target_link_libraries(
   test_util PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
 
+add_library(cost STATIC
+cost_fxn.h
+)
+target_include_directories(
+  cost PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  cost PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
+
 add_library(ba STATIC
 bundle_adjuster.h
 bundle_adjuster.cpp
@@ -62,7 +70,7 @@ target_include_directories(
   mapper PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
   mapper PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES}
-  img sift test_util stream init increment)
+  img sift test_util stream init increment ba ba_run cost)
 
 add_executable(ceres_gpt ceres_test.cpp)
 target_include_directories(

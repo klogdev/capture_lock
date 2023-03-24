@@ -1,5 +1,6 @@
 #include <Eigen/Core>
 #include <ceres/ceres.h>
+#include "base/camera.h"
 
 #include "optim/bundle_adjustment.h"
 
@@ -8,12 +9,16 @@ class BundleAdjust_{
         BundleAdjust_(const colmap::BundleAdjustmentOptions& options,
                  const colmap::BundleAdjustmentConfig& config);
 
-        bool Solve();
+        bool Solve(colmap::Camera& camera,
+                   std::unordered_map<int,colmap::Image>& global_image_map,
+                   std::unordered_map<int,colmap::Point3D>& global_3d_map);
 
         const ceres::Solver::Summary& Summary() const;
 
     private:
-        void SetUp(ceres::LossFunction* loss_function);
+        void SetUp(ceres::LossFunction* loss_function, colmap::Camera& camera,
+                    std::unordered_map<int,colmap::Image>& global_image_map,
+                    std::unordered_map<int,colmap::Point3D>& global_3d_map);
 
         void AddImageToProblem(const colmap::image_t image_id,
                         colmap::Camera& camera,

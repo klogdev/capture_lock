@@ -1,4 +1,6 @@
 #include "bundle_adjuster.h"
+#include "cost_fxn.h"
+
 #include <Eigen/Core>
 #include <ceres/ceres.h>
 #include "base/image.h"
@@ -11,26 +13,33 @@ BundleAdjust_::BundleAdjust_(const colmap::BundleAdjustmentOptions& options,
                             const colmap::BundleAdjustmentConfig& config)
     : options_(options), config_(config) {}
 
-bool BundleAdjust_::Solve(){
+bool BundleAdjust_::Solve(colmap::Camera& camera,
+                          std::unordered_map<int,colmap::Image>& global_image_map,
+                          std::unordered_map<int,colmap::Point3D>& global_3d_map){
     problem_ = std::make_unique<ceres::Problem>();
     //default loss in options_: trivial loss
     ceres::LossFunction* loss_function = options_.CreateLossFunction();
-    SetUp(loss_function);
+    SetUp(loss_function, camera, global_image_map, global_3d_map);
 
     ceres::Solver::Options solver_options = options_.solver_options;
     return true;
 }
 
-void BundleAdjust_::SetUp(ceres::LossFunction* loss_function){
+void BundleAdjust_::SetUp(ceres::LossFunction* loss_function,
+                          colmap::Camera& camera,
+                          std::unordered_map<int,colmap::Image>& global_image_map,
+                          std::unordered_map<int,colmap::Point3D>& global_3d_map){
     for (const colmap::image_t image_id : config_.Images()) {
-        AddImageToProblem(image_id, loss_function);
+        AddImageToProblem(image_id, camera, global_image_map, 
+                          global_3d_map, loss_function);
     }
     //need call BA config for preprocess
     for (const auto point3D_id : config_.VariablePoints()) {
-        AddPointToProblem(point3D_id, loss_function);
+        AddPointToProblem(point3D_id, camera, global_image_map, 
+                          global_3d_map, loss_function);
     }
     //skip camera parameterization?
-    ParameterizePoints();
+    ParameterizePoints(global_3d_map);
 }
 
 void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
@@ -56,44 +65,27 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
         num_observations += 1;
         point3D_num_observations_[point_2d.Point3DId()] += 1;
 
-        colmap::Point3D& curr_3d = global_3d_map[point2D.Point3DId()];
+        colmap::Point3D& curr_3d = global_3d_map[point_2d.Point3DId()];
         assert(curr_3d.Track().Length() > 1); //must have more than 1 obs, to have enough DoF
 
         ceres::CostFunction* cost_function = nullptr;
         //constant pose init by both 2d point and extrinsic, only intrinsic/3d point as parametes
-        if (constant_pose) {
-            switch (camera.ModelId()) {
-        #define CAMERA_MODEL_CASE(CameraModel)                                 \
-        case colmap::CameraModel::kModelId:                                          \
-            cost_function =                                                    \
-                colmap::BundleAdjustmentConstantPoseCostFunction<colmap::CameraModel>::Create( \
-                    image.Qvec(), image.Tvec(), point2D.XY());                 \
-            break;
-
-                CAMERA_MODEL_SWITCH_CASES
-
-        #undef CAMERA_MODEL_CASE
-            }
+        if (constant_pose) {                                     
+            cost_function =                                                    
+                BAConstPoseCostFxn::Create( 
+                    image.Qvec(), image.Tvec(), point_2d.XY());                 
 
             problem_->AddResidualBlock(cost_function, loss_function,
                                         curr_3d.XYZ().data(), camera_params_data);
             } 
-        else{
-            switch (camera.ModelId()) {
-                #define CAMERA_MODEL_CASE(CameraModel)                                   \
-                case colmap::CameraModel::kModelId:                                            \
-                    cost_function =                                                      \
-                        colmap::BundleAdjustmentCostFunction<CameraModel>::Create(point2D.XY()); \
-                    break;
 
-                        CAMERA_MODEL_SWITCH_CASES
-
-                #undef CAMERA_MODEL_CASE
+        else{                                      
+                cost_function = BACostFxn::Create(point_2d.XY()); 
             }
         problem_->AddResidualBlock(cost_function, loss_function, qvec_data,
                                     tvec_data, curr_3d.XYZ().data(),
                                     camera_params_data); 
-        }
+        
     }
     
     if (!constant_pose){
@@ -123,19 +115,9 @@ void BundleAdjust_::AddPointToProblem(const colmap::point3D_t point3D_id,
 
         ceres::CostFunction* cost_function = nullptr;
 
-        switch (camera.ModelId()) {
-            #define CAMERA_MODEL_CASE(CameraModel)                                 \
-            case CameraModel::kModelId:                                          \
-                cost_function =                                                    \
-                    colmap::BundleAdjustmentConstantPoseCostFunction<CameraModel>::Create( \
-                        track_image.Qvec(), track_image.Tvec(), track_point_2d.XY());                 \
-                break;
-
-                CAMERA_MODEL_SWITCH_CASES
-
-            #undef CAMERA_MODEL_CASE
-                }
-    problem_->AddResidualBlock(cost_function, loss_function,
+        cost_function = BAConstPoseCostFxn::Create(track_image.Qvec(), track_image.Tvec(), track_point_2d.XY());                 
+                
+        problem_->AddResidualBlock(cost_function, loss_function,
                                curr_3d.XYZ().data(), camera.ParamsData());
     }
 }
