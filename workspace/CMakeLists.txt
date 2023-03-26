@@ -36,7 +36,7 @@ global_bundle.cpp
 target_include_directories(
   ba_run PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  ba_run PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
+  ba_run PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift ba)
 
 add_library(increment STATIC
 incremental_construct.h

@@ -1,4 +1,5 @@
 #include "global_bundle.h"
+#include "bundle_adjuster.h"
 #include "optim/bundle_adjustment.h"
 
 bool GlobalBundleAdjuster(const colmap::BundleAdjustmentOptions& ba_options,

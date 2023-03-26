@@ -1,6 +1,7 @@
 #include "base/image.h"
 #include "base/camera.h"
 #include "base/point3d.h"
+#include "optim/bundle_adjustment.h"
 
 bool GlobalBundleAdjuster(const colmap::BundleAdjustmentOptions& ba_options,
                         colmap::Camera& Camera,
