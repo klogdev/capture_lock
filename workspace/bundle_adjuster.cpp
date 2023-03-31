@@ -53,6 +53,8 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
     double* qvec_data = image.Qvec().data();
     double* tvec_data = image.Tvec().data();
     double* camera_params_data = camera.ParamsData();
+    std::vector<double> camera_paras = camera.Params();
+    std::cout << "number of cam paras: " << camera_paras.size() << std::endl;
 
     const bool constant_pose =
       !options_.refine_extrinsics || config_.HasConstantPose(image_id);

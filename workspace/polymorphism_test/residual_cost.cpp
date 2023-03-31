@@ -1,42 +1,6 @@
 #include <ceres/ceres.h>
 #include <Eigen/Core>
 
-enum class Residuals {Reprojection};
-
-// class ResidualCalculator{
-//     public:
-//      virtual bool operator()(const std::array<double>* parameters,
-//                            std::vector<double>* residuals) const = 0;
-// };
-
-// class ReprojectionError : public ResidualCalculator{
-//     public:
-//      ReprojectionError(const Eigen::Vector2d& point_2d,
-//                        const Eigen::Vector3d& point_3d)
-//          : camera_point(point_2d), world_point(point_3d) {}
-
-//      bool operator()(const std::array<double>* parameters, 
-//                     std::vector<double>* residuals) const override {
-//        // parameters should be a flattened vector with size 4x3
-//        Eigen::Vector3d project_3d;
-//        Eigen::Vector4d point3d_homo = Eigen::Vector4d::Identity();
-//        point3d_homo.topRows(3) = world_point;
-
-//        Eigen::Map<const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic,
-//                                       Eigen::RowMajor>>
-//            proj_mat(parameters->data(), 3, 4);
-//        project_3d = proj_mat * point3d_homo;
-
-//        (*residuals)[0] = camera_point(0) - project_3d(0) / project_3d(2);
-//        (*residuals)[1] = camera_point(1) - project_3d(1) / project_3d(2);
-
-//        return true;
-//      }
-
-//     private:
-//         Eigen::Vector2d camera_point;
-//         Eigen::Vector3d world_point;
-// };
 
 class ReprojectionErrorFunctor {
  public:
