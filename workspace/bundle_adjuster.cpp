@@ -83,11 +83,11 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
 
         else{                                      
                 cost_function = BACostFxn::Create(point_2d.XY()); 
-            }
-        problem_->AddResidualBlock(cost_function, loss_function, qvec_data,
-                                    tvec_data, curr_3d.XYZ().data(),
-                                    camera_params_data); 
-        
+           
+          problem_->AddResidualBlock(cost_function, loss_function, qvec_data,
+                                      tvec_data, curr_3d.XYZ().data(),
+                                      camera_params_data); 
+         }
     }
     
     if (!constant_pose){
