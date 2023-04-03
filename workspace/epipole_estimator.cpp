@@ -1,14 +1,14 @@
 #include <Eigen/Core>
 #include "optim/ransac.h"
 
-Eigen::Vector3d EpipoleEstimator::Estimate(const Eigen::Vector2d& point_2d_01,
-                                           const Eigen::Vector2d& point_2d_02,
-                                           const Eigen::Vector2d& point_2d_11,
-                                           const Eigen::Vector2d& point_2d_12){
-    Eigen::Vector3d homo01 = Point2dToHomo(point_2d_01);
-    Eigen::Vector3d homo02 = Point2dToHomo(point_2d_02);
-    Eigen::Vector3d homo11 = Point2dToHomo(point_2d_11);
-    Eigen::Vector3d homo12 = Point2dToHomo(point_2d_12);
+#include "epipole_estimator.h"
+
+Eigen::Vector3d EpipoleEstimator::Estimate(const std::vector<X_t>& pair1,
+                                           const std::vector<Y_t>& pair2){
+    Eigen::Vector3d homo01 = Point2dToHomo(pair1[0].point_lock);
+    Eigen::Vector3d homo02 = Point2dToHomo(pair2[0].point_lock);
+    Eigen::Vector3d homo11 = Point2dToHomo(pair1[0].point_comp);
+    Eigen::Vector3d homo12 = Point2dToHomo(pair2[0].point_comp);
 
     Eigen::Vector3d line1 = PointToLine(homo01, homo11);
     Eigen::Vector3d line2 = PointToLine(homo02, homo12);
@@ -16,15 +16,41 @@ Eigen::Vector3d EpipoleEstimator::Estimate(const Eigen::Vector2d& point_2d_01,
     return LineToPoint(line1, line2);
 }
 
-void EpipoleEstimator::Residual(std::vector<Eigen::Vector2d>& points1, 
-                                std::vector<Eigen::Vector2d>& points2,
-                                EigenVector3d& model, 
-                                std::vector<double>* residuals){
+void EpipoleEstimator::Residuals(const std::vector<X_t>& pairs1, 
+                                 const std::vector<Y_t>& pairs2,
+                                 const M_t& model, 
+                                 std::vector<double>* residuals){
     int n = points1.size();
 
     for(int i = 0; i < n; i++){
-        
+        Eigen::Vector3d homo01 = Point2dToHomo(pairs1[i].point_lock);
+        Eigen::Vector3d homo02 = Point2dToHomo(pairs2[i].point_lock);
+        Eigen::Vector3d homo11 = Point2dToHomo(pairs1[i].point_comp);
+        Eigen::Vector3d homo12 = Point2dToHomo(pairs2[i].point_comp);
+
+        Eigen::Vector3d line1 = PointToLine(homo01, homo11);
+        Eigen::Vector3d line2 = PointToLine(homo02, homo12);
+
+        Eigen::Vector3d curr_intersection = LineToPoint(line1, line2);
+        (*residuals)[i] = SquareError(model, curr_intersection);
     }
+}
+
+bool EstimateEpipole(const colmap::RANSACOptions& ransac_options,
+                     const std::vector<PixelPair>& pairs1
+                     const std::vector<PixelPair>& pairs2
+                     std::vector<char>* inlier_mask, Eigen::Vector3d* model){
+    colmap::RANSAC<EpipoleEstimator> ransac(ransac_options);
+    const auto report = ransac.Estimate(pairs1, pairs2);
+
+    if (!report.success) {
+        return false;
+    }
+
+    *inlier_mask = report.inlier_mask;
+    *model = report.model;
+
+    return report.success;
 }
 
 //helper functions
