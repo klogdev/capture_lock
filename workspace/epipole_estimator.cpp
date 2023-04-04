@@ -48,7 +48,7 @@ bool EstimateEpipole(const colmap::RANSACOptions& ransac_options,
     }
 
     *inlier_mask = report.inlier_mask;
-    *model = report.model;
+    *model = report.model; //init out of the fn body
 
     return report.success;
 }

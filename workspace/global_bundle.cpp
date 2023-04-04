@@ -3,9 +3,9 @@
 #include "optim/bundle_adjustment.h"
 
 bool GlobalBundleAdjuster(const colmap::BundleAdjustmentOptions& ba_options,
-                        colmap::Camera& camera,
-                        std::unordered_map<int,colmap::Image>& global_image_map,
-                        std::unordered_map<int,colmap::Point3D>& global_3d_map){
+                          colmap::Camera& camera,
+                          std::unordered_map<int,colmap::Image>& global_image_map,
+                          std::unordered_map<int,colmap::Point3D>& global_3d_map){
     colmap::BundleAdjustmentConfig ba_config;
     for (const auto& [image_id, value] : global_image_map) {
         ba_config.AddImage(image_id);

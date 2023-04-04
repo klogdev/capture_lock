@@ -43,18 +43,16 @@ void BundleAdjust_::SetUp(ceres::LossFunction* loss_function,
 }
 
 void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
-                        colmap::Camera& camera,
-                        std::unordered_map<int,colmap::Image>& global_image_map,
-                        std::unordered_map<int,colmap::Point3D>& global_3d_map,
-                        ceres::LossFunction* loss_function){
+                                      colmap::Camera& camera,
+                                      std::unordered_map<int,colmap::Image>& global_image_map,
+                                      std::unordered_map<int,colmap::Point3D>& global_3d_map,
+                                      ceres::LossFunction* loss_function){
     colmap::Image& image = global_image_map[image_id];
     image.NormalizeQvec();
 
     double* qvec_data = image.Qvec().data();
     double* tvec_data = image.Tvec().data();
     double* camera_params_data = camera.ParamsData();
-    std::vector<double> camera_paras = camera.Params();
-    std::cout << "number of cam paras: " << camera_paras.size() << std::endl;
 
     const bool constant_pose =
       !options_.refine_extrinsics || config_.HasConstantPose(image_id);
