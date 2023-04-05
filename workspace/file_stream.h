@@ -11,6 +11,7 @@ struct GyroData {
     double wx, wy, wz;
 };
 
-std::vector<GyroData> LoadGyroData(string file_path)
+std::vector<GyroData> LoadGyroData(std::string timestamp_path, 
+                                   std::string data_path);
 
 std::vector<std::string> FilePathStream(const std::string folder_dir);
