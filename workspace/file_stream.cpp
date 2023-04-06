@@ -24,6 +24,17 @@ std::vector<std::string> FilePathStream(const std::string folder_dir){
     return file_list;
 }
 
+std::vector<std::string> GyroPathStream(const std::string folder_dir){
+    std::vector<std::string> file_list;
+    for (int index = 1; index <= 77; ++index) {
+        const std::string gyro_name = absl::StrFormat("%10d.txt", index);
+        const std::string gyro_path =
+        absl::StrFormat("%s/%s", folder_dir, gyro_name);
+        file_list.push_back(gyro_path);
+    }
+    return file_list;
+}
+
 std::vector<std::string> LoadTimeStamp(std::string timestamp){
     std::vector<std::string> time_list;
     std::ifstream times(timestamp);
@@ -43,7 +54,7 @@ std::vector<std::string> LoadTimeStamp(std::string timestamp){
 Eigen::Vector3d LoadOneGyro(std::string one_file_path){
     std::ifstream gyro(one_file_path);
     std::string line;
-
+    //each gyro data only has 1 line with different var
     while(std::getline(gyro, line)){
         std::isstringstream iss(line);
         std::vector<std::string> curr_line{std::istream_iterator<std::string>{iss}, 
@@ -57,6 +68,22 @@ Eigen::Vector3d LoadOneGyro(std::string one_file_path){
 }
 
 std::vector<GyroData> LoadGyroData(std::string timestamp_path, 
-                                   std::string data_path){
-    
+                                   std::string data_path,
+                                   int start_frame,
+                                   int end_frame){
+    std::vector<std::string> time_frames = LoadTimeStamp(timestamp_path);
+    std::vector<std::string> gyro_paths = GyroPathStream(data_path);
+
+    std::vector<GyroData> gyro_data;
+
+    for(int i = start_frame; i <= end_frame; i++){
+        curr_data = LoadOneGyro(gyro_paths[i]);
+        GyroData curr_gyro;
+        curr_gyro.timstamp = time_frames[i];
+        curr_gyro.wx = curr_data(0);
+        curr_gyro.wy = curr_data(1);
+        curr_gyro.wz = curr_data(2);
+        gyro_data.push_back(curr_gyro);
+    }
+    return gyro_data;
 }

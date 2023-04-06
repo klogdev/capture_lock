@@ -16,6 +16,10 @@ std::vector<std::string> LoadTimeStamp(std::string timestamp);
 Eigen::Vector3d LoadOneGyro(std::string one_file_path);
 
 std::vector<GyroData> LoadGyroData(std::string timestamp_path, 
-                                   std::string data_path);
+                                   std::string data_path,
+                                   int start_frame,
+                                   int end_frame);
+
+std::vector<std::string> GyroPathStream(const std::string folder_dir);
 
 std::vector<std::string> FilePathStream(const std::string folder_dir);
