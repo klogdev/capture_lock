@@ -35,17 +35,14 @@ std::vector<std::string> GyroPathStream(const std::string folder_dir){
     return file_list;
 }
 
-std::vector<std::string> LoadTimeStamp(std::string timestamp){
-    std::vector<std::string> time_list;
+std::vector<double> LoadTimeStamp(std::string timestamp){
+    std::vector<double> time_list;
     std::ifstream times(timestamp);
     std::string line;
 
     while(std::getline(times, line)){
-        std::isstringstream iss(line);
-        std::vector<std::string> curr_line{std::istream_iterator<std::string>{iss}, 
-                                           std::istream_iterator<std::string>{}};
 
-        time_list.push_back(curr_line[1]);
+        time_list.push_back(TimeStrToDouble(line));
     }
 
     return time_list;
@@ -86,4 +83,18 @@ std::vector<GyroData> LoadGyroData(std::string timestamp_path,
         gyro_data.push_back(curr_gyro);
     }
     return gyro_data;
+}
+
+double TimeStrToDouble(std::string timestamp){
+    std::chrono::system_clock::time_point tp;
+    std::chrono::duration<int64_t, std::nano> ns;
+    std::sscanf(timestamp.c_str(), "%ld-%ld-%ld %ld:%ld:%lf", &std::get<0>(tp), &std::get<1>(tp),
+                &std::get<2>(tp), &std::get<3>(tp), &std::get<4>(tp), &ns);
+    tp += std::chrono::nanoseconds{ns.count()};
+
+    // Convert the time point to a double representing seconds
+    auto duration = tp.time_since_epoch();
+    double seconds = std::chrono::duration<double>{duration}.count();
+
+    return seconds;
 }

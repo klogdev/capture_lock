@@ -11,7 +11,7 @@ struct GyroData {
     double wx, wy, wz;
 };
 
-std::vector<std::string> LoadTimeStamp(std::string timestamp);
+std::vector<double> LoadTimeStamp(std::string timestamp);
 
 Eigen::Vector3d LoadOneGyro(std::string one_file_path);
 
@@ -22,4 +22,7 @@ std::vector<GyroData> LoadGyroData(std::string timestamp_path,
 
 std::vector<std::string> GyroPathStream(const std::string folder_dir);
 
+//general fxn for obtaining all file paths of images in a folder
 std::vector<std::string> FilePathStream(const std::string folder_dir);
+
+double TimeStrToDouble(std::string timestamp);
