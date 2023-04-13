@@ -48,12 +48,12 @@ int main(int argc, char** argv){
 
     //triangulate first two 
     InitFirstPair(image_stream[0], image_stream[1], camera,
-                global_image_map,global_keypts_map,global_3d_map);
+                global_image_map,global_keypts_map,global_3d_map,768,576);
 
     //increment remaining frames
     for (int i = 2; i < image_stream.size(); i++){
         IncrementOneImage(image_stream[i], i, global_image_map[i-1],camera,
-                        global_image_map,global_keypts_map,global_3d_map);
+                        global_image_map,global_keypts_map,global_3d_map,768,576);
     }
 
     colmap::BundleAdjustmentOptions ba_options;

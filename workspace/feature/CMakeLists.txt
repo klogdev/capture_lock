@@ -1,16 +1,16 @@
-add_library(stb_image STATIC
-            stb_image.h
-            stb_image_write.h
-)
+# add_library(stb_image STATIC
+#             stb_image.h
+#             stb_image_write.h
+# )
 
-set_target_properties(stb_image PROPERTIES LINKER_LANGUAGE CXX)
+# set_target_properties(stb_image PROPERTIES LINKER_LANGUAGE CXX)
 
 add_library(img STATIC
             image_sift.h
             image_sift.cpp
 )
 
-target_link_libraries(img PRIVATE stb_image PUBLIC ${OpenCV_LIBRARIES})
+target_link_libraries(img PRIVATE PUBLIC ${OpenCV_LIBRARIES})
 
 add_library(sift STATIC
             sift.cpp

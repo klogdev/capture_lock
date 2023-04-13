@@ -13,10 +13,11 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
                     colmap::Camera& camera,
                     std::unordered_map<int,colmap::Image>& global_image_map,
                     std::unordered_map<int,std::vector<sift::Keypoint>>& global_keypts_map,
-                    std::unordered_map<int,colmap::Point3D>& global_3d_map){
+                    std::unordered_map<int,colmap::Point3D>& global_3d_map,
+                    int resize_w, int resize_h){
     //initialize the Image class by its path (feature/image_sift)
-    Image image1(first_path);
-    Image image2(second_path);
+    Image image1(first_path, resize_w, resize_h);
+    Image image2(second_path, resize_w, resize_h);
 
     std::vector<sift::Keypoint> key_points1 = GetKeyPoints(image1);
     std::vector<sift::Keypoint> key_points2 = GetKeyPoints(image2);

@@ -15,7 +15,7 @@
 colmap::Image SIFTtoCOLMAPImage(int image_id, std::vector<Eigen::Vector2d> features,
                                 const colmap::Camera& camera){
     colmap::Image curr_image;
-    curr_image.SetImageId(image_id); //need type conversion?
+    curr_image.SetImageId(image_id); //automatic type conversion to the built-in type
     curr_image.SetCameraId(camera.CameraId());
     curr_image.SetPoints2D(features);
     return curr_image;
@@ -41,9 +41,9 @@ void IncrementOneImage(std::string image_path, int next_id,
                         colmap::Camera& camera,
                         std::unordered_map<int,colmap::Image>& global_image_map,
                         std::unordered_map<int,std::vector<sift::Keypoint>>& global_keypts_map,
-                        std::unordered_map<int,colmap::Point3D>& global_3d_map
-                        ){
-    Image new_image(image_path);
+                        std::unordered_map<int,colmap::Point3D>& global_3d_map,
+                        int resize_w, int resize_h){
+    Image new_image(image_path, resize_w, resize_h);
     std::vector<sift::Keypoint> curr_key_points = GetKeyPoints(new_image);
     //covert sift keypts to eigen, should we only pick matched 2d pts for pose est??
     std::vector<Eigen::Vector2d> curr_keypts_vec = SIFTPtsToVec(curr_key_points);

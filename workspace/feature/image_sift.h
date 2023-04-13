@@ -5,7 +5,7 @@
 enum Interpolation {BILINEAR, NEAREST};
 
 struct Image {
-    explicit Image(std::string file_path);
+    explicit Image(std::string file_path, int final_w, int final_h);
     Image(int w, int h, int c);
     Image();
     ~Image();
