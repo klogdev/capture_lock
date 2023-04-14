@@ -51,15 +51,16 @@ std::vector<double> LoadTimeStamp(std::string timestamp){
 Eigen::Vector3d LoadOneGyro(std::string one_file_path){
     std::ifstream gyro(one_file_path);
     std::string line;
+    Eigen::Vector3d curr_gyro;
     //each gyro data only has 1 line with different var
     while(std::getline(gyro, line)){
-        std::isstringstream iss(line);
+        std::istringstream iss(line);
         std::vector<std::string> curr_line{std::istream_iterator<std::string>{iss}, 
                                            std::istream_iterator<std::string>{}};
 
-        Eigen::Vector3d curr_gyro(std::stod(curr_line[17]),
-                                  std::stod(curr_line[18]),
-                                  std::stod(curr_line[19]));
+        curr_gyro(0) = std::stod(curr_line[17]);
+        curr_gyro(1) = std::stod(curr_line[18]);
+        curr_gyro(2) = std::stod(curr_line[19]);
     }
     return curr_gyro;
 }
@@ -68,15 +69,15 @@ std::vector<GyroData> LoadGyroData(std::string timestamp_path,
                                    std::string data_path,
                                    int start_frame,
                                    int end_frame){
-    std::vector<std::string> time_frames = LoadTimeStamp(timestamp_path);
+    std::vector<double> time_frames = LoadTimeStamp(timestamp_path);
     std::vector<std::string> gyro_paths = GyroPathStream(data_path);
 
     std::vector<GyroData> gyro_data;
 
     for(int i = start_frame; i <= end_frame; i++){
-        curr_data = LoadOneGyro(gyro_paths[i]);
+        Eigen::Vector3d curr_data = LoadOneGyro(gyro_paths[i]);
         GyroData curr_gyro;
-        curr_gyro.timstamp = time_frames[i];
+        curr_gyro.timestamp = time_frames[i];
         curr_gyro.wx = curr_data(0);
         curr_gyro.wy = curr_data(1);
         curr_gyro.wz = curr_data(2);
@@ -86,15 +87,10 @@ std::vector<GyroData> LoadGyroData(std::string timestamp_path,
 }
 
 double TimeStrToDouble(std::string timestamp){
-    std::chrono::system_clock::time_point tp;
-    std::chrono::duration<int64_t, std::nano> ns;
-    std::sscanf(timestamp.c_str(), "%ld-%ld-%ld %ld:%ld:%lf", &std::get<0>(tp), &std::get<1>(tp),
-                &std::get<2>(tp), &std::get<3>(tp), &std::get<4>(tp), &ns);
-    tp += std::chrono::nanoseconds{ns.count()};
-
-    // Convert the time point to a double representing seconds
-    auto duration = tp.time_since_epoch();
-    double seconds = std::chrono::duration<double>{duration}.count();
-
-    return seconds;
+    std::tm tm_time = {};
+    std::istringstream iss(timestamp);
+    iss >> std::get_time(&tm_time, "%Y-%m-%d %H:%M:%S");
+    auto time_point = std::chrono::system_clock::from_time_t(std::mktime(&tm_time));
+    auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(time_point.time_since_epoch());
+    return duration.count();
 }
