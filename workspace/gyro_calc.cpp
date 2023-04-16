@@ -2,6 +2,7 @@
 #include "gyro_calc.h"
 
 #include <Eigen/Core>
+#include <Eigen/Geometry>
 
 Eigen::Quaterniond EstimateGyroAccumulation(vector<GyroData> GyroData,
                                          int frame1, int frame2){

@@ -1,5 +1,6 @@
 add_subdirectory(feature) 
 add_subdirectory(polymorphism_test)
+add_subdirectory(test)
 
 link_directories("/usr/local/lib/colmap/")
 
@@ -56,6 +57,22 @@ target_include_directories(
   stream PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
   stream PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES} img sift)
+
+add_library(gyro STATIC
+gyro_calc.h
+)
+target_include_directories(
+  gyro PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  gyro PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
+
+add_library(kitti STATIC
+kitti_helper.h
+)
+target_include_directories(
+  kitti PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  kitti PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
 
 add_executable(mapper mapper_main.cpp)
 target_include_directories(

@@ -1,5 +1,7 @@
 link_directories("../feature")
 link_directories("/usr/local/lib/colmap/")
+link_directories("../")
+
 
 add_library(test_util STATIC
 test_util.h
@@ -50,3 +52,11 @@ target_include_directories(
 target_link_libraries(
   opencv_test PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${OpenCV_LIBRARIES}
   ${absl_LIBRARIES} test_util)
+
+add_executable(kitti_test kitti_reader_test.cpp)
+target_include_directories(
+  kitti_test PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}" 
+  "${OpenCV_INCLUDE_DIRS}")
+target_link_libraries(
+  kitti_test PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${OpenCV_LIBRARIES}
+  ${absl_LIBRARIES} gyro stream kitti)
