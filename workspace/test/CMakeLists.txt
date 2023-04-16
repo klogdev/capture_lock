@@ -1,6 +1,7 @@
 link_directories("../feature")
 link_directories("/usr/local/lib/colmap/")
 link_directories("../")
+include_directories(${WORKSPACE_DIR})
 
 
 add_library(test_util STATIC

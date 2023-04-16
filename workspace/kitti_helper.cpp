@@ -1,7 +1,8 @@
-#include <iostream> 
-#include <string>
-#include <fstream>
 #include <Eigen/Core>
+#include <fstream>
+#include <iostream>
+#include <iterator>
+#include <string>
 
 #include "base/projection.h"
 
@@ -27,7 +28,7 @@ std::vector<std::vector<double>> IntrinsicFromKittiCali(const std::string base_p
 Eigen::Matrix3d ProjMatFromCali(const std::vector<std::vector<double>> calib_vec,
                                   const int sensor_num){
     std::vector<double> curr_sensor = calib_vec[sensor_num];
-    Eigen::Map<Matrix<double, 3, 4>> proj_mat(curr_sensor.data());
+    Eigen::Map<Eigen::Matrix<double, 3, 4>> proj_mat(curr_sensor.data());
 
     Eigen::Matrix3d K;
     Eigen::Matrix3d R; 

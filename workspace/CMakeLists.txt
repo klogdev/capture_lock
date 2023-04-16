@@ -1,7 +1,3 @@
-add_subdirectory(feature) 
-add_subdirectory(polymorphism_test)
-add_subdirectory(test)
-
 link_directories("/usr/local/lib/colmap/")
 
 
@@ -68,6 +64,7 @@ target_link_libraries(
 
 add_library(kitti STATIC
 kitti_helper.h
+kitti_helper.cpp
 )
 target_include_directories(
   kitti PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
@@ -86,3 +83,9 @@ target_include_directories(
   main_cli PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
   main_cli PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
+
+set(WORKSPACE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_subdirectory(feature) 
+add_subdirectory(polymorphism_test)
+add_subdirectory(test)
