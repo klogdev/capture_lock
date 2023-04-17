@@ -5,7 +5,7 @@
 #include <Eigen/Geometry>
 
 Eigen::Quaterniond EstimateGyroAccumulation(vector<GyroData> GyroData,
-                                         int frame1, int frame2){
+                                            int frame1, int frame2){
     double dt = GyroData[1].timestamp - GyroData[0].timestamp;
     double acc_x = 0.0, acc_y = 0.0, acc_z = 0.0;
     for (int i = frame1; i <= frame2; i++){

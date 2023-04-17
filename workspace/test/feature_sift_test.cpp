@@ -15,12 +15,9 @@ int main(int argc, char** argv){
         std::cout << " " << argv[0] << "need two images file path and the output path" << std::endl;
     }
 
-    //initialize the Image class by its path (feature/image_sift)
-    Image image1(argv[1]);
-    Image image2(argv[2]);
-    //get cv mat separately for plot
-    // cv::Mat image_cv1 = CentralCrop(cv::imread(argv[1]),800,600);
-    // cv::Mat image_cv2 = CentralCrop(cv::imread(argv[2]),800,600);
+    //initialize the Image class by its path (from feature/image_sift)
+    Image image1(argv[1],768,576);
+    Image image2(argv[2],768,576);
 
     //get cv mat separately for plot
     cv::Mat image_cv1 = ResizeDown(cv::imread(argv[1]),800,600);

@@ -36,8 +36,8 @@ int main(int argc, char** argv){
     }
 
     //initialize the Image class by its path (feature/image_sift)
-    Image image1(argv[1]);
-    Image image2(argv[2]);
+    Image image1(argv[1],768,576);
+    Image image2(argv[2],768,576);
     //get matches from images
     std::vector<MatchedVec> Matches;
     

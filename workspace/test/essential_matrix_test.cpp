@@ -36,8 +36,8 @@ int main(int argc, char** argv){
     }
 
     //initialize the Image class by its path (feature/image_sift)
-    Image Image1(argv[1]);
-    Image Image2(argv[2]);
+    Image Image1(argv[1],768,576);
+    Image Image2(argv[2],768,576);
 
     std::vector<Eigen::Matrix3d> Essentials = EssentialMatrixFromFivePts(Image1, Image2);
 

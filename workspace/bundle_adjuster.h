@@ -15,10 +15,12 @@ class BundleAdjust_{
 
         const ceres::Solver::Summary& Summary() const;
 
+        std::vector<double> RetrieveParas(const int parameter_idx);
+
     private:
         void SetUp(ceres::LossFunction* loss_function, colmap::Camera& camera,
-                    std::unordered_map<int,colmap::Image>& global_image_map,
-                    std::unordered_map<int,colmap::Point3D>& global_3d_map);
+                   std::unordered_map<int,colmap::Image>& global_image_map,
+                   std::unordered_map<int,colmap::Point3D>& global_3d_map);
 
         void AddImageToProblem(const colmap::image_t image_id,
                         colmap::Camera& camera,
