@@ -30,6 +30,7 @@ int main(){
     ceres::CostFunction* cost_function =
         new ceres::AutoDiffCostFunction<ReprojectionErrorFunctor, 2, 2, 3>(
             new ReprojectionErrorFunctor(some_param));
+    //calling AddParameterBlock, i.e. for camera & points explicitly is not required
     problem.AddResidualBlock(cost_function, nullptr, camera_point.data(),
                              triangulated_point.data());
 

@@ -132,14 +132,19 @@ void BundleAdjust_::ParameterizePoints(
     }
 }
 
-std::vector<double> BundleAdjust_::RetrieveParas(const int parameter_idx){
-    // Get the number of parameter blocks in the problem
-    int num_parameter_blocks = problem_.NumParameterBlocks();
-
-    // Loop through each parameter block and get its optimized value
+std::vector<Eigen::VectorXd> BundleAdjust_::RetrieveParas(const int para_idx1, const int para_idx2){
     
-    double params = new double[problem_.ParameterBlockSize(parameter_idx)];
-    problem.GetParameterBlock(parameter_idx, &params);
+    
+    std::vector<double*> parameter_blocks;
+    problem_->GetParameterBlocks(&parameter_blocks);
 
-    return params;
+    std::vector<Eigen::VectorXd> block_data;
+    for (int i = 0; i < parameter_blocks.size(); ++i) {
+        double* block = parameter_blocks[i];
+        int block_size = problem_->ParameterBlockSize(block);
+
+        Eigen::VectorXd block_vec(block, block + block_size);
+        block_data.push_back(block_vec);
+    }
+    return block_data;
 }

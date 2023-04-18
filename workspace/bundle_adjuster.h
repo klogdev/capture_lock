@@ -15,7 +15,7 @@ class BundleAdjust_{
 
         const ceres::Solver::Summary& Summary() const;
 
-        std::vector<double> RetrieveParas(const int parameter_idx);
+        std::vector<Eigen::VectorXd> RetrieveParas(const int para_idx1, const int para_idx2);
 
     private:
         void SetUp(ceres::LossFunction* loss_function, colmap::Camera& camera,
