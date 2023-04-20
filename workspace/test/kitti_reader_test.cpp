@@ -21,5 +21,4 @@ int main(int argc, char** argv){
 
     Eigen::Matrix3d K = ProjMatFromCali(cali_info,0);
 
-
 }
