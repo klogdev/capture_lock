@@ -56,9 +56,21 @@ int main(int argc, char** argv){
                         global_image_map,global_keypts_map,global_3d_map,768,576);
     }
 
+    std::cout << "debug parameters, before BA, pose 3 is: " << std::endl;
+    std::cout << global_image_map[3].Qvec() << std::endl;
+
+    std::cout << "debug parameters, before BA, point 3 is: " << std::endl;
+    std::cout << global_3d_map[3].XYZ() << std::endl;
+
     colmap::BundleAdjustmentOptions ba_options;
     bool run_ba = GlobalBundleAdjuster(ba_options, camera, global_image_map, global_3d_map);    
 
     std::cout << "result of BA is: " << run_ba << std::endl;
+
+    std::cout << "debug parameters, after BA, pose 3 is: " << std::endl;
+    std::cout << global_image_map[3].Qvec() << std::endl;
+
+    std::cout << "debug parameters, after BA, point 3 is: " << std::endl;
+    std::cout << global_3d_map[3].XYZ() << std::endl;
     return 0;
 }

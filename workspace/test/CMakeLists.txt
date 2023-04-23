@@ -1,4 +1,5 @@
 link_directories("../feature")
+link_directories("../calib_loader")
 link_directories("/usr/local/lib/colmap/")
 link_directories("../")
 include_directories(${WORKSPACE_DIR})
@@ -61,3 +62,11 @@ target_include_directories(
 target_link_libraries(
   kitti_test PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${OpenCV_LIBRARIES}
   ${absl_LIBRARIES} gyro stream kitti)
+
+# add_executable(calib_test calib_factory_test.cpp)
+# target_include_directories(
+#   calib_test PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}" 
+#   "${OpenCV_INCLUDE_DIRS}")
+# target_link_libraries(
+#   calib_test PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${OpenCV_LIBRARIES}
+#   ${absl_LIBRARIES} kitti kitti_calib colmap_calib)

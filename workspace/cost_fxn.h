@@ -16,7 +16,7 @@ class BACostFxn{
                 new BACostFxn(point_2d)
             );
         }
-
+        //4,3,3,4 => qvec, tvec, point_3d, simple pinhole camera paras
         template<typename T>
         bool operator()(const T* const qvec, const T* const tvec,
                   const T* const point_3d, const T* const camera_params,

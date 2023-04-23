@@ -132,19 +132,19 @@ void BundleAdjust_::ParameterizePoints(
     }
 }
 
-std::vector<Eigen::VectorXd> BundleAdjust_::RetrieveParas(const int para_idx1, const int para_idx2){
+// std::vector<Eigen::VectorXd> BundleAdjust_::RetrieveParas(const int para_idx1, const int para_idx2){
     
     
-    std::vector<double*> parameter_blocks;
-    problem_->GetParameterBlocks(&parameter_blocks);
+//     std::vector<double*> parameter_blocks;
+//     problem_->GetParameterBlocks(&parameter_blocks);
 
-    std::vector<Eigen::VectorXd> block_data;
-    for (int i = 0; i < parameter_blocks.size(); ++i) {
-        double* block = parameter_blocks[i];
-        int block_size = problem_->ParameterBlockSize(block);
+//     std::vector<Eigen::VectorXd> block_data;
+//     for (int i = 0; i < parameter_blocks.size(); ++i) {
+//         double* block = parameter_blocks[i];
+//         int block_size = problem_->ParameterBlockSize(block);
 
-        Eigen::VectorXd block_vec(block, block + block_size);
-        block_data.push_back(block_vec);
-    }
-    return block_data;
-}
+//         Eigen::VectorXd block_vec(block, block + block_size);
+//         block_data.push_back(block_vec);
+//     }
+//     return block_data;
+// }
