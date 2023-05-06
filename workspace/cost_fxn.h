@@ -16,13 +16,14 @@ class BACostFxn{
                 new BACostFxn(point_2d)
             );
         }
-        //4,3,3,4 => qvec, tvec, point_3d, simple pinhole camera paras
+        //4,3,3,4 => qvec, tvec, point_3d, simple pinhole camera params
         template<typename T>
         bool operator()(const T* const qvec, const T* const tvec,
                   const T* const point_3d, const T* const camera_params,
                   T* residuals) const{
             // Rotate and translate.
             T projection[3];
+            
             ceres::UnitQuaternionRotatePoint(qvec, point_3d, projection);
             projection[0] += tvec[0];
             projection[1] += tvec[1];
@@ -39,6 +40,23 @@ class BACostFxn{
             // Re-projection error.
             residuals[0] -= T(obs_x);
             residuals[1] -= T(obs_y);
+
+            
+            if (isnan(residuals[0]) || isnan(residuals[1])){
+                std::cout << "Error: NaN residual value encountered in Cost Fxn." << std::endl;
+                std::cout << "obs: " << obs_x << ", " << obs_y << std::endl;
+                std::cout << "Cost Fxn Proj: " << projection[0] << 
+                ", " << projection[1] << std::endl;
+                for(int i = 0; i < 4; i++){
+                    std::cout << "Camera parameters: " << camera_params[i] << std::endl;
+                }
+                for(int i = 0; i < 4; i++){
+                    std::cout << "qvec: " << qvec[i] << std::endl;
+                }
+                for(int i = 0; i < 3; i++){
+                    std::cout << "tvec: " << tvec[i] << std::endl;
+                }
+            }
 
             return true;
         }
@@ -94,6 +112,11 @@ class BAConstPoseCostFxn {
         // Re-projection error.
         residuals[0] -= T(obs_x);
         residuals[1] -= T(obs_y);
+
+        // std::cout << "Const Cost Fxn Residual: " << residuals[0] << 
+        //         ", " << residuals[1] << std::endl;
+        if (isnan(residuals[0]) || isnan(residuals[1]))
+                std::cout << "Error: NaN residual value encountered in Const Cost Fxn." << std::endl;
 
         return true;
     }

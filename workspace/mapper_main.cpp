@@ -63,6 +63,7 @@ int main(int argc, char** argv){
     std::cout << global_3d_map[3].XYZ() << std::endl;
 
     colmap::BundleAdjustmentOptions ba_options;
+    ba_options.solver_options.num_threads = 1;
     bool run_ba = GlobalBundleAdjuster(ba_options, camera, global_image_map, global_3d_map);    
 
     std::cout << "result of BA is: " << run_ba << std::endl;

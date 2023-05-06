@@ -9,13 +9,11 @@ class BundleAdjust_{
         BundleAdjust_(const colmap::BundleAdjustmentOptions& options,
                  const colmap::BundleAdjustmentConfig& config);
 
-        bool Solve(colmap::Camera& camera,
+        bool Solver(colmap::Camera& camera,
                    std::unordered_map<int,colmap::Image>& global_image_map,
                    std::unordered_map<int,colmap::Point3D>& global_3d_map);
 
         const ceres::Solver::Summary& Summary() const;
-
-        //std::vector<Eigen::VectorXd> RetrieveParas(const int para_idx1, const int para_idx2);
 
     private:
         void SetUp(ceres::LossFunction* loss_function, colmap::Camera& camera,

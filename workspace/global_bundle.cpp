@@ -18,9 +18,15 @@ bool GlobalBundleAdjuster(const colmap::BundleAdjustmentOptions& ba_options,
     //set the first frame as constant, 0 indexed
     ba_config.SetConstantPose(0);
 
+    //debug constant pose
+    colmap::Image first_image = global_image_map[0];
+
+    std::cout << "debug first quat: " << first_image.Qvec() << std::endl;
+    std::cout << "debug first trans: " << first_image.Tvec() << std::endl;
+
   // Run bundle adjustment.
   BundleAdjust_ bundle_adjuster(ba_options, ba_config);
-  if (!bundle_adjuster.Solve(camera, global_image_map, global_3d_map)) {
+  if (!bundle_adjuster.Solver(camera, global_image_map, global_3d_map)) {
     return false;
   }
 

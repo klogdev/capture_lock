@@ -9,11 +9,12 @@
 #include "base/cost_functions.h"
 
 //config: include all images&point should be setup in priori
+//options are adopt from colmap's BA option
 BundleAdjust_::BundleAdjust_(const colmap::BundleAdjustmentOptions& options,
                             const colmap::BundleAdjustmentConfig& config)
     : options_(options), config_(config) {}
 
-bool BundleAdjust_::Solve(colmap::Camera& camera,
+bool BundleAdjust_::Solver(colmap::Camera& camera,
                           std::unordered_map<int,colmap::Image>& global_image_map,
                           std::unordered_map<int,colmap::Point3D>& global_3d_map){
     problem_ = std::make_unique<ceres::Problem>();
@@ -22,6 +23,8 @@ bool BundleAdjust_::Solve(colmap::Camera& camera,
     SetUp(loss_function, camera, global_image_map, global_3d_map);
 
     ceres::Solver::Options solver_options = options_.solver_options;
+    ceres::Solve(solver_options, problem_.get(), &summary_);
+
     return true;
 }
 
@@ -29,11 +32,14 @@ void BundleAdjust_::SetUp(ceres::LossFunction* loss_function,
                           colmap::Camera& camera,
                           std::unordered_map<int,colmap::Image>& global_image_map,
                           std::unordered_map<int,colmap::Point3D>& global_3d_map){
+    //need call BA config for preprocess;
+    //the config_ is the private member of BA,
+    //and will be processed during global_bundle
     for (const colmap::image_t image_id : config_.Images()) {
         AddImageToProblem(image_id, camera, global_image_map, 
                           global_3d_map, loss_function);
     }
-    //need call BA config for preprocess
+    
     for (const auto point3D_id : config_.VariablePoints()) {
         AddPointToProblem(point3D_id, camera, global_image_map, 
                           global_3d_map, loss_function);
@@ -77,21 +83,24 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
 
             problem_->AddResidualBlock(cost_function, loss_function,
                                         curr_3d.XYZ().data(), camera_params_data);
+            std::cout << "debug constant pose: " << std::endl;
+            std::cout << "image-" << image_id << " has pose" << std::endl;
+            std::cout << "quat: " << image.Qvec() << std::endl;
+            std::cout << "trans: " << image.Tvec() << std::endl;
             } 
 
         else{                                      
-                cost_function = BACostFxn::Create(point_2d.XY()); 
+            cost_function = BACostFxn::Create(point_2d.XY()); 
            
-          problem_->AddResidualBlock(cost_function, loss_function, qvec_data,
-                                      tvec_data, curr_3d.XYZ().data(),
-                                      camera_params_data); 
+            problem_->AddResidualBlock(cost_function, loss_function, qvec_data,
+                                        tvec_data, curr_3d.XYZ().data(),
+                                        camera_params_data); 
          }
     }
     
     if (!constant_pose){
         colmap::SetQuaternionManifold(problem_.get(), qvec_data);
-    }
-    
+    }    
 }
 
 void BundleAdjust_::AddPointToProblem(const colmap::point3D_t point3D_id,
@@ -101,10 +110,12 @@ void BundleAdjust_::AddPointToProblem(const colmap::point3D_t point3D_id,
                                         ceres::LossFunction* loss_function){
     colmap::Point3D curr_3d = global_3d_map[point3D_id];
 
+    //all obs already processed
     if (point3D_num_observations_[point3D_id] == curr_3d.Track().Length())
         return;
 
     for (const auto& track_el: curr_3d.Track().Elements()){
+        //skip the obs if already added
         if (config_.HasImage(track_el.image_id)) {
             continue;
         }
@@ -132,19 +143,3 @@ void BundleAdjust_::ParameterizePoints(
     }
 }
 
-// std::vector<Eigen::VectorXd> BundleAdjust_::RetrieveParas(const int para_idx1, const int para_idx2){
-    
-    
-//     std::vector<double*> parameter_blocks;
-//     problem_->GetParameterBlocks(&parameter_blocks);
-
-//     std::vector<Eigen::VectorXd> block_data;
-//     for (int i = 0; i < parameter_blocks.size(); ++i) {
-//         double* block = parameter_blocks[i];
-//         int block_size = problem_->ParameterBlockSize(block);
-
-//         Eigen::VectorXd block_vec(block, block + block_size);
-//         block_data.push_back(block_vec);
-//     }
-//     return block_data;
-// }
