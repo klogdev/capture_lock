@@ -44,9 +44,7 @@ class BACostFxn{
             
             if (isnan(residuals[0]) || isnan(residuals[1])){
                 std::cout << "Error: NaN residual value encountered in Cost Fxn." << std::endl;
-                std::cout << "obs: " << obs_x << ", " << obs_y << std::endl;
-                std::cout << "Cost Fxn Proj: " << projection[0] << 
-                ", " << projection[1] << std::endl;
+                
                 for(int i = 0; i < 4; i++){
                     std::cout << "Camera parameters: " << camera_params[i] << std::endl;
                 }

@@ -54,6 +54,8 @@ int main(int argc, char** argv){
     for (int i = 2; i < image_stream.size(); i++){
         IncrementOneImage(image_stream[i], i, global_image_map[i-1],camera,
                         global_image_map,global_keypts_map,global_3d_map,768,576);
+        std::cout << "num of 3d points after process image " << i << " is: " 
+                  << global_3d_map.size() << std::endl;
     }
 
     std::cout << "debug parameters, before BA, pose 3 is: " << std::endl;

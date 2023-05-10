@@ -34,8 +34,9 @@ void BundleAdjust_::SetUp(ceres::LossFunction* loss_function,
                           std::unordered_map<int,colmap::Point3D>& global_3d_map){
     //need call BA config for preprocess;
     //the config_ is the private member of BA,
-    //and will be processed during global_bundle
+    //and will be processed within the global_bundle
     for (const colmap::image_t image_id : config_.Images()) {
+        std::cout << "added image id in the SetUp: " << image_id << std::endl;
         AddImageToProblem(image_id, camera, global_image_map, 
                           global_3d_map, loss_function);
     }
@@ -83,10 +84,10 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
 
             problem_->AddResidualBlock(cost_function, loss_function,
                                         curr_3d.XYZ().data(), camera_params_data);
-            std::cout << "debug constant pose: " << std::endl;
-            std::cout << "image-" << image_id << " has pose" << std::endl;
-            std::cout << "quat: " << image.Qvec() << std::endl;
-            std::cout << "trans: " << image.Tvec() << std::endl;
+            // std::cout << "debug constant pose: " << std::endl;
+            // std::cout << "image-" << image_id << " has pose" << std::endl;
+            // std::cout << "quat: " << image.Qvec() << std::endl;
+            // std::cout << "trans: " << image.Tvec() << std::endl;
             } 
 
         else{                                      
@@ -95,6 +96,10 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
             problem_->AddResidualBlock(cost_function, loss_function, qvec_data,
                                         tvec_data, curr_3d.XYZ().data(),
                                         camera_params_data); 
+            // std::cout << "debug variable pose: " << std::endl;
+            // std::cout << "image-" << image_id << " has pose" << std::endl;
+            // std::cout << "quat: " << image.Qvec() << std::endl;
+            // std::cout << "trans: " << image.Tvec() << std::endl;
          }
     }
     
