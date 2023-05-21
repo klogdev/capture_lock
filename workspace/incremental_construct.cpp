@@ -54,7 +54,8 @@ void IncrementOneImage(std::string image_path, int next_id,
     std::vector<Eigen::Vector2d> last_keypts_vec = SIFTPtsToVec(last_key_points);
     std::vector<std::pair<int, int>> matches = sift::find_keypoint_matches(last_key_points, curr_key_points);
 
-    std::cout << "num of features in " << next_id << "is: " << curr_keypts_vec.size() << std::endl;
+    std::cout << "num of features in " << next_id << " is: " << curr_keypts_vec.size() << std::endl;
+    std::cout << "num of matches between " << last_id << " and " << next_id << " is: " << matches.size() << std::endl;
 
     std::vector<Eigen::Vector3d> matched3d_from2d;
     std::vector<Eigen::Vector2d> matched2d_curr;
@@ -103,7 +104,7 @@ void IncrementOneImage(std::string image_path, int next_id,
                                                 &camera, &inliers, &inlier_mask);
     new_cmp_image.SetQvec(qvec_abs);
     new_cmp_image.SetTvec(tvec_abs);
-    std::cout << "number of 2d-3d pairs in " << next_id << " is: " 
+    std::cout << "number of inliers 2d-3d pairs by PnP in " << next_id << " is: " 
                 << inliers << std::endl;
     std::cout << "result of " << next_id << " 's pose estimation" 
                 << " is: " << qvec_abs << std::endl;
@@ -118,11 +119,10 @@ void IncrementOneImage(std::string image_path, int next_id,
 
     //idx of triangulated pts are consistent with matched_vec,
     //they should be matched back to their original idx of matched vec
+    //here we use all matched point (without RANSAC) for triangulation
     std::vector<Eigen::Vector3d> triangulate_3d = colmap::TriangulatePoints(proj_mat1, proj_mat2,
                                                                     matched_vec1, matched_vec2);
-    
-    std::cout << "num of matched 3d in " << next_id << " image is: " << triangulate_3d.size() << std::endl; 
-
+                                                                    
     int curr_3d_len = global_3d_map.size();
     for (int i = 0; i < triangulate_3d.size(); i++){
         int orig_idx1 = vec2d1_idx_map[i];
