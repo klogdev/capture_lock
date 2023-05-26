@@ -57,6 +57,8 @@ void IncrementOneImage(std::string image_path, int next_id,
     std::cout << "num of features in " << next_id << " is: " << curr_keypts_vec.size() << std::endl;
     std::cout << "num of matches between " << last_id << " and " << next_id << " is: " << matches.size() << std::endl;
 
+    //we dont need real vector id and the idx in below vector
+    //as the PnP only estimate the inliers as a intermediate step
     std::vector<Eigen::Vector3d> matched3d_from2d;
     std::vector<Eigen::Vector2d> matched2d_curr;
     for (int i = 0; i < matches.size(); i++){
@@ -118,7 +120,7 @@ void IncrementOneImage(std::string image_path, int next_id,
     Eigen::Matrix3x4d proj_mat2 = calibration*extrinsic_mat2;
 
     //idx of triangulated pts are consistent with matched_vec,
-    //they should be matched back to their original idx of matched vec
+    //they should be matched back to their original idx of feature vec
     //here we use all matched point (without RANSAC) for triangulation
     std::vector<Eigen::Vector3d> triangulate_3d = colmap::TriangulatePoints(proj_mat1, proj_mat2,
                                                                     matched_vec1, matched_vec2);

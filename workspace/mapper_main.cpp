@@ -64,6 +64,14 @@ int main(int argc, char** argv){
     std::cout << "debug parameters, before BA, point 3 is: " << std::endl;
     std::cout << global_3d_map[3].XYZ() << std::endl;
 
+    //debugging number of tracked features after all frames
+    for(const auto& point: global_3d_map){
+        colmap::Point3D curr_3d = point.second;
+        int curr_track_len = curr_3d.Track().Length();
+        std::cout << "the 3D point " << point.first << " has track length: " 
+        << curr_track_len << std::endl;
+    }
+
     colmap::BundleAdjustmentOptions ba_options;
     ba_options.solver_options.num_threads = 1;
     bool run_ba = GlobalBundleAdjuster(ba_options, camera, global_image_map, global_3d_map);    
