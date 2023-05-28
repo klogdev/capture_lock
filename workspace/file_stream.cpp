@@ -11,7 +11,7 @@
 
 std::vector<std::string> FilePathStream(const std::string folder_dir){
     std::vector<std::string> file_list;
-    for (int index = 141; index <= 146; ++index) {
+    for (int index = 141; index <= 150; ++index) {
         const std::string image_name = absl::StrFormat("P118%04d.JPG", index);
         const std::string image_path =
         absl::StrFormat("%s/%s", folder_dir, image_name);

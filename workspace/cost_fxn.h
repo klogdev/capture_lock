@@ -41,7 +41,7 @@ class BACostFxn{
             residuals[0] -= T(obs_x);
             residuals[1] -= T(obs_y);
 
-            
+            //debugging info if we got NaN value in Parameter blocks
             if (isnan(residuals[0]) || isnan(residuals[1])){
                 std::cout << "Error: NaN residual value encountered in Cost Fxn." << std::endl;
                 
@@ -111,8 +111,6 @@ class BAConstPoseCostFxn {
         residuals[0] -= T(obs_x);
         residuals[1] -= T(obs_y);
 
-        // std::cout << "Const Cost Fxn Residual: " << residuals[0] << 
-        //         ", " << residuals[1] << std::endl;
         if (isnan(residuals[0]) || isnan(residuals[1]))
                 std::cout << "Error: NaN residual value encountered in Const Cost Fxn." << std::endl;
 

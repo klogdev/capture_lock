@@ -80,7 +80,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     for (int i = 0; i < triangulate_3d.size(); i++){
         int orig_idx1 = vec2d1_idx_map[i];
         int orig_idx2 = vec2d2_idx_map[i];
-        //all 3d points are new
+        //all 3d points are new; i consistent with new_3d_id (0-indexed)
         int new_3d_id = curr_3d_len;
         curr_3d_len++;
         colmap::Point3D new_3d;

@@ -84,10 +84,6 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
 
             problem_->AddResidualBlock(cost_function, loss_function,
                                         curr_3d.XYZ().data(), camera_params_data);
-            // std::cout << "debug constant pose: " << std::endl;
-            // std::cout << "image-" << image_id << " has pose" << std::endl;
-            // std::cout << "quat: " << image.Qvec() << std::endl;
-            // std::cout << "trans: " << image.Tvec() << std::endl;
             } 
 
         else{                                      
@@ -96,10 +92,6 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
             problem_->AddResidualBlock(cost_function, loss_function, qvec_data,
                                         tvec_data, curr_3d.XYZ().data(),
                                         camera_params_data); 
-            // std::cout << "debug variable pose: " << std::endl;
-            // std::cout << "image-" << image_id << " has pose" << std::endl;
-            // std::cout << "quat: " << image.Qvec() << std::endl;
-            // std::cout << "trans: " << image.Tvec() << std::endl;
          }
     }
     

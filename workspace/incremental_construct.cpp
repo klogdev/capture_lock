@@ -132,19 +132,20 @@ void IncrementOneImage(std::string image_path, int next_id,
         if (last_image.Point2D(orig_idx1).HasPoint3D()){
             colmap::point3D_t curr3d_id = last_image.Point2D(orig_idx1).Point3DId();//type conversion??
             //overlap the 3d point coord by the updated one
-            colmap::Point3D curr_3d = global_3d_map[curr3d_id];
+            colmap::Point3D& curr_3d = global_3d_map[curr3d_id];
             curr_3d.SetXYZ(triangulate_3d[i]);
-            curr_3d.Track().AddElement(last_id, orig_idx1);
             curr_3d.Track().AddElement(next_id, orig_idx2);
             new_cmp_image.SetPoint3DForPoint2D(orig_idx2,curr3d_id);
         }
         else {
-            int new_3d_id = curr_3d_len + 1;
+            int new_3d_id = curr_3d_len; //the id is 0-indexed
             curr_3d_len++;
-            colmap::Point3D new_3d = global_3d_map[new_3d_id];
+            colmap::Point3D new_3d;
             new_3d.SetXYZ(triangulate_3d[i]);
             new_3d.Track().AddElement(last_id, orig_idx1);
             new_3d.Track().AddElement(next_id, orig_idx2);
+            global_3d_map[new_3d_id] = new_3d;
+
             last_image.SetPoint3DForPoint2D(orig_idx1,new_3d_id);
             new_cmp_image.SetPoint3DForPoint2D(orig_idx2,new_3d_id);
         }

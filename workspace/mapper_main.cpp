@@ -6,6 +6,7 @@
 #include "base/point3d.h"
 #include "base/triangulation.h"
 #include "base/camera_models.h"
+#include "base/track.h"
 #include "optim/bundle_adjustment.h"
 
 #include "feature/image_sift.h"
@@ -19,6 +20,14 @@
 const double downscale_x = 768.0/3072;
 const double downscale_y = 576.0/2304;
 const double downscale_avg = (downscale_x + downscale_y)/2;
+
+void DebugTracks(colmap::Track track){
+    std::vector<colmap::TrackElement>& curr_vec = track.Elements();
+
+    for (const auto elem: curr_vec){
+        std::cout << elem.image_id << std::endl;
+    }
+}
 
 int main(int argc, char** argv){
     if (argc < 3)
@@ -56,6 +65,16 @@ int main(int argc, char** argv){
                         global_image_map,global_keypts_map,global_3d_map,768,576);
         std::cout << "num of 3d points after process image " << i << " is: " 
                   << global_3d_map.size() << std::endl;
+
+        //debugging number of tracked features after all frames
+        for(const auto& point: global_3d_map){
+            colmap::Point3D curr_3d = point.second;
+            int curr_track_len = curr_3d.Track().Length();
+            if(curr_3d.Track().Length() > 5){
+                std::cout << "the 3D point " << point.first << " has tracked images: " << std::endl;
+                DebugTracks(curr_3d.Track());
+            }
+        }
     }
 
     std::cout << "debug parameters, before BA, pose 3 is: " << std::endl;
@@ -63,14 +82,6 @@ int main(int argc, char** argv){
 
     std::cout << "debug parameters, before BA, point 3 is: " << std::endl;
     std::cout << global_3d_map[3].XYZ() << std::endl;
-
-    //debugging number of tracked features after all frames
-    for(const auto& point: global_3d_map){
-        colmap::Point3D curr_3d = point.second;
-        int curr_track_len = curr_3d.Track().Length();
-        std::cout << "the 3D point " << point.first << " has track length: " 
-        << curr_track_len << std::endl;
-    }
 
     colmap::BundleAdjustmentOptions ba_options;
     ba_options.solver_options.num_threads = 1;
