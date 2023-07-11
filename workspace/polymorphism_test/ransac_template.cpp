@@ -5,7 +5,7 @@ struct RANSACOptions
 {
     double max_error = 0.0;
 
-    double min_inlier_ration = 0.0;
+    double min_inlier_ratio = 0.0;
 
     int max_trials = 0;
 };
