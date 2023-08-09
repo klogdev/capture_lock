@@ -17,7 +17,7 @@
 #include "bundle_adjuster.h"
 #include "global_bundle.h"
 
-const double downscale_x = 768.0/3072;
+const double downscale_x = 768.0/3072; // dowsacale of the image
 const double downscale_y = 576.0/2304;
 const double downscale_avg = (downscale_x + downscale_y)/2;
 
