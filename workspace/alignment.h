@@ -4,3 +4,6 @@
 
 Eigen::Vector3d FinalAlignment(std::vector<sift::Keypoint>& locked_keypts, 
                                std::string compensate_path);
+
+
+Eigen::Vector3d TestALignment(std::vector<sift::Keypoint>& test);

@@ -2,94 +2,129 @@
 #include <vector>
 #include <cmath>
 #include <limits>
-#include <random>
+#include <cstdlib>
 
-using namespace std;
+struct Point {
+    double x, y;
+    int cluster; // Which cluster this point belongs to
 
-// function to calculate the euclidean distance between two vectors
-double euclideanDistance(vector<double> a, vector<double> b) {
-    double distance = 0.0;
-    for (int i = 0; i < a.size(); i++) {
-        distance += pow(a[i] - b[i], 2);
-    }
-    return sqrt(distance);
+    Point(double x = 0, double y = 0, int cluster = -1): x(x), y(y), cluster(cluster) {}
+};
+
+double distance(const Point& a, const Point& b) {
+    return std::sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
 }
 
-// function to assign each data point to the nearest centroid
-void assignPointsToCentroids(vector<vector<double>>& data, vector<vector<double>>& centroids, vector<int>& assignments) {
-    for (int i = 0; i < data.size(); i++) {
-        double minDistance = numeric_limits<double>::max();
-        int minIndex = -1;
-        for (int j = 0; j < centroids.size(); j++) {
-            double distance = euclideanDistance(data[i], centroids[j]);
-            if (distance < minDistance) {
-                minDistance = distance;
-                minIndex = j;
-            }
-        }
-        assignments[i] = minIndex;
-    }
-}
+std::vector<Point> kMeans(std::vector<Point>& data, int k, int maxIterations) {
+    std::vector<Point> centroids(k);
 
-// function to update the centroids to the mean of the data points assigned to them
-void updateCentroids(vector<vector<double>>& data, vector<vector<double>>& centroids, vector<int>& assignments) {
-    for (int i = 0; i < centroids.size(); i++) {
-        vector<double> sum(centroids[i].size(), 0.0);
-        int count = 0;
-        for (int j = 0; j < data.size(); j++) {
-            if (assignments[j] == i) {
-                for (int k = 0; k < sum.size(); k++) {
-                    sum[k] += data[j][k];
-                }
-                count++;
-            }
-        }
-        if (count > 0) {
-            for (int k = 0; k < sum.size(); k++) {
-                centroids[i][k] = sum[k] / count;
-            }
-        }
+    // Randomly initialize centroids
+    for (int i = 0; i < k; ++i) {
+        centroids[i] = data[std::rand() % data.size()];
     }
-}
 
-// function to initialize the centroids randomly
-void initializeCentroids(vector<vector<double>>& data, vector<vector<double>>& centroids, int k) {
-    centroids.clear();
-    random_device rd;
-    mt19937 gen(rd());
-    uniform_int_distribution<> dis(0, data.size() - 1);
-    vector<int> indices;
-    for (int i = 0; i < k; i++) {
-        int index;
-        do {
-            index = dis(gen);
-        } while (find(indices.begin(), indices.end(), index) != indices.end());
-        indices.push_back(index);
-        centroids.push_back(data[index]);
-    }
-}
-
-// k-means algorithm
-void kMeans(vector<vector<double>>& data, int k, int maxIterations) {
-    vector<vector<double>> centroids;
-    vector<int> assignments(data.size(), -1);
-    initializeCentroids(data, centroids, k);
     int iterations = 0;
-    while (iterations < maxIterations) {
-        assignPointsToCentroids(data, centroids, assignments);
-        updateCentroids(data, centroids, assignments);
+    bool changed = true; // extra flag to signal early stop
+
+    while (changed && iterations < maxIterations) {
+        changed = false;
+
+        // Assign each data point to the closest centroid
+        for (Point& point : data) {
+            double minDist = std::numeric_limits<double>::max();
+            int minIdx = 0;
+
+            for (int i = 0; i < k; ++i) {
+                double dist = distance(point, centroids[i]);
+                if (dist < minDist) {
+                    minDist = dist;
+                    minIdx = i;
+                }
+            }
+
+            if (point.cluster != minIdx) {
+                point.cluster = minIdx;
+                changed = true;
+            }
+        }
+
+        // Recalculate the centroids
+        std::vector<int> clusterSizes(k, 0);
+        std::vector<Point> newCentroids(k, {0, 0});
+
+        for (const Point& point : data) {
+            newCentroids[point.cluster].x += point.x;
+            newCentroids[point.cluster].y += point.y;
+            clusterSizes[point.cluster]++;
+        }
+
+        for (int i = 0; i < k; ++i) {
+            if (clusterSizes[i] > 0) {
+                newCentroids[i].x /= clusterSizes[i];
+                newCentroids[i].y /= clusterSizes[i];
+            }
+        }
+
+        centroids = newCentroids;
         iterations++;
     }
-    for (int i = 0; i < data.size(); i++) {
-        cout << "Data point " << i << " is assigned to centroid " << assignments[i] << endl;
+
+    return centroids;
+}
+
+std::vector<Point> kMeansPlusPlusInitialization(const std::vector<Point>& data, int k) {
+    std::vector<Point> centroids;
+    std::vector<double> distances(data.size(), 0.0);
+
+    // Step 1: Choose one centroid uniformly at random from the data points
+    centroids.push_back(data[std::rand() % data.size()]);
+
+    for (int i = 1; i < k; ++i) {
+        double sum = 0;
+
+        // Step 2: For each data point, compute D(x)
+        for (size_t j = 0; j < data.size(); ++j) {
+            distances[j] = distance(data[j], centroids[0]);
+            for (size_t c = 1; c < i; ++c) {
+                double tempDistance = distance(data[j], centroids[c]);
+                if (tempDistance < distances[j]) {
+                    distances[j] = tempDistance;
+                }
+            }
+            sum += distances[j] * distances[j];
+        }
+
+        // Step 3: Choose next centroid
+        double rnd = std::rand() / static_cast<double>(RAND_MAX) * sum;
+        for (size_t j = 0; j < data.size(); ++j) {
+            if ((rnd -= distances[j] * distances[j]) <= 0) {
+                centroids.push_back(data[j]);
+                break;
+            }
+        }
     }
+
+    return centroids;
 }
 
 int main() {
-    vector<vector<double>> data = {{1.0, 1.0}, {1.5, 2.0}, {3.0, 4.0}, {5.0, 7.0}, {3.5, 5.0}, {4.5, 5.0}, {3.5, 4.5}};
-    int k = 2; // number of clusters
-    int maxIterations = 10; // maximum number of iterations for k-means
-    kMeans(data, k, maxIterations);
+    std::srand(static_cast<unsigned>(std::time(nullptr)));
+
+    // Sample data points
+    std::vector<Point> data = {
+        {2, 3}, {5, 6}, {8, 9},
+        {3, 2}, {6, 5}, {7, 8},
+        {12, 15}, {14, 13}, {15, 14}
+    };
+
+    int k = 3; // number of clusters
+    int maxIterations = 100;
+
+    std::vector<Point> centroids = kMeans(data, k, maxIterations);
+
+    for (int i = 0; i < k; ++i) {
+        std::cout << "Centroid " << i << ": (" << centroids[i].x << ", " << centroids[i].y << ")\n";
+    }
+
     return 0;
 }
-
