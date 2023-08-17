@@ -4,59 +4,78 @@
 struct RANSACOptions
 {
     double max_error = 0.0;
-
     double min_inlier_ratio = 0.0;
-
-    int max_trials = 0;
+    int max_iter = 10;
+    int num_samples = 10;
+    int num_trials = 100;
 };
 
-template <typename Estimator> //model for estimation
+template<typename X_t, typename Y_t>
+class Sampler{
+    public:
+        Sampler(){}
+
+        void SampleXY(const std::vector<X_t>& X, const std::vector<Y_t>& Y, 
+                      std::vector<X_t>& X_rand, std::vector<Y_t>& Y_rand){
+
+                        int sample_size = X_rand.size();
+                        unordered_set<int> seen;
+
+                        int cnt = 0;
+                        while(cnt < sample_size){
+                            int trial = std::rand()%sample_size;
+                            if(seen.find(trial) != seen.end())
+                                continue;
+
+                            seen.insert(trial);
+                            X_rand.push_back(X[trial]);
+                            Y_rand.push_back(Y[trial]);
+                            cnt++;
+                        }
+
+                    }
+};
+
+// Estimator should have its own typedef, i.e. for X_t et.al
+// also need encapsulate method such as Estimate/Residuals
+template<typename Estimator, typename Sampler>
 class RANSAC{
     public:
-        RANSAC(const RANSACOptions& options)
-        :options_(options) {}
-        
-        Estimator estimator;
-        colmap::RandomSampler sampler;
-        int num_samples = sampler.NumSamples();
+        RANSAC<typename Estimator, typename Sampler>::RANSAC(const RANSACOptions& options)
+            :options_(options), sampler(Sampler()){
+            // preprocessing, such as computer number of inliers needed
+        }
 
-        template <typename X_t, typename Y_t>
-        bool Estimate(std::vector<X_t>& X, std::vector<Y_t>& Y){
-            colmap::CHECK_EQ(X.size(), Y.size());
-            
-            std::vector<X_t> X_rand(num_samples);
-            std::vector<Y_t> Y_rand(num_samples);
-            typename Estimator::M_t model;
-            const size_t num_samples = X.size();
-            sampler.SampleXY(X, Y, &X_rand, &Y_rand);
+        template<typename X_t, typename Y_t>
+        bool Estimate(std::vector<X_t>& x, std::vector<Y_t>& y){
+            std::vector<X_t> x_rand;
+            std::vector<Y_t> y_rand;
 
-            std::vector<typename Estimator::M_t> sample_models;
-            for(int num_trials = 0; num_trials < options_.max_trials; num_trials++){
-                sample_models = estimator.Estimate(X_rand, Y_rand);
-                
-                // Evaluate the quality of each model.
-                for (const auto& sample_model : sample_models) {
-                    std::vector<size_t> inliers;
-                    double error_sum = 0.0;
-                    for (size_t i = 0; i < num_samples; ++i) {
-                        if (estimator.Test(sample_model, X[i], Y[i], options_.max_error)) {
-                            inliers.push_back(i);
-                            error_sum += estimator.Error(sample_model, X[i], Y[i]);
-                        }
-                    }
+            // in real implementation, we have separate logic to compare model
+            // which count the # of inliers of the current model in addition to res
+            double res = std::numeric_limits<double>::max();
+            typename Estimator::M_t best_model;
 
-                    const double inlier_ratio = static_cast<double>(inliers.size()) / static_cast<double>(num_samples);
-                    if (inlier_ratio >= options_.min_inlier_ration) {
-                        // The model is good enough.
-                        model = sample_model;
-                        return true;
-                    }
+            for(int i = 0; i < options_.num_trials; i++){
+                sampler.SampleXY(x, y, x_rand, y_rand);
+                typename Estimator::M_t model = estimator.Estimate(x_rand, y_rand);
+
+                double current_residual = estimator.Residual(model, x, y);
+
+                if (current_residual < best_residual) {
+                    best_residual = current_residual;
+                    best_model = model;
                 }
             }
-            // RANSAC failed to find a model that satisfies the threshold.
-            return false;
+
+            // Assuming a threshold for a "good" model
+            return best_residual <= options_.residual_threshold;
         }
 
     protected:
         RANSACOptions options_;
+        Sampler sampler;
+        Estimator estimator;
 };
+
+// the instance will be initialized as RANSAC<XxEstimator> ransac(options);

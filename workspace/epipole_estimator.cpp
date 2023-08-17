@@ -55,7 +55,7 @@ bool EstimateEpipole(const colmap::RANSACOptions& ransac_options,
 
 //helper functions
 Eigen::Vector3d Point2dToHomo(Eigen::Vector2d point_2d){
-    homo = Eigen::Vector4d::Identity();
+    homo = Eigen::Vector3d::Identity();
     homo.topRows(2) = point_2d;
     return homo; 
 }

@@ -15,7 +15,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
                     std::unordered_map<int,std::vector<sift::Keypoint>>& global_keypts_map,
                     std::unordered_map<int,colmap::Point3D>& global_3d_map,
                     int resize_w, int resize_h){
-    //initialize the Image class by its path (feature/image_sift)
+    //initialize the Image class by its path (via lib feature/image_sift)
     Image image1(first_path, resize_w, resize_h);
     Image image2(second_path, resize_w, resize_h);
 

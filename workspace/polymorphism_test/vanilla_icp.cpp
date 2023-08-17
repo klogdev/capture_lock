@@ -54,7 +54,7 @@ Eigen::Affine3d computeTransformation(const std::vector<Point>& source, const st
     Eigen::Matrix3d V = svd.matrixV();
     Eigen::Matrix3d R = V * U.transpose();
     if (R.determinant() < 0) { // Handling reflection case
-        V.col(2) *= -1;
+        V.col(2) *= -1; // we force the det to be 1, which consistent with the def of rot mat
         R = V * U.transpose();
     }
 
