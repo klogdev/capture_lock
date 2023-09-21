@@ -1,2 +1,0 @@
-/usr/bin/ar qc libba_run.a  CMakeFiles/ba_run.dir/global_bundle.cpp.o
-/usr/bin/ranlib libba_run.a

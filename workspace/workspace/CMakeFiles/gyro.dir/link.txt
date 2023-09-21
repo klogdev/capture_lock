@@ -1,2 +1,0 @@
-/usr/bin/ar qc libgyro.a  
-/usr/bin/ranlib libgyro.a
