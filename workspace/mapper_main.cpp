@@ -16,6 +16,7 @@
 #include "init_first_pair.h"
 #include "bundle_adjuster.h"
 #include "global_bundle.h"
+#include "pose_save.h"
 
 const double downscale_x = 768.0/3072; // dowsacale of the image
 const double downscale_y = 576.0/2304;
@@ -49,19 +50,19 @@ int main(int argc, char** argv){
     camera.SetModelId(colmap::SimpleRadialCameraModel::model_id);
     camera.Rescale(downscale_x);
 
-    std::vector<std::string> image_stream = FilePathStream(image_path);
+    std::vector<std::vector<std::string>> image_stream = FilePathStream(image_path);
     //start create map by init list of hashmaps
     std::unordered_map<int,colmap::Image> global_image_map;
     std::unordered_map<int,std::vector<sift::Keypoint>> global_keypts_map;
     std::unordered_map<int,colmap::Point3D> global_3d_map;
 
     //triangulate first two 
-    InitFirstPair(image_stream[0], image_stream[1], camera,
+    InitFirstPair(image_stream[0][0], image_stream[1][1], camera,
                 global_image_map,global_keypts_map,global_3d_map,768,576);
 
     //increment remaining frames
-    for (int i = 2; i < image_stream.size(); i++){
-        IncrementOneImage(image_stream[i], i, global_image_map[i-1],camera,
+    for (int i = 2; i < image_stream[0].size(); i++){
+        IncrementOneImage(image_stream[0][i], i, global_image_map[i-1],camera,
                         global_image_map,global_keypts_map,global_3d_map,768,576);
         std::cout << "num of 3d points after process image " << i << " is: " 
                   << global_3d_map.size() << std::endl;
@@ -76,6 +77,8 @@ int main(int argc, char** argv){
             }
         }
     }
+
+
 
     std::cout << "debug parameters, before BA, pose 3 is: " << std::endl;
     std::cout << global_image_map[3].Qvec() << std::endl;
@@ -94,5 +97,10 @@ int main(int argc, char** argv){
 
     std::cout << "debug parameters, after BA, point 3 is: " << std::endl;
     std::cout << global_3d_map[3].XYZ() << std::endl;
+
+    //save the poses
+    std::string output = "/tmp2/optim_poses.txt";
+    SavePoseToTxt(output, global_image_map);
+
     return 0;
 }

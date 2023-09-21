@@ -1,5 +1,7 @@
 #include <string>
 #include <Eigen/Core>
+#include <Eigen/Geometry>
+
 #include "optim/ransac.h"
 #include "estimators/pose.h"
 #include "base/image.h"
@@ -15,7 +17,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
                     std::unordered_map<int,std::vector<sift::Keypoint>>& global_keypts_map,
                     std::unordered_map<int,colmap::Point3D>& global_3d_map,
                     int resize_w, int resize_h){
-    //initialize the Image class by its path (via lib feature/image_sift)
+    //initialize the Image class by its path (via lib: feature/image_sift)
     Image image1(first_path, resize_w, resize_h);
     Image image2(second_path, resize_w, resize_h);
 
@@ -28,9 +30,9 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     std::vector<Eigen::Vector2d> key_vec2 = SIFTPtsToVec(key_points2);
     colmap::Image cmp_image2 = SIFTtoCOLMAPImage(2, key_vec2, camera);
 
-    //register the first frame as identity mat and zero trans
-    Eigen::Vector4d qvec1 = Eigen::Vector4d(1, 0, 0, 0);
-    Eigen::Vector3d tvec1 = Eigen::Vector3d::Zero();
+    //register the first frame as the g.t.'s image 141
+    Eigen::Vector4d qvec1 = Eigen::Vector4d(0.230317, 0.025641, 0.935816, -0.265602);
+    Eigen::Vector3d tvec1 = Eigen::Vector3d(-0.124033, 0.665758, 2.87239);
     cmp_image1.SetQvec(qvec1);
     cmp_image1.SetTvec(tvec1);
 
@@ -59,8 +61,23 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
         colmap::EstimateRelativePose(ransac_options, matched_vec1, matched_vec2, 
                                      &qvec2, &tvec2);
     std::cout << "inliers from relative pose: " << num_inliers << std::endl;
-    cmp_image2.SetQvec(qvec2);
-    cmp_image2.SetTvec(tvec2);
+
+    // shift the second pose by the relative pose
+    Eigen::Quaterniond q_rel(qvec2);
+    Eigen::Quaterniond qvec1_q(qvec1);
+    Eigen::Quaterniond qvec2_q = qvec1_q*q_rel;
+
+    qvec2[0] = qvec2_q.w();
+    qvec2[1] = qvec2_q.x();
+    qvec2[2] = qvec2_q.y();
+    qvec2[3] = qvec2_q.z();
+
+    // override the translation of second frame with g.t.
+    Eigen::Vector4d qvec2_gt = Eigen::Vector4d(0.12968, 0.0108472, 0.9516, -0.278429);
+    Eigen::Vector3d tvec2_gt = Eigen::Vector3d(0.103507, 0.723477, 2.76724);
+
+    cmp_image2.SetQvec(qvec2_gt);
+    cmp_image2.SetTvec(tvec2_gt);
 
     std::cout << "rotation of first pair is: " << qvec2 << std::endl;
     std::cout << "translation of first pair is: " << tvec2 << std::endl;

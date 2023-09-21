@@ -1,0 +1,2 @@
+/usr/bin/ar qc libstream.a  CMakeFiles/stream.dir/file_stream.cpp.o
+/usr/bin/ranlib libstream.a

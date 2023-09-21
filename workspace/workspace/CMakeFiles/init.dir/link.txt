@@ -1,0 +1,2 @@
+/usr/bin/ar qc libinit.a  CMakeFiles/init.dir/init_first_pair.cpp.o
+/usr/bin/ranlib libinit.a

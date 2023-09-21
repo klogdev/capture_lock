@@ -1,0 +1,2 @@
+/usr/bin/ar qc libcost.a  
+/usr/bin/ranlib libcost.a

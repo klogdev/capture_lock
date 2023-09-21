@@ -1,0 +1,2 @@
+/usr/bin/ar qc libincrement.a  CMakeFiles/increment.dir/incremental_construct.cpp.o
+/usr/bin/ranlib libincrement.a

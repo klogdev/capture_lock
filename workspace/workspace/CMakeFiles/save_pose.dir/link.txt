@@ -1,0 +1,2 @@
+/usr/bin/ar qc libsave_pose.a  CMakeFiles/save_pose.dir/pose_save.cpp.o
+/usr/bin/ranlib libsave_pose.a

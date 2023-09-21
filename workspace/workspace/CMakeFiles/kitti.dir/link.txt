@@ -1,0 +1,2 @@
+/usr/bin/ar qc libkitti.a  CMakeFiles/kitti.dir/kitti_helper.cpp.o
+/usr/bin/ranlib libkitti.a

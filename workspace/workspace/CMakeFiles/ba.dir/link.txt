@@ -1,0 +1,2 @@
+/usr/bin/ar qc libba.a  CMakeFiles/ba.dir/bundle_adjuster.cpp.o
+/usr/bin/ranlib libba.a

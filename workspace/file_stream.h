@@ -23,6 +23,6 @@ std::vector<GyroData> LoadGyroData(std::string timestamp_path,
 std::vector<std::string> GyroPathStream(const std::string folder_dir);
 
 //general fxn for obtaining all file paths of images in a folder
-std::vector<std::string> FilePathStream(const std::string folder_dir);
+std::vector<std::vector<std::string>> FilePathStream(const std::string folder_dir);
 
 double TimeStrToDouble(std::string timestamp);
