@@ -1,2 +1,0 @@
-/usr/bin/ar qc libimg.a  CMakeFiles/img.dir/image_sift.cpp.o
-/usr/bin/ranlib libimg.a
