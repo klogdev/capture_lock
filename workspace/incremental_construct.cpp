@@ -45,7 +45,7 @@ void IncrementOneImage(std::string image_path, int next_id,
                         int resize_w, int resize_h){
     Image new_image(image_path, resize_w, resize_h);
     std::vector<sift::Keypoint> curr_key_points = GetKeyPoints(new_image);
-    //covert sift keypts to eigen, should we only pick matched 2d pts for pose est??
+    //convert sift keypts to eigen, should we only pick matched 2d pts for pose est??
     std::vector<Eigen::Vector2d> curr_keypts_vec = SIFTPtsToVec(curr_key_points);
     colmap::Image new_cmp_image = SIFTtoCOLMAPImage(next_id, curr_keypts_vec, camera);
     int last_id = next_id - 1;
@@ -58,7 +58,7 @@ void IncrementOneImage(std::string image_path, int next_id,
     std::cout << "num of matches between " << last_id << " and " << next_id << " is: " << matches.size() << std::endl;
 
     //we dont need real vector id and the idx in below vector
-    //as the PnP only estimate the inliers as a intermediate step
+    //as the PnP only estimate the inliers as an intermediate step
     std::vector<Eigen::Vector3d> matched3d_from2d;
     std::vector<Eigen::Vector2d> matched2d_curr;
     for (int i = 0; i < matches.size(); i++){

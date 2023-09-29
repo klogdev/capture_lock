@@ -26,6 +26,8 @@ bool GlobalBundleAdjuster(const colmap::BundleAdjustmentOptions& ba_options,
     std::cout << "debug first trans: " << first_image.Tvec() << std::endl;
 
   // Run bundle adjustment. SetUp is called inside the Solver
+  // the bundle_adjuster_ will initialized by input image based on the
+  // indices offered by ba_config
   BundleAdjust_ bundle_adjuster(ba_options, ba_config);
   if (!bundle_adjuster.Solver(camera, global_image_map, global_3d_map)) {
     return false;
