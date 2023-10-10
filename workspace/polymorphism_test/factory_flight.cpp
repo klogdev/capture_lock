@@ -6,16 +6,17 @@
 
 enum Seat {Economy, Premium, Business};
 
-enum Airline {Delta, United, SouthWest};
+enum Airline {Delta, United, SouthWest,Luigi};
 
 // global map for querying
-std::unordered_map<string, Airline> airlines{
+std::unordered_map<std::string, Airline> airlines{
     {"Delta", Delta},
     {"United", United},
-    {"SouthWest", SouthWest}
+    {"SouthWest", SouthWest},
+    {"Luigi", Luigi}
 };
 
-std::unordered_map<string, Seat> seats{
+std::unordered_map<std::string, Seat> seats{
     {"Economy", Economy},
     {"Premium", Premium},
     {"Business", Business}
@@ -45,11 +46,11 @@ class AirlineCalculator{
             switch (ticket.seat)
             {
             case (Economy):
-                op_cost = getEconomy(ticket.dist);
+                op_cost = getEconomy(ticket.miles);
             case (Premium):
-                op_cost = getPremium(ticket.dist);
+                op_cost = getPremium(ticket.miles);
             case (Business):
-                op_cost = getBusiness(ticket.dist);
+                op_cost = getBusiness(ticket.miles);
             default:
                 break;
             }
@@ -75,20 +76,22 @@ class DeltaCalc: public AirlineCalculator{
         float calc(const Ticket& ticket) const override{
             float op = getOpCost(ticket);
 
-            return op + ticket.dist*0.5;
+            return op + ticket.miles*0.5;
         }
 
-        //Singleton
+        // Singleton
+        // initialization of local static variables 
+        // is guaranteed to be thread-safe
         static AirlineCalculator* instance(){
-            static DeltaCalc calc;
-            return &calc;
+            static DeltaCalc calc_ins;
+            return &calc_ins;
         }
 
         virtual ~DeltaCalc() = default;
 
     private:
         DeltaCalc() = default;
-}
+};
 
 // Factory pattern
 AirlineCalculator* AirlineCalculator::create(Airline airline){
@@ -102,9 +105,9 @@ AirlineCalculator* AirlineCalculator::create(Airline airline){
     }
 }
 
-static Ticket parse_ticket(const string& s){
+static Ticket parse_ticket(const std::string& s){
     // split by space
-    std::vector<string> arr;
+    std::vector<std::string> arr;
     std::stringstream ss(s);
     std::string token; //current reading
 
@@ -115,7 +118,7 @@ static Ticket parse_ticket(const string& s){
     Ticket ticket;
     ticket.airline = airlines[arr[0]];
     ticket.seat = seats[arr[2]];
-    ticket.dist = std::stof(arr[1]);
+    ticket.miles = std::stof(arr[1]);
 
     return ticket;
 }
