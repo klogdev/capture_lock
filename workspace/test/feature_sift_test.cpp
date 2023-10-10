@@ -16,8 +16,8 @@ int main(int argc, char** argv){
     }
 
     //initialize the Image class by its path (from feature/image_sift)
-    Image image1(argv[1],768,576);
-    Image image2(argv[2],768,576);
+    Image image1(argv[1],576,768);
+    Image image2(argv[2],576,768);
 
     int h = std::stoi(argv[4]);
     int w = std::stoi(argv[5]);
@@ -26,7 +26,10 @@ int main(int argc, char** argv){
     cv::Mat image_cv1 = ResizeDown(cv::imread(argv[1]),w,h);
     cv::Mat image_cv2 = ResizeDown(cv::imread(argv[2]),w,h);
     
+    std::string img_path1 = argv[1];
+    std::string img_path2 = argv[2];
     std::string file_path = argv[3];
+
     
     std::vector<MatchedVec> test_matches = FindMatches(image1, image2);
 
@@ -39,13 +42,21 @@ int main(int argc, char** argv){
     for (int i = 0; i < test_matches.size(); i++){
         cv::Point line1_start(test_matches[i].KeyPt1(0), test_matches[i].KeyPt1(1));
         cv::Point line1_end(test_matches[i].KeyPt2(0)+w, test_matches[i].KeyPt2(1));
-    
+        if(test_matches[i].KeyPt2(1) > 768)
+            std::cout << "debug out of view" << std::endl;
         cv::line(concat_img, line1_start, line1_end, cv::Scalar(255, 0, 0), 
-        /*thickness=*/2, /*lineType=*/cv::LINE_AA);
-        
+        /*thickness=*/2, /*lineType=*/cv::LINE_AA);  
     }
 
-    cv::imwrite("/tmp2/144_145.JPG", concat_img);
+    cv::Point dummy_start(384,288);
+    cv::Point dummy_end(1152,288);
+    cv::line(concat_img, dummy_start, dummy_end, cv::Scalar(0, 255, 0), 
+        /*thickness=*/2, /*lineType=*/cv::LINE_AA);  
+
+
+    std::string img1_idx = img_path1.substr(18, 3); 
+    std::string img2_idx = img_path2.substr(18, 3);    
+    cv::imwrite("/tmp2/"+img1_idx+'_'+img2_idx+".JPG", concat_img);
 
     std::ofstream file(file_path, std::ios::trunc);
     file << "tested output of the matched points" << std::endl;
