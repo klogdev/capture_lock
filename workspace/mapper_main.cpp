@@ -58,7 +58,7 @@ int main(int argc, char** argv){
 
     //triangulate first two 
     InitFirstPair(image_stream[0][0], image_stream[1][1], camera,
-                global_image_map,global_keypts_map,global_3d_map,768,576);
+                global_image_map,global_keypts_map,global_3d_map,576,768);
 
     //increment remaining frames
     for (int i = 2; i < image_stream[0].size(); i++){
@@ -78,16 +78,17 @@ int main(int argc, char** argv){
         }
     }
 
-
-
     std::cout << "debug parameters, before BA, pose 3 is: " << std::endl;
     std::cout << global_image_map[3].Qvec() << std::endl;
 
     std::cout << "debug parameters, before BA, point 3 is: " << std::endl;
     std::cout << global_3d_map[3].XYZ() << std::endl;
 
+    // init ba options, use soft l1 to be robust with outliers
     colmap::BundleAdjustmentOptions ba_options;
     ba_options.solver_options.num_threads = 1;
+    ba_options.loss_function_type = colmap::LossFunctionType::SOFT_L1;
+
     bool run_ba = GlobalBundleAdjuster(ba_options, camera, global_image_map, global_3d_map);    
 
     std::cout << "result of BA is: " << run_ba << std::endl;
