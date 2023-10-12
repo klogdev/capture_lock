@@ -49,10 +49,13 @@ class AirlineCalculator{
             {
             case (Economy):
                 op_cost = getEconomy(ticket.miles);
+                break;
             case (Premium):
                 op_cost = getPremium(ticket.miles);
+                break;
             case (Business):
                 op_cost = getBusiness(ticket.miles);
+                break;
             default:
                 break;
             }
@@ -112,7 +115,7 @@ class UnitedCalc: public AirlineCalculator{
     protected:
         // protected member can be overriden by the derived class method
         float getPremium(float d) const override{
-            return 25 + 0.1*d;
+            return 25.0f + 0.1*d;
         }
 };
 
@@ -174,7 +177,12 @@ static Ticket parse_ticket(const std::string& s){
     }
 
     Ticket ticket;
-    ticket.airline = airlines[arr[0]];
+    // Check and get the airline from the map
+    auto it = airlines.find(arr[0]);
+    if (it == airlines.end()) {
+        throw std::runtime_error("Unknown airline: " + arr[0]);
+    }
+    ticket.airline = it->second;
     ticket.seat = seats[arr[2]];
     ticket.miles = std::stof(arr[1]);
 
@@ -194,8 +202,7 @@ void process_tickets(std::vector<std::string> tickets,
 }
 
 int main(){
-    std::vector<std::string> input{"United 150.0 Premium", "United 120.0 Economy","United 100.0 Business","Delta 60.0 Economy",
-    "Delta 60.0 Premium","Delta 60.0 Business", "SouthWest 1000.0 Economy","SouthWest 4000.0 Economy"};
+    std::vector<std::string> input{"United 150.0 Premium", "United 120.0 Economy","United 100.0 Business","Delta 60.0 Economy", "Delta 60.0 Premium","Delta 60.0 Business", "SouthWest 1000.0 Economy","SouthWest 4000.0 Economy","ANA 300.0 Economy"};
 
     std::vector<float> costs;
     process_tickets(input, costs);
