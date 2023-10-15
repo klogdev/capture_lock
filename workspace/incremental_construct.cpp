@@ -30,7 +30,7 @@ std::vector<sift::Keypoint> GetKeyPoints(Image& image){
 std::vector<Eigen::Vector2d> SIFTPtsToVec(std::vector<sift::Keypoint> key_points){
     std::vector<Eigen::Vector2d> key_vec;
     for (int i = 0; i < key_points.size(); i++){
-        Eigen::Vector2d curr_vec(key_points[i].i,key_points[i].j);
+        Eigen::Vector2d curr_vec(key_points[i].i, key_points[i].j);
         key_vec.push_back(curr_vec);
     }
     return key_vec;
@@ -152,5 +152,5 @@ void IncrementOneImage(std::string image_path, int next_id,
         }
     }
     global_image_map[next_id] = new_cmp_image;
-    global_keypts_map[next_id] = curr_key_points;
+    global_keypts_map[next_id] = curr_key_points; //sift Keypoint
 }

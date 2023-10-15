@@ -78,26 +78,15 @@ int main(int argc, char** argv){
         }
     }
 
-    std::cout << "debug parameters, before BA, pose 3 is: " << std::endl;
-    std::cout << global_image_map[3].Qvec() << std::endl;
-
-    std::cout << "debug parameters, before BA, point 3 is: " << std::endl;
-    std::cout << global_3d_map[3].XYZ() << std::endl;
 
     // init ba options, use soft l1 to be robust with outliers
     colmap::BundleAdjustmentOptions ba_options;
     ba_options.solver_options.num_threads = 1;
-    ba_options.loss_function_type = colmap::LossFunctionType::SOFT_L1;
+    ba_options.loss_function_type = colmap::BundleAdjustmentOptions::LossFunctionType::SOFT_L1;
 
     bool run_ba = GlobalBundleAdjuster(ba_options, camera, global_image_map, global_3d_map);    
 
     std::cout << "result of BA is: " << run_ba << std::endl;
-
-    std::cout << "debug parameters, after BA, pose 3 is: " << std::endl;
-    std::cout << global_image_map[3].Qvec() << std::endl;
-
-    std::cout << "debug parameters, after BA, point 3 is: " << std::endl;
-    std::cout << global_3d_map[3].XYZ() << std::endl;
 
     //save the poses
     std::string output = "/tmp2/optim_poses.txt";

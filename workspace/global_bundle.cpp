@@ -8,7 +8,6 @@ bool GlobalBundleAdjuster(const colmap::BundleAdjustmentOptions& ba_options,
                           std::unordered_map<int,colmap::Point3D>& global_3d_map){
     colmap::BundleAdjustmentConfig ba_config;
     for (const auto& [image_id, value] : global_image_map){
-        std::cout << "Global Bundle added images: " << image_id << std::endl;
         ba_config.AddImage(image_id);
     }
 

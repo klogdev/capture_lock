@@ -42,7 +42,7 @@ int main(int argc, char** argv){
     for (int i = 0; i < test_matches.size(); i++){
         cv::Point line1_start(test_matches[i].KeyPt1(0), test_matches[i].KeyPt1(1));
         cv::Point line1_end(test_matches[i].KeyPt2(0)+w, test_matches[i].KeyPt2(1));
-        if(test_matches[i].KeyPt2(1) > 768)
+        if(test_matches[i].KeyPt2(1) > 576)
             std::cout << "debug out of view" << std::endl;
         cv::line(concat_img, line1_start, line1_end, cv::Scalar(255, 0, 0), 
         /*thickness=*/2, /*lineType=*/cv::LINE_AA);  

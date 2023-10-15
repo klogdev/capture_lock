@@ -36,7 +36,6 @@ void BundleAdjust_::SetUp(ceres::LossFunction* loss_function,
     //the config_ is the private member of BA,
     //and will be processed within the global_bundle
     for (const colmap::image_t image_id : config_.Images()) {
-        std::cout << "added image id in the SetUp: " << image_id << std::endl;
         AddImageToProblem(image_id, camera, global_image_map, 
                           global_3d_map, loss_function);
     }
