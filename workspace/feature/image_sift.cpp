@@ -9,13 +9,7 @@
 Image::Image(std::string file_path, int final_w, int final_h)
 {
     cv::Mat orig_image = cv::imread(file_path, cv::IMREAD_COLOR);
-    //hard coded crop 
-    int center_x = (orig_image.cols)/2;
-    int center_y = (orig_image.rows)/2;
-    // int final_w = 768;
-    // int final_h = 576;
-    //cv::Rect MyRoI(center_x-final_w/2, center_y-final_h/2, final_w, final_h);
-    //cv::Mat image = orig_image(MyRoI);
+    
     //hard coded resize
     cv::Mat image;
     cv::resize(orig_image, image, cv::Size(final_w, final_h), cv::INTER_LINEAR);

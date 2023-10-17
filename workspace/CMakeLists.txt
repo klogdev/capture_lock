@@ -80,6 +80,7 @@ target_include_directories(
 target_link_libraries(
   save_pose PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
 
+
 add_executable(mapper mapper_main.cpp)
 target_include_directories(
   mapper PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")

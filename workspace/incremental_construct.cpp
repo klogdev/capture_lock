@@ -1,10 +1,12 @@
 #include "sfm/incremental_mapper.h"
 #include "sfm/incremental_triangulator.h"
+
 #include "base/image.h"
 #include "base/point3d.h"
 #include "base/camera.h"
 #include "base/triangulation.h"
 #include "base/track.h"
+
 #include "estimators/pose.h"
 
 #include "feature/image_sift.h"
@@ -42,14 +44,15 @@ void IncrementOneImage(std::string image_path, int next_id,
                         std::unordered_map<int,colmap::Image>& global_image_map,
                         std::unordered_map<int,std::vector<sift::Keypoint>>& global_keypts_map,
                         std::unordered_map<int,colmap::Point3D>& global_3d_map,
-                        int resize_h, int resize_w){
+                        int resize_w, int resize_h){
                             
-    Image new_image(image_path, resize_h, resize_w);
+    Image new_image(image_path, resize_w, resize_h);
     std::vector<sift::Keypoint> curr_key_points = GetKeyPoints(new_image);
     //convert sift keypts to eigen, should we only pick matched 2d pts for pose est??
     std::vector<Eigen::Vector2d> curr_keypts_vec = SIFTPtsToVec(curr_key_points);
     colmap::Image new_cmp_image = SIFTtoCOLMAPImage(next_id, curr_keypts_vec, camera);
     int last_id = next_id - 1;
+
 
     std::vector<sift::Keypoint> last_key_points = global_keypts_map[last_id];
     std::vector<Eigen::Vector2d> last_keypts_vec = SIFTPtsToVec(last_key_points);

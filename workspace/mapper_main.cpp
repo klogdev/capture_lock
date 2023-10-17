@@ -58,12 +58,12 @@ int main(int argc, char** argv){
 
     //triangulate first two 
     InitFirstPair(image_stream[0][0], image_stream[1][1], camera,
-                global_image_map,global_keypts_map,global_3d_map,576,768);
+                global_image_map, global_keypts_map,global_3d_map, 768, 576);
 
     //increment remaining frames
     for (int i = 2; i < image_stream[0].size(); i++){
-        IncrementOneImage(image_stream[0][i], i, global_image_map[i-1],camera,
-                        global_image_map,global_keypts_map,global_3d_map,768,576);
+        IncrementOneImage(image_stream[0][i], i, global_image_map[i-1], camera,
+                        global_image_map, global_keypts_map, global_3d_map, 768, 576);
         std::cout << "num of 3d points after process image " << i << " is: " 
                   << global_3d_map.size() << std::endl;
 

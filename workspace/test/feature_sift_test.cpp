@@ -16,11 +16,12 @@ int main(int argc, char** argv){
     }
 
     //initialize the Image class by its path (from feature/image_sift)
-    Image image1(argv[1],576,768);
-    Image image2(argv[2],576,768);
 
-    int h = std::stoi(argv[4]);
-    int w = std::stoi(argv[5]);
+    int h = std::stoi(argv[4]); //576
+    int w = std::stoi(argv[5]); //768
+
+    Image image1(argv[1],w,h);
+    Image image2(argv[2],w,h);
 
     //get cv mat separately for plot
     cv::Mat image_cv1 = ResizeDown(cv::imread(argv[1]),w,h);
@@ -38,8 +39,9 @@ int main(int argc, char** argv){
     // Concatenate images horizontally
     cv::Mat concat_img;
     cv::hconcat(image_cv1, image_cv2, concat_img);
+    int plot_range = 15;//test_matches.size();
 
-    for (int i = 0; i < test_matches.size(); i++){
+    for (int i = 0; i < plot_range; i++){
         cv::Point line1_start(test_matches[i].KeyPt1(0), test_matches[i].KeyPt1(1));
         cv::Point line1_end(test_matches[i].KeyPt2(0)+w, test_matches[i].KeyPt2(1));
         if(test_matches[i].KeyPt2(1) > 576)

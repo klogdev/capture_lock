@@ -494,6 +494,7 @@ std::vector<std::pair<int, int>> find_keypoint_matches(std::vector<Keypoint>& a,
 
     for (int i = 0; i < a.size(); i++) {
         // find two nearest neighbours in b for current keypoint from a
+        // brute force search for all keypoints
         int nn1_idx = -1;
         float nn1_dist = 100000000, nn2_dist = 100000000;
         for (int j = 0; j < b.size(); j++) {
