@@ -50,6 +50,8 @@ int main(int argc, char** argv){
     camera.SetModelId(colmap::SimpleRadialCameraModel::model_id);
     camera.Rescale(downscale_x);
 
+    // we read different segements of image streams
+    // now we working on the first stream by manually process image_steam[0]
     std::vector<std::vector<std::string>> image_stream = FilePathStream(image_path);
     //start create map by init list of hashmaps
     std::unordered_map<int,colmap::Image> global_image_map;
@@ -57,7 +59,7 @@ int main(int argc, char** argv){
     std::unordered_map<int,colmap::Point3D> global_3d_map;
 
     //triangulate first two 
-    InitFirstPair(image_stream[0][0], image_stream[1][1], camera,
+    InitFirstPair(image_stream[0][0], image_stream[0][1], camera,
                 global_image_map, global_keypts_map,global_3d_map, 768, 576);
 
     //increment remaining frames

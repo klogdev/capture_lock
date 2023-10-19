@@ -24,6 +24,8 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     std::vector<sift::Keypoint> key_points1 = GetKeyPoints(image1);
     std::vector<sift::Keypoint> key_points2 = GetKeyPoints(image2);
     std::vector<std::pair<int, int>> matches = sift::find_keypoint_matches(key_points1, key_points2);
+
+    std::cout << "debug num of matches in the first pair: " << matches.size() << std::endl;
     
     std::vector<Eigen::Vector2d> key_vec1 = SIFTPtsToVec(key_points1);
     colmap::Image cmp_image1 = SIFTtoCOLMAPImage(1, key_vec1, camera);
@@ -31,8 +33,8 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     colmap::Image cmp_image2 = SIFTtoCOLMAPImage(2, key_vec2, camera);
 
     //register the first frame as the g.t.'s image 141
-    Eigen::Vector4d qvec1 = Eigen::Vector4d(0.230317, 0.025641, 0.935816, -0.265602);
-    Eigen::Vector3d tvec1 = Eigen::Vector3d(-0.124033, 0.665758, 2.87239);
+    Eigen::Vector4d qvec1 = Eigen::Vector4d(0.868254, 0.0224726, 0.474455, -0.143257);
+    Eigen::Vector3d tvec1 = Eigen::Vector3d(-0.679221, 1.00351, 3.65061);
     cmp_image1.SetQvec(qvec1);
     cmp_image1.SetTvec(tvec1);
 
@@ -73,8 +75,8 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     qvec2[3] = qvec2_q.z();
 
     // override the translation of second frame with g.t.
-    Eigen::Vector4d qvec2_gt = Eigen::Vector4d(0.12968, 0.0108472, 0.9516, -0.278429);
-    Eigen::Vector3d tvec2_gt = Eigen::Vector3d(0.103507, 0.723477, 2.76724);
+    Eigen::Vector4d qvec2_gt = Eigen::Vector4d(0.864347, 0.0331977, 0.477339, -0.154756);
+    Eigen::Vector3d tvec2_gt = Eigen::Vector3d(-0.756852, 0.980926, 3.58659);
 
     cmp_image2.SetQvec(qvec2_gt);
     cmp_image2.SetTvec(tvec2_gt);

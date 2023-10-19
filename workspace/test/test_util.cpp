@@ -21,6 +21,9 @@ std::vector<MatchedVec> FindMatches(Image& Image1, Image& Image2){
     std::vector<sift::Keypoint> KeyPoints1 = sift::find_keypoints_and_descriptors(Image1_gray);
     std::vector<sift::Keypoint> KeyPoints2 = sift::find_keypoints_and_descriptors(Image2_gray);
 
+    std::cout << "number of features in 1: " << KeyPoints1.size() << std::endl;
+    std::cout << "number of features in 2: " << KeyPoints2.size() << std::endl;
+
     //here the int pairs are indices in KeyPoints vectors
     std::vector<std::pair<int, int>> Matches = sift::find_keypoint_matches(KeyPoints1, KeyPoints2);
 

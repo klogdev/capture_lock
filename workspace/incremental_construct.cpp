@@ -58,7 +58,8 @@ void IncrementOneImage(std::string image_path, int next_id,
     std::vector<Eigen::Vector2d> last_keypts_vec = SIFTPtsToVec(last_key_points);
     std::vector<std::pair<int, int>> matches = sift::find_keypoint_matches(last_key_points, curr_key_points);
 
-    std::cout << "num of features in " << next_id << " is: " << curr_keypts_vec.size() << std::endl;
+    std::cout << "num of features in " << next_id << " is: " << curr_key_points.size() << std::endl;
+    std::cout << "num of features in " << last_id << " is: " << last_key_points.size() << std::endl;
     std::cout << "num of matches between " << last_id << " and " << next_id << " is: " << matches.size() << std::endl;
 
     //we dont need real vector id and the idx in below vector
