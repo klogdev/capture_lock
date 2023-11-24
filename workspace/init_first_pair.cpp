@@ -59,10 +59,12 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     ransac_options.max_error = 1.5;
     Eigen::Vector4d qvec2 = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec2 = Eigen::Vector3d::Zero();
+    std::vector<char> inlier_mask_rel;
     size_t num_inliers = 
         colmap::EstimateRelativePose(ransac_options, matched_vec1, matched_vec2, 
-                                     &qvec2, &tvec2);
+                                     &qvec2, &tvec2, &inlier_mask_rel);
     std::cout << "inliers from relative pose: " << num_inliers << std::endl;
+    std::cout << "length of inlier masks: " << inlier_mask_rel << std::endl;
 
     // shift the second pose by the relative pose
     Eigen::Quaterniond q_rel(qvec2);
@@ -123,11 +125,11 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     absolute_options.ransac_options.max_error = 1.0;
     Eigen::Vector4d qvec_abs = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec_abs = Eigen::Vector3d::Zero();
-    std::vector<char> inlier_mask;
+    std::vector<char> inlier_mask_abs;
     size_t inliers = triangulate_3d.size(); //need check def
     bool abs_pose = colmap::EstimateAbsolutePose(absolute_options, matched_vec2,
                                                 triangulate_3d, &qvec_abs, &tvec_abs,
-                                                &camera, &inliers, &inlier_mask);
+                                                &camera, &inliers, &inlier_mask_abs);
                     
     std::cout << "abs rotation of first pair is: " << qvec_abs << std::endl;
     std::cout << "abs translation of first pair is: " << tvec_abs << std::endl;
