@@ -43,7 +43,7 @@ init_first_pair.cpp
 target_include_directories(
   init PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  init PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
+  init PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift relative_pose)
 
 add_library(stream STATIC
 file_stream.h
@@ -100,3 +100,4 @@ add_subdirectory(feature)
 add_subdirectory(polymorphism_test)
 add_subdirectory(test)
 add_subdirectory(calib_loader)
+add_subdirectory(estimate)

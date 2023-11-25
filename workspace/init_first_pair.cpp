@@ -11,6 +11,8 @@
 #include "feature/image_sift.h"
 #include "incremental_construct.h"
 
+#include "estimate/relative_pose.h"
+
 void InitFirstPair(const std::string first_path, const std::string second_path,
                     colmap::Camera& camera,
                     std::unordered_map<int,colmap::Image>& global_image_map,
@@ -60,11 +62,12 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     Eigen::Vector4d qvec2 = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec2 = Eigen::Vector3d::Zero();
     std::vector<char> inlier_mask_rel;
+    // use customized relative pose estimator w/ inlier masks
     size_t num_inliers = 
-        colmap::EstimateRelativePose(ransac_options, matched_vec1, matched_vec2, 
+        RelativePoseWMask(ransac_options, matched_vec1, matched_vec2, 
                                      &qvec2, &tvec2, &inlier_mask_rel);
     std::cout << "inliers from relative pose: " << num_inliers << std::endl;
-    std::cout << "length of inlier masks: " << inlier_mask_rel << std::endl;
+    std::cout << "length of inlier masks: " << inlier_mask_rel.size() << std::endl;
 
     // shift the second pose by the relative pose
     Eigen::Quaterniond q_rel(qvec2);

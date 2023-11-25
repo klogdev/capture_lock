@@ -1,15 +1,20 @@
+#include <ceres/ceres.h>
+
 #include "base/essential_matrix.h"
 #include "base/pose.h"
+
+#include "estimators/essential_matrix.h"
+#include "optim/ransac.h"
 
 #include "relative_pose.h"
 
 
-size_t RelativePoseWMask(const RANSACOptions& ransac_options,
+size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
                         const std::vector<Eigen::Vector2d>& points1,
                         const std::vector<Eigen::Vector2d>& points2,
                         Eigen::Vector4d* qvec, Eigen::Vector3d* tvec,
                         std::vector<char>* inlier_mask) {
-    colmap::<EssentialMatrixFivePointEstimator> ransac(colmap::ransac_options);
+    colmap::RANSAC<colmap::EssentialMatrixFivePointEstimator> ransac(ransac_options);
     const auto report = ransac.Estimate(points1, points2);
 
     if (!report.success) {
@@ -36,7 +41,7 @@ size_t RelativePoseWMask(const RANSACOptions& ransac_options,
 
     *qvec = colmap::RotationMatrixToQuaternion(R);
 
-    if (IsNaN(*qvec) || IsNaN(*tvec)) {
+    if (qvec->hasNaN() || tvec->hasNaN()) {
         return 0;
     }
 
