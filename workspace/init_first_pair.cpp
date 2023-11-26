@@ -42,8 +42,8 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
 
     //collect matched vector before relative estimation
     //as the ransac estimator requires both vectors have same size
-    std::unordered_map<int,int> vec2d1_idx_map; //map of idx of triangulation vector
-    std::unordered_map<int,int> vec2d2_idx_map; //to the idx of original vector
+    std::unordered_map<int,int> vec2d1_idx_map; //map of idx of matched vec for relative pose
+    std::unordered_map<int,int> vec2d2_idx_map; //to the idx of original feature vector
     std::vector<Eigen::Vector2d> matched_vec1;
     std::vector<Eigen::Vector2d> matched_vec2;
 
@@ -99,23 +99,28 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
 
     std::vector<Eigen::Vector3d> triangulate_3d = colmap::TriangulatePoints(proj_mat1, proj_mat2,
                                                                     matched_vec1, matched_vec2);
-
+    // triangulate_3d should has identical length of matched_vec and inlier_mask
+    // we skip the outlier of inlier_mask
     int curr_3d_len = 0;
     for (int i = 0; i < triangulate_3d.size(); i++){
-        int orig_idx1 = vec2d1_idx_map[i];
+        if(inlier_mask_rel[i] == 0)
+            continue;
+
+        int orig_idx1 = vec2d1_idx_map[i]; // identical to colmap_vec and sift_vec
         int orig_idx2 = vec2d2_idx_map[i];
         //all 3d points are new; i consistent with new_3d_id (0-indexed)
         int new_3d_id = curr_3d_len;
         curr_3d_len++;
         colmap::Point3D new_3d;
         new_3d.SetXYZ(triangulate_3d[i]);
-        new_3d.Track().AddElement(0, orig_idx1);
+        new_3d.Track().AddElement(0, orig_idx1); // (image_id, 2d_id)
         new_3d.Track().AddElement(1, orig_idx2);
         global_3d_map[new_3d_id] = new_3d;
         cmp_image1.SetPoint3DForPoint2D(orig_idx1,new_3d_id);
         cmp_image2.SetPoint3DForPoint2D(orig_idx2,new_3d_id);
         
     }
+
     global_image_map[0] = cmp_image1;
     global_image_map[1] = cmp_image2;
     global_keypts_map[0] = key_points1;
