@@ -13,6 +13,7 @@
 #include "feature/sift.h"
 
 #include "incremental_construct.h"
+#include "estimate/relative_pose.h"
 
 colmap::Image SIFTtoCOLMAPImage(int image_id, std::vector<Eigen::Vector2d> features,
                                 const colmap::Camera& camera){
@@ -62,6 +63,33 @@ void IncrementOneImage(std::string image_path, int next_id,
     std::cout << "num of features in " << last_id << " is: " << last_key_points.size() << std::endl;
     std::cout << "num of matches between " << last_id << " and " << next_id << " is: " << matches.size() << std::endl;
 
+    //collect matched vector for relative pose w/ RANSAC
+    // as a pre-filtering
+    std::unordered_map<int,int> vec2d1_idx_map; //map of idx of matched vec for relative pose
+    std::unordered_map<int,int> vec2d2_idx_map; //to the idx of original feature vector
+    std::vector<Eigen::Vector2d> matched_vec1;
+    std::vector<Eigen::Vector2d> matched_vec2;
+
+    for (int i = 0; i < matches.size(); i++){
+        int curr_idx1 = matches[i].first;
+        int curr_idx2 = matches[i].second;
+        vec2d1_idx_map[i] = curr_idx1;
+        vec2d2_idx_map[i] = curr_idx2;
+        matched_vec1.push_back(last_keypts_vec[curr_idx1]);
+        matched_vec2.push_back(curr_keypts_vec[curr_idx2]);
+    }
+
+    //start relative pose estimation w/ RANSAC for a pre-filtering
+    colmap::RANSACOptions ransac_options = colmap::RANSACOptions();
+    ransac_options.max_error = 2.0;
+    Eigen::Vector4d qvec_rel = Eigen::Vector4d(0, 0, 0, 1); // init relative pose
+    Eigen::Vector3d tvec_rel = Eigen::Vector3d::Zero();     // randomly
+    std::vector<char> inlier_mask_rel;
+    // use customized relative pose estimator w/ inlier masks
+    size_t num_inliers = 
+        RelativePoseWMask(ransac_options, matched_vec1, matched_vec2, 
+                                     &qvec_rel, &tvec_rel, &inlier_mask_rel);
+
     //we dont need real vector id and the idx in below vector
     //as the PnP only estimate the inliers as an intermediate step
     std::vector<Eigen::Vector3d> matched3d_from2d;
@@ -69,6 +97,9 @@ void IncrementOneImage(std::string image_path, int next_id,
     for (int i = 0; i < matches.size(); i++){
         //assume sift::key_points id of last image are consistent with the id
         //registered in points2d
+        if(inlier_mask_rel[i] == 0)
+            continue;
+
         colmap::point2D_t last_2d_id = matches[i].first; //need type conversion
         colmap::Point2D last_2d = last_image.Point2D(last_2d_id);
         if (!last_2d.HasPoint3D()){
@@ -83,25 +114,11 @@ void IncrementOneImage(std::string image_path, int next_id,
         matched2d_curr.push_back(curr_keypts_vec[curr_2d_id]);
     }
 
-    //collect matched vector before absolute estimation
-    //as the ransac estimator requires both vectors have same size
-    std::unordered_map<int,int> vec2d1_idx_map; //map of idx of triangulation vector
-    std::unordered_map<int,int> vec2d2_idx_map; //to the idx of original vector
-    std::vector<Eigen::Vector2d> matched_vec1;
-    std::vector<Eigen::Vector2d> matched_vec2;
-
-    for (int i = 0; i < matches.size(); i++){
-        int curr_idx1 = matches[i].first;
-        int curr_idx2 = matches[i].second;
-        vec2d1_idx_map[i] = curr_idx1;
-        vec2d2_idx_map[i] = curr_idx2;
-        matched_vec1.push_back(last_keypts_vec[curr_idx1]);
-        matched_vec2.push_back(curr_keypts_vec[curr_idx2]);
-    }
+    std::cout << "num of matched 3D in image " << next_id << " is: " << matched3d_from2d.size() << std::endl;
 
     //start absolute pose estimation
     colmap::AbsolutePoseEstimationOptions absolute_options = colmap::AbsolutePoseEstimationOptions();
-    absolute_options.ransac_options.max_error = 1.5;
+    absolute_options.ransac_options.max_error = 2.0;
     Eigen::Vector4d qvec_abs = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec_abs = Eigen::Vector3d::Zero();
     std::vector<char> inlier_mask;
@@ -116,6 +133,7 @@ void IncrementOneImage(std::string image_path, int next_id,
     std::cout << "result of " << next_id << " 's pose estimation" 
                 << " is: " << qvec_abs << std::endl;
 
+
     //start triangulation
     Eigen::Matrix3d calibration = camera.CalibrationMatrix();
     Eigen::Matrix3x4d extrinsic_mat1 = last_image.ProjectionMatrix(); //under proj.cc, only compose extrinsic
@@ -127,11 +145,15 @@ void IncrementOneImage(std::string image_path, int next_id,
     //idx of triangulated pts are consistent with matched_vec,
     //they should be matched back to their original idx of feature vec
     //here we use all matched point (without RANSAC) for triangulation
+    // but filter out outliers when we register to the global map
     std::vector<Eigen::Vector3d> triangulate_3d = colmap::TriangulatePoints(proj_mat1, proj_mat2,
                                                                     matched_vec1, matched_vec2);
                                                                     
     int curr_3d_len = global_3d_map.size();
     for (int i = 0; i < triangulate_3d.size(); i++){
+        if(inlier_mask_rel[i] == 0)
+            continue;
+
         int orig_idx1 = vec2d1_idx_map[i];
         int orig_idx2 = vec2d2_idx_map[i];
         if (last_image.Point2D(orig_idx1).HasPoint3D()){
