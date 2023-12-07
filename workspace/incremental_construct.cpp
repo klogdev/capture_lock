@@ -39,9 +39,8 @@ std::vector<Eigen::Vector2d> SIFTPtsToVec(std::vector<sift::Keypoint> key_points
     return key_vec;
 }
 
-void IncrementOneImage(std::string image_path, int next_id,
-                        colmap::Image& last_image,
-                        colmap::Camera& camera,
+void IncrementOneImage(std::string image_path, int new_id,
+                        int last_id, colmap::Camera& camera,
                         std::unordered_map<int,colmap::Image>& global_image_map,
                         std::unordered_map<int,std::vector<sift::Keypoint>>& global_keypts_map,
                         std::unordered_map<int,colmap::Point3D>& global_3d_map,
@@ -51,19 +50,18 @@ void IncrementOneImage(std::string image_path, int next_id,
     std::vector<sift::Keypoint> curr_key_points = GetKeyPoints(new_image);
     //convert sift keypts to eigen, should we only pick matched 2d pts for pose est??
     std::vector<Eigen::Vector2d> curr_keypts_vec = SIFTPtsToVec(curr_key_points);
-    colmap::Image new_cmp_image = SIFTtoCOLMAPImage(next_id, curr_keypts_vec, camera);
-    int last_id = next_id - 1;
-
+    colmap::Image new_cmp_image = SIFTtoCOLMAPImage(new_id, curr_keypts_vec, camera);
+    colmap::Image last_image = global_image_map[last_id];
 
     std::vector<sift::Keypoint> last_key_points = global_keypts_map[last_id];
     std::vector<Eigen::Vector2d> last_keypts_vec = SIFTPtsToVec(last_key_points);
     std::vector<std::pair<int, int>> matches = sift::find_keypoint_matches(last_key_points, curr_key_points);
 
-    std::cout << "num of features in " << next_id << " is: " << curr_key_points.size() << std::endl;
+    std::cout << "num of features in " << new_id << " is: " << curr_key_points.size() << std::endl;
     std::cout << "num of features in " << last_id << " is: " << last_key_points.size() << std::endl;
-    std::cout << "num of matches between " << last_id << " and " << next_id << " is: " << matches.size() << std::endl;
+    std::cout << "num of raw matches between " << last_id << " and " << new_id << " is: " << matches.size() << std::endl;
 
-    //collect matched vector for relative pose w/ RANSAC
+    // collect matched vector for relative pose w/ RANSAC
     // as a pre-filtering
     std::unordered_map<int,int> vec2d1_idx_map; //map of idx of matched vec for relative pose
     std::unordered_map<int,int> vec2d2_idx_map; //to the idx of original feature vector
@@ -90,6 +88,8 @@ void IncrementOneImage(std::string image_path, int next_id,
         RelativePoseWMask(ransac_options, matched_vec1, matched_vec2, 
                                      &qvec_rel, &tvec_rel, &inlier_mask_rel);
 
+    int test_inliers = 0; // for Debugging
+
     //we dont need real vector id and the idx in below vector
     //as the PnP only estimate the inliers as an intermediate step
     std::vector<Eigen::Vector3d> matched3d_from2d;
@@ -99,7 +99,8 @@ void IncrementOneImage(std::string image_path, int next_id,
         //registered in points2d
         if(inlier_mask_rel[i] == 0)
             continue;
-
+        
+        test_inliers++;
         colmap::point2D_t last_2d_id = matches[i].first; //need type conversion
         colmap::Point2D last_2d = last_image.Point2D(last_2d_id);
         if (!last_2d.HasPoint3D()){
@@ -113,8 +114,9 @@ void IncrementOneImage(std::string image_path, int next_id,
         colmap::point2D_t curr_2d_id = matches[i].second;
         matched2d_curr.push_back(curr_keypts_vec[curr_2d_id]);
     }
+    std::cout << "num of inlier matches between " << last_id << " and " << new_id << " is: " << test_inliers << std::endl;
 
-    std::cout << "num of matched 3D in image " << next_id << " is: " << matched3d_from2d.size() << std::endl;
+    std::cout << "num of matched 3D in image " << new_id << " is: " << matched3d_from2d.size() << std::endl;
 
     //start absolute pose estimation
     colmap::AbsolutePoseEstimationOptions absolute_options = colmap::AbsolutePoseEstimationOptions();
@@ -128,9 +130,9 @@ void IncrementOneImage(std::string image_path, int next_id,
                                                 &camera, &inliers, &inlier_mask);
     new_cmp_image.SetQvec(qvec_abs);
     new_cmp_image.SetTvec(tvec_abs);
-    std::cout << "number of inliers 2d-3d pairs by PnP in " << next_id << " is: " 
+    std::cout << "number of inliers 2d-3d pairs by PnP in " << new_id << " is: " 
                 << inliers << std::endl;
-    std::cout << "result of " << next_id << " 's pose estimation" 
+    std::cout << "result of " << new_id << " 's pose estimation" 
                 << " is: " << qvec_abs << std::endl;
 
 
@@ -157,11 +159,11 @@ void IncrementOneImage(std::string image_path, int next_id,
         int orig_idx1 = vec2d1_idx_map[i];
         int orig_idx2 = vec2d2_idx_map[i];
         if (last_image.Point2D(orig_idx1).HasPoint3D()){
-            colmap::point3D_t curr3d_id = last_image.Point2D(orig_idx1).Point3DId();//type conversion??
+            colmap::point3D_t curr3d_id = last_image.Point2D(orig_idx1).Point3DId();// type conversion??
             //overlap the 3d point coord by the updated one
             colmap::Point3D& curr_3d = global_3d_map[curr3d_id];
             curr_3d.SetXYZ(triangulate_3d[i]);
-            curr_3d.Track().AddElement(next_id, orig_idx2);
+            curr_3d.Track().AddElement(new_id, orig_idx2);
             new_cmp_image.SetPoint3DForPoint2D(orig_idx2,curr3d_id);
         }
         else {
@@ -170,13 +172,13 @@ void IncrementOneImage(std::string image_path, int next_id,
             colmap::Point3D new_3d;
             new_3d.SetXYZ(triangulate_3d[i]);
             new_3d.Track().AddElement(last_id, orig_idx1);
-            new_3d.Track().AddElement(next_id, orig_idx2);
+            new_3d.Track().AddElement(new_id, orig_idx2);
             global_3d_map[new_3d_id] = new_3d;
 
             last_image.SetPoint3DForPoint2D(orig_idx1,new_3d_id);
             new_cmp_image.SetPoint3DForPoint2D(orig_idx2,new_3d_id);
         }
     }
-    global_image_map[next_id] = new_cmp_image;
-    global_keypts_map[next_id] = curr_key_points; //sift Keypoint
+    global_image_map[new_id] = new_cmp_image;
+    global_keypts_map[new_id] = curr_key_points; //sift Keypoint
 }

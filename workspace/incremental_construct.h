@@ -11,9 +11,8 @@ colmap::Image SIFTtoCOLMAPImage(int image_id, std::vector<Eigen::Vector2d> featu
                                 const colmap::Camera& camera);
 
 //three global maps should have consistent ID
-void IncrementOneImage(std::string image_path,int next_id,
-                        colmap::Image& last_image,
-                        colmap::Camera& camera,
+void IncrementOneImage(std::string image_path,int new_id,
+                        int last_id, colmap::Camera& camera,
                         std::unordered_map<int,colmap::Image>& global_image_map,
                         std::unordered_map<int,std::vector<sift::Keypoint>>& global_keypts_map,
                         std::unordered_map<int,colmap::Point3D>& global_3d_map,
