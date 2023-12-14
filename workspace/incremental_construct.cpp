@@ -48,7 +48,8 @@ void IncrementOneImage(std::string image_path, int new_id,
                             
     Image new_image(image_path, resize_w, resize_h);
     std::vector<sift::Keypoint> curr_key_points = GetKeyPoints(new_image);
-    //convert sift keypts to eigen, should we only pick matched 2d pts for pose est??
+    // convert sift keypts to eigen, 
+    // will pick inlier matches by ransac via essential mat model
     std::vector<Eigen::Vector2d> curr_keypts_vec = SIFTPtsToVec(curr_key_points);
     colmap::Image new_cmp_image = SIFTtoCOLMAPImage(new_id, curr_keypts_vec, camera);
     colmap::Image last_image = global_image_map[last_id];
@@ -61,7 +62,7 @@ void IncrementOneImage(std::string image_path, int new_id,
     std::cout << "num of features in " << last_id << " is: " << last_key_points.size() << std::endl;
     std::cout << "num of raw matches between " << last_id << " and " << new_id << " is: " << matches.size() << std::endl;
 
-    // collect matched vector for relative pose w/ RANSAC
+    // collect matched vector with relative pose w/ RANSAC
     // as a pre-filtering
     std::unordered_map<int,int> vec2d1_idx_map; //map of idx of matched vec for relative pose
     std::unordered_map<int,int> vec2d2_idx_map; //to the idx of original feature vector
@@ -90,17 +91,19 @@ void IncrementOneImage(std::string image_path, int new_id,
 
     int test_inliers = 0; // for Debugging
 
-    //we dont need real vector id and the idx in below vector
-    //as the PnP only estimate the inliers as an intermediate step
+    // we dont need to record the original vector id 
+    // as the PnP only estimate the inliers as an intermediate step
     std::vector<Eigen::Vector3d> matched3d_from2d;
     std::vector<Eigen::Vector2d> matched2d_curr;
     for (int i = 0; i < matches.size(); i++){
-        //assume sift::key_points id of last image are consistent with the id
-        //registered in points2d
+
         if(inlier_mask_rel[i] == 0)
             continue;
         
         test_inliers++;
+
+        //assume sift::key_points' id of last image are consistent with the id
+        //registered in points2d
         colmap::point2D_t last_2d_id = matches[i].first; //need type conversion
         colmap::Point2D last_2d = last_image.Point2D(last_2d_id);
         if (!last_2d.HasPoint3D()){
@@ -114,13 +117,14 @@ void IncrementOneImage(std::string image_path, int new_id,
         colmap::point2D_t curr_2d_id = matches[i].second;
         matched2d_curr.push_back(curr_keypts_vec[curr_2d_id]);
     }
-    std::cout << "num of inlier matches between " << last_id << " and " << new_id << " is: " << test_inliers << std::endl;
 
+    // num of inliers after ransac filtering
+    std::cout << "num of inlier matches between " << last_id << " and " << new_id << " is: " << test_inliers << std::endl;
     std::cout << "num of matched 3D in image " << new_id << " is: " << matched3d_from2d.size() << std::endl;
 
     //start absolute pose estimation
     colmap::AbsolutePoseEstimationOptions absolute_options = colmap::AbsolutePoseEstimationOptions();
-    absolute_options.ransac_options.max_error = 2.0;
+    absolute_options.ransac_options.max_error = 3.0;
     Eigen::Vector4d qvec_abs = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec_abs = Eigen::Vector3d::Zero();
     std::vector<char> inlier_mask;

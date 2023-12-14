@@ -58,7 +58,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
 
     //start relative pose estimation and register pose for the frame 2
     colmap::RANSACOptions ransac_options = colmap::RANSACOptions();
-    ransac_options.max_error = 1.5;
+    ransac_options.max_error = 1.0;
     Eigen::Vector4d qvec2 = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec2 = Eigen::Vector3d::Zero();
     std::vector<char> inlier_mask_rel;
@@ -128,9 +128,10 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     std::cout << "num of 3d points from first pair is: " << 
            global_3d_map.size() << std::endl;
 
-    //sanity check of image 1's pose (0 indexed)
+    // sanity check of image 1's pose (0 indexed), 
+    // directly use features & raw triangulated 3d points w/o ransac filtering
     colmap::AbsolutePoseEstimationOptions absolute_options = colmap::AbsolutePoseEstimationOptions();
-    absolute_options.ransac_options.max_error = 1.0;
+    absolute_options.ransac_options.max_error = 3.0;
     Eigen::Vector4d qvec_abs = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec_abs = Eigen::Vector3d::Zero();
     std::vector<char> inlier_mask_abs;
