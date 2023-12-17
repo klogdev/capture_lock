@@ -12,6 +12,8 @@
 #include "feature/image_sift.h"
 #include "feature/sift.h"
 
+#include "util_/reprojection.h"
+
 #include "incremental_construct.h"
 #include "estimate/relative_pose.h"
 
@@ -78,7 +80,7 @@ void IncrementOneImage(std::string image_path, int new_id,
         matched_vec2.push_back(curr_keypts_vec[curr_idx2]);
     }
 
-    //start relative pose estimation w/ RANSAC for a pre-filtering
+    // start relative pose estimation w/ RANSAC for a pre-filtering
     colmap::RANSACOptions ransac_options = colmap::RANSACOptions();
     ransac_options.max_error = 2.0;
     Eigen::Vector4d qvec_rel = Eigen::Vector4d(0, 0, 0, 1); // init relative pose
@@ -102,8 +104,8 @@ void IncrementOneImage(std::string image_path, int new_id,
         
         test_inliers++;
 
-        //assume sift::key_points' id of last image are consistent with the id
-        //registered in points2d
+        // assume sift::key_points' id of last image are consistent with the id
+        // registered in points2d
         colmap::point2D_t last_2d_id = matches[i].first; //need type conversion
         colmap::Point2D last_2d = last_image.Point2D(last_2d_id);
         if (!last_2d.HasPoint3D()){
@@ -113,6 +115,12 @@ void IncrementOneImage(std::string image_path, int new_id,
         colmap::point3D_t global_3d_key = last_2d.Point3DId();
         Eigen::Vector3d from2d_to3d = global_3d_map[global_3d_key].XYZ();//extract vector from point3d's attr
         matched3d_from2d.push_back(from2d_to3d);
+        
+        // DEBUGGING: check the reprojection error
+        // Eigen::Vector2d last_2d_pt = last_2d.XY();
+        // double repro_err = ReprojErr(last_2d_pt, from2d_to3d, camera, last_image.ProjectionMatrix());
+        // std::cout << "the reprojection error of image " << last_id 
+        // << "'s point " << last_2d_id << " is " << repro_err << std::endl; 
         
         colmap::point2D_t curr_2d_id = matches[i].second;
         matched2d_curr.push_back(curr_keypts_vec[curr_2d_id]);

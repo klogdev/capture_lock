@@ -12,6 +12,7 @@
 #include "incremental_construct.h"
 
 #include "estimate/relative_pose.h"
+#include "util_/reprojection.h"
 
 void InitFirstPair(const std::string first_path, const std::string second_path,
                     colmap::Camera& camera,
@@ -40,8 +41,8 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     cmp_image1.SetQvec(qvec1);
     cmp_image1.SetTvec(tvec1);
 
-    //collect matched vector before relative estimation
-    //as the ransac estimator requires both vectors have same size
+    // collect matched vector before relative estimation
+    // as the ransac estimator requires both vectors have same size
     std::unordered_map<int,int> vec2d1_idx_map; //map of idx of matched vec for relative pose
     std::unordered_map<int,int> vec2d2_idx_map; //to the idx of original feature vector
     std::vector<Eigen::Vector2d> matched_vec1;
@@ -79,7 +80,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     qvec2[2] = qvec2_q.y();
     qvec2[3] = qvec2_q.z();
 
-    // override the translation of second frame with g.t.
+    // override the pose of second frame with g.t. image 142
     Eigen::Vector4d qvec2_gt = Eigen::Vector4d(0.864347, 0.0331977, 0.477339, -0.154756);
     Eigen::Vector3d tvec2_gt = Eigen::Vector3d(-0.756852, 0.980926, 3.58659);
 
@@ -91,16 +92,30 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
 
     //start triangulation
     Eigen::Matrix3d calibration = camera.CalibrationMatrix();
+    std::cout << "check calibration matrix: " << std::endl;
+    std::cout << calibration << std::endl;
     Eigen::Matrix3x4d extrinsic_mat1 = cmp_image1.ProjectionMatrix(); //under proj.cc, only compose extrinsic
     Eigen::Matrix3x4d extrinsic_mat2 = cmp_image2.ProjectionMatrix();
 
     Eigen::Matrix3x4d proj_mat1 = calibration*extrinsic_mat1;
     Eigen::Matrix3x4d proj_mat2 = calibration*extrinsic_mat2;
 
+    // DEBUGGING: 
+    std::cout << "g.t. 3D and 2D points to test calibration & projection matrix" 
+    << std::endl;
+    Eigen::Vector3d gt_3d_img2 = Eigen::Vector3d(1.35701, -1.7395, 0.961988);
+    Eigen::Vector2d gt_2d_img2 = Eigen::Vector2d(1682.36, 182.795);
+
+    double repro_gt = ReprojErr(gt_2d_img2, gt_3d_img2, camera, proj_mat2);
+    std::cout << "reprojection of the g.t. point is: " << repro_gt << std::endl;
+
+
     std::vector<Eigen::Vector3d> triangulate_3d = colmap::TriangulatePoints(proj_mat1, proj_mat2,
                                                                     matched_vec1, matched_vec2);
     // triangulate_3d should has identical length of matched_vec and inlier_mask
     // we skip the outlier of inlier_mask
+
+    std::cout << "2D indices of the first pair: " << std::endl;
     int curr_3d_len = 0;
     for (int i = 0; i < triangulate_3d.size(); i++){
         if(inlier_mask_rel[i] == 0)
@@ -108,6 +123,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
 
         int orig_idx1 = vec2d1_idx_map[i]; // identical to colmap_vec and sift_vec
         int orig_idx2 = vec2d2_idx_map[i];
+        
         //all 3d points are new; i consistent with new_3d_id (0-indexed)
         int new_3d_id = curr_3d_len;
         curr_3d_len++;
@@ -115,6 +131,19 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
         new_3d.SetXYZ(triangulate_3d[i]);
         new_3d.Track().AddElement(0, orig_idx1); // (image_id, 2d_id)
         new_3d.Track().AddElement(1, orig_idx2);
+
+        // DEBUGGING
+        // Eigen::Vector2d curr_2d_from0 = key_vec1[orig_idx1];
+        // double repro_1 = ReprojErr(curr_2d_from0, triangulate_3d[i], camera,
+        //                             cmp_image1.ProjectionMatrix());
+
+        // Eigen::Vector2d curr_2d_from1 = key_vec1[orig_idx2];
+        // double repro_2 = ReprojErr(curr_2d_from1, triangulate_3d[i], camera,
+        //                             cmp_image2.ProjectionMatrix());
+        // std::cout << "reprojection of 3d point " << new_3d_id << " on image 0 is "
+        //           << repro_1 << std::endl;
+        // std::cout << "reprojection of 3d point " << new_3d_id << " on image 1 is "
+        //           << repro_2 << std::endl;
         global_3d_map[new_3d_id] = new_3d;
         cmp_image1.SetPoint3DForPoint2D(orig_idx1,new_3d_id);
         cmp_image2.SetPoint3DForPoint2D(orig_idx2,new_3d_id);

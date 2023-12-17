@@ -2,7 +2,7 @@
 #include "base/camera.h"
 
 double ReprojErr(Eigen::Vector2d& point_2d, Eigen::Vector3d& point_3d, 
-                 colmap::Camera camera, Eigen:Matrix3x4d& proj_matrix){
+                 colmap::Camera camera, const Eigen::Matrix3x4d& proj_matrix){
 
         Eigen::Vector4d point_3d_homo = Eigen::Vector4d::Identity();
         point_3d_homo.topRows(3) = point_3d; 
