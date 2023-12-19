@@ -48,7 +48,7 @@ int main(int argc, char** argv){
               << camera.ModelName() << " " << camera.Width() << " " 
               << camera.Height() << " " << camera.ParamsToString() << std::endl;
     camera.SetModelId(colmap::SimpleRadialCameraModel::model_id);
-    camera.Rescale(1.0);
+    camera.Rescale(downscale_x);
 
     // we read different segements of image streams
     // now we working on the first stream by manually process image_steam[0]

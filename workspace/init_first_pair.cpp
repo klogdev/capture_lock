@@ -7,6 +7,7 @@
 #include "base/image.h"
 #include "base/camera.h"
 #include "base/triangulation.h"
+#include "base/projection.h"
 #include "feature/sift.h"
 #include "feature/image_sift.h"
 #include "incremental_construct.h"
@@ -97,17 +98,14 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     Eigen::Matrix3x4d extrinsic_mat1 = cmp_image1.ProjectionMatrix(); //under proj.cc, only compose extrinsic
     Eigen::Matrix3x4d extrinsic_mat2 = cmp_image2.ProjectionMatrix();
 
+    std::cout << "check extrinsic matrix of image 2: " << std::endl;
+    std::cout << extrinsic_mat2 << std::endl;
+
     Eigen::Matrix3x4d proj_mat1 = calibration*extrinsic_mat1;
     Eigen::Matrix3x4d proj_mat2 = calibration*extrinsic_mat2;
 
-    // DEBUGGING: 
-    std::cout << "g.t. 3D and 2D points to test calibration & projection matrix" 
-    << std::endl;
-    Eigen::Vector3d gt_3d_img2 = Eigen::Vector3d(1.35701, -1.7395, 0.961988);
-    Eigen::Vector2d gt_2d_img2 = Eigen::Vector2d(1682.36, 182.795);
-
-    double repro_gt = ReprojErr(gt_2d_img2, gt_3d_img2, camera, proj_mat2);
-    std::cout << "reprojection of the g.t. point is: " << repro_gt << std::endl;
+    std::cout << "check projection matrix of image 2: " << std::endl;
+    std::cout << proj_mat2 << std::endl;
 
 
     std::vector<Eigen::Vector3d> triangulate_3d = colmap::TriangulatePoints(proj_mat1, proj_mat2,
@@ -133,17 +131,24 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
         new_3d.Track().AddElement(1, orig_idx2);
 
         // DEBUGGING
-        // Eigen::Vector2d curr_2d_from0 = key_vec1[orig_idx1];
-        // double repro_1 = ReprojErr(curr_2d_from0, triangulate_3d[i], camera,
-        //                             cmp_image1.ProjectionMatrix());
+        Eigen::Vector2d curr_2d_from0 = key_vec1[orig_idx1];
+        double repro_1 = colmap::CalculateSquaredReprojectionError(curr_2d_from0,
+                                                                   triangulate_3d[i],
+                                                                   cmp_image1.Qvec(),
+                                                                   cmp_image1.Tvec(),
+                                                                   camera);
 
-        // Eigen::Vector2d curr_2d_from1 = key_vec1[orig_idx2];
-        // double repro_2 = ReprojErr(curr_2d_from1, triangulate_3d[i], camera,
-        //                             cmp_image2.ProjectionMatrix());
-        // std::cout << "reprojection of 3d point " << new_3d_id << " on image 0 is "
-        //           << repro_1 << std::endl;
-        // std::cout << "reprojection of 3d point " << new_3d_id << " on image 1 is "
-        //           << repro_2 << std::endl;
+        Eigen::Vector2d curr_2d_from1 = key_vec1[orig_idx2];
+        double repro_2 = colmap::CalculateSquaredReprojectionError(curr_2d_from1,
+                                                                   triangulate_3d[i],
+                                                                   cmp_image2.Qvec(),
+                                                                   cmp_image2.Tvec(),
+                                                                   camera);
+        std::cout << "reprojection of 3d point " << new_3d_id << " on image 0 is "
+                  << repro_1 << std::endl;
+        std::cout << "reprojection of 3d point " << new_3d_id << " on image 1 is "
+                  << repro_2 << std::endl;
+
         global_3d_map[new_3d_id] = new_3d;
         cmp_image1.SetPoint3DForPoint2D(orig_idx1,new_3d_id);
         cmp_image2.SetPoint3DForPoint2D(orig_idx2,new_3d_id);

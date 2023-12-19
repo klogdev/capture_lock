@@ -6,6 +6,7 @@
 #include "base/camera.h"
 #include "base/triangulation.h"
 #include "base/track.h"
+#include "base/projection.h"
 
 #include "estimators/pose.h"
 
@@ -117,10 +118,14 @@ void IncrementOneImage(std::string image_path, int new_id,
         matched3d_from2d.push_back(from2d_to3d);
         
         // DEBUGGING: check the reprojection error
-        // Eigen::Vector2d last_2d_pt = last_2d.XY();
-        // double repro_err = ReprojErr(last_2d_pt, from2d_to3d, camera, last_image.ProjectionMatrix());
-        // std::cout << "the reprojection error of image " << last_id 
-        // << "'s point " << last_2d_id << " is " << repro_err << std::endl; 
+        Eigen::Vector2d last_2d_pt = last_2d.XY();
+        double repro_err = colmap::CalculateSquaredReprojectionError(last_2d_pt,
+                                                                     from2d_to3d,
+                                                                     last_image.Qvec(),
+                                                                     last_image.Tvec(),
+                                                                     camera);
+        std::cout << "the reprojection error of image " << last_id 
+        << "'s point " << last_2d_id << " is " << repro_err << std::endl; 
         
         colmap::point2D_t curr_2d_id = matches[i].second;
         matched2d_curr.push_back(curr_keypts_vec[curr_2d_id]);
