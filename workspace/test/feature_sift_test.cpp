@@ -9,8 +9,7 @@
 
 
 int main(int argc, char** argv){
-    if (argc < 6)
-    {
+    if (argc < 6){
         std::cout << "Standard Input" << std::endl;
         std::cout << " " << argv[0] << "need two images file path and the output path, also dim of image" << std::endl;
     }
