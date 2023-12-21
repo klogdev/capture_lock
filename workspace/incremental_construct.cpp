@@ -93,6 +93,7 @@ void IncrementOneImage(std::string image_path, int new_id,
                                      &qvec_rel, &tvec_rel, &inlier_mask_rel);
 
     int test_inliers = 0; // for Debugging
+    int inlier_repro = 0;
 
     // we dont need to record the original vector id 
     // as the PnP only estimate the inliers as an intermediate step
@@ -124,6 +125,8 @@ void IncrementOneImage(std::string image_path, int new_id,
                                                                      last_image.Qvec(),
                                                                      last_image.Tvec(),
                                                                      camera);
+        if(repro_err <= 0.8)
+            inlier_repro++;
         std::cout << "the reprojection error of image " << last_id 
         << "'s point " << last_2d_id << " is " << repro_err << std::endl; 
         
@@ -134,6 +137,8 @@ void IncrementOneImage(std::string image_path, int new_id,
     // num of inliers after ransac filtering
     std::cout << "num of inlier matches between " << last_id << " and " << new_id << " is: " << test_inliers << std::endl;
     std::cout << "num of matched 3D in image " << new_id << " is: " << matched3d_from2d.size() << std::endl;
+    std::cout << "rate of rperojection inlier " << last_id << " is: " << 
+    (float)inlier_repro/matched3d_from2d.size() << std::endl;
 
     //start absolute pose estimation
     colmap::AbsolutePoseEstimationOptions absolute_options = colmap::AbsolutePoseEstimationOptions();

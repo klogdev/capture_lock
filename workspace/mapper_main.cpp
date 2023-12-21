@@ -34,7 +34,7 @@ int main(int argc, char** argv){
     if (argc < 3)
     {
         std::cout << "Standard Input" << std::endl;
-        std::cout << " " << argv[0] << "path to 3 .txt data files and image files" 
+        std::cout << " " << argv[0] << " path to 3 .txt data files and image files" 
         << std::endl;
     }
     std::string sparse_path = argv[1];
@@ -53,7 +53,7 @@ int main(int argc, char** argv){
     // we read different segements of image streams
     // now we are working on the first stream by manually process image_stream[0]
     std::vector<std::vector<std::string>> image_stream = FilePathStream(image_path);
-    // start create map by init list of hashmaps
+    // start create global maps by init list of hashmaps
     std::unordered_map<int,colmap::Image> global_image_map;
     std::unordered_map<int,std::vector<sift::Keypoint>> global_keypts_map;
     std::unordered_map<int,colmap::Point3D> global_3d_map;

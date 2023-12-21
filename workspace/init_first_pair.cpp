@@ -115,14 +115,19 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
 
     std::cout << "2D indices of the first pair: " << std::endl;
     int curr_3d_len = 0;
+    int inlier_img0 = 0; // debugging inliers of reprojection
+    int inlier_img1 = 0;
+
+    int inlier_cnt = 0;
     for (int i = 0; i < triangulate_3d.size(); i++){
         if(inlier_mask_rel[i] == 0)
             continue;
 
+        inlier_cnt++;
         int orig_idx1 = vec2d1_idx_map[i]; // identical to colmap_vec and sift_vec
         int orig_idx2 = vec2d2_idx_map[i];
         
-        //all 3d points are new; i consistent with new_3d_id (0-indexed)
+        // all 3d points are new; i consistent with new_3d_id (0-indexed)
         int new_3d_id = curr_3d_len;
         curr_3d_len++;
         colmap::Point3D new_3d;
@@ -130,13 +135,15 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
         new_3d.Track().AddElement(0, orig_idx1); // (image_id, 2d_id)
         new_3d.Track().AddElement(1, orig_idx2);
 
-        // DEBUGGING
+        // DEBUGGING: reprojection errors
         Eigen::Vector2d curr_2d_from0 = key_vec1[orig_idx1];
         double repro_1 = colmap::CalculateSquaredReprojectionError(curr_2d_from0,
                                                                    triangulate_3d[i],
                                                                    cmp_image1.Qvec(),
                                                                    cmp_image1.Tvec(),
                                                                    camera);
+        if(repro_1 <= 0.8)
+            inlier_img0++;
 
         Eigen::Vector2d curr_2d_from1 = key_vec2[orig_idx2];
         double repro_2 = colmap::CalculateSquaredReprojectionError(curr_2d_from1,
@@ -144,9 +151,12 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
                                                                    cmp_image2.Qvec(),
                                                                    cmp_image2.Tvec(),
                                                                    camera);
-        std::cout << "reprojection of 3d point " << new_3d_id << " on image 0 is "
+        if(repro_2 <= 0.8)
+            inlier_img1++;
+
+        std::cout << "reprojection of 3d point " << new_3d_id << " on image " << 0 << " is "
                   << repro_1 << std::endl;
-        std::cout << "reprojection of 3d point " << new_3d_id << " on image 1 is "
+        std::cout << "reprojection of 3d point " << new_3d_id << " on image " << 1 << " is "
                   << repro_2 << std::endl;
 
         global_3d_map[new_3d_id] = new_3d;
@@ -155,12 +165,19 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
         
     }
 
+    std::cout << "rate of points with reprojection < 0.8 on image 0 is: "
+    << (float)inlier_img0/curr_3d_len << std::endl;
+    std::cout << "rate of points with reprojection < 0.8 on image 1 is: "
+    << (float)inlier_img1/curr_3d_len << std::endl;
+
     global_image_map[0] = cmp_image1;
     global_image_map[1] = cmp_image2;
     global_keypts_map[0] = key_points1;
     global_keypts_map[1] = key_points2;
     std::cout << "num of 3d points from first pair is: " << 
            global_3d_map.size() << std::endl;
+    std::cout << "num of 3d points from first pair inlier mask is: " << 
+           inlier_cnt << std::endl;
 
     // sanity check of image 1's pose (0 indexed), 
     // directly use features & raw triangulated 3d points w/o ransac filtering
