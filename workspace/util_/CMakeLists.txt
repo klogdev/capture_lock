@@ -12,3 +12,12 @@ target_include_directories(
   reprojection PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
   reprojection PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
+
+add_library(triangulate STATIC
+triangulate.h
+triangulate.cpp
+)
+target_include_directories(
+  triangulate PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  triangulate PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})

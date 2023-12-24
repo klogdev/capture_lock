@@ -14,6 +14,7 @@
 
 #include "estimate/relative_pose.h"
 #include "util_/reprojection.h"
+#include "util_/triangulate.h"
 
 void InitFirstPair(const std::string first_path, const std::string second_path,
                     colmap::Camera& camera,
@@ -21,7 +22,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
                     std::unordered_map<int,std::vector<sift::Keypoint>>& global_keypts_map,
                     std::unordered_map<int,colmap::Point3D>& global_3d_map,
                     int resize_w, int resize_h){
-    //initialize the Image class by its path (via lib: feature/image_sift)
+    // initialize the Image class by its path (via lib: feature/image_sift)
     Image image1(first_path, resize_w, resize_h);
     Image image2(second_path, resize_w, resize_h);
 
@@ -58,7 +59,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
         matched_vec2.push_back(key_vec2[curr_idx2]);
     }
 
-    //start relative pose estimation and register pose for the frame 2
+    // start relative pose estimation and register pose for the frame 2
     colmap::RANSACOptions ransac_options = colmap::RANSACOptions();
     ransac_options.max_error = 1.0;
     Eigen::Vector4d qvec2 = Eigen::Vector4d(0, 0, 0, 1);
@@ -101,27 +102,31 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     std::cout << "check extrinsic matrix of image 2: " << std::endl;
     std::cout << extrinsic_mat2 << std::endl;
 
-    Eigen::Matrix3x4d proj_mat1 = calibration*extrinsic_mat1;
-    Eigen::Matrix3x4d proj_mat2 = calibration*extrinsic_mat2;
 
-    std::cout << "check projection matrix of image 2: " << std::endl;
-    std::cout << proj_mat2 << std::endl;
+    std::vector<Eigen::Vector3d> triangulate_3d;
+    TriangulateImage(cmp_image1, cmp_image2, camera, matched_vec1, matched_vec2,
+                    triangulate_3d);
 
-
-    std::vector<Eigen::Vector3d> triangulate_3d = colmap::TriangulatePoints(proj_mat1, proj_mat2,
-                                                                    matched_vec1, matched_vec2);
     // triangulate_3d should has identical length of matched_vec and inlier_mask
     // we skip the outlier of inlier_mask
-
     std::cout << "2D indices of the first pair: " << std::endl;
     int curr_3d_len = 0;
     int inlier_img0 = 0; // debugging inliers of reprojection
     int inlier_img1 = 0;
 
+    double min_ang = 0.0;
     int inlier_cnt = 0;
     for (int i = 0; i < triangulate_3d.size(); i++){
         if(inlier_mask_rel[i] == 0)
             continue;
+        // check the quality of the triangulation
+        if(!CheckTriangulateQuality(cmp_image1.ProjectionMatrix(),
+                                    cmp_image2.ProjectionMatrix(),
+                                    cmp_image1.ProjectionCenter(),
+                                    cmp_image2.ProjectionCenter(),
+                                    triangulate_3d[i], min_ang)){
+            continue;
+        }
 
         inlier_cnt++;
         int orig_idx1 = vec2d1_idx_map[i]; // identical to colmap_vec and sift_vec

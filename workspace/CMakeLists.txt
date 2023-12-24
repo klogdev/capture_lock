@@ -34,7 +34,7 @@ incremental_construct.cpp
 target_include_directories(
   increment PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  increment PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift reprojection)
+  increment PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift reprojection triangulate)
 
 add_library(init STATIC
 init_first_pair.h
@@ -43,7 +43,8 @@ init_first_pair.cpp
 target_include_directories(
   init PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  init PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift relative_pose reprojection)
+  init PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift relative_pose 
+  reprojection triangulate)
 
 add_library(stream STATIC
 file_stream.h

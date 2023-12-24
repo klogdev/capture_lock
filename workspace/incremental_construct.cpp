@@ -14,6 +14,7 @@
 #include "feature/sift.h"
 
 #include "util_/reprojection.h"
+#include "util_/triangulate.h"
 
 #include "incremental_construct.h"
 #include "estimate/relative_pose.h"
@@ -137,7 +138,7 @@ void IncrementOneImage(std::string image_path, int new_id,
     // num of inliers after ransac filtering
     std::cout << "num of inlier matches between " << last_id << " and " << new_id << " is: " << test_inliers << std::endl;
     std::cout << "num of matched 3D in image " << new_id << " is: " << matched3d_from2d.size() << std::endl;
-    std::cout << "rate of rperojection inlier " << last_id << " is: " << 
+    std::cout << "rate of reprojection inlier " << last_id << " is: " << 
     (float)inlier_repro/matched3d_from2d.size() << std::endl;
 
     //start absolute pose estimation
@@ -158,31 +159,34 @@ void IncrementOneImage(std::string image_path, int new_id,
                 << " is: " << qvec_abs << std::endl;
 
 
-    //start triangulation
-    Eigen::Matrix3d calibration = camera.CalibrationMatrix();
-    Eigen::Matrix3x4d extrinsic_mat1 = last_image.ProjectionMatrix(); //under proj.cc, only compose extrinsic
-    Eigen::Matrix3x4d extrinsic_mat2 = new_cmp_image.ProjectionMatrix();
+    // start triangulation
 
-    Eigen::Matrix3x4d proj_mat1 = calibration*extrinsic_mat1;
-    Eigen::Matrix3x4d proj_mat2 = calibration*extrinsic_mat2;
-
-    //idx of triangulated pts are consistent with matched_vec,
-    //they should be matched back to their original idx of feature vec
-    //here we use all matched point (without RANSAC) for triangulation
+    // idx of triangulated pts are consistent with matched_vec,
+    // they should be matched back to their original idx of feature vec
+    // here we use all matched point (without RANSAC) for triangulation
     // but filter out outliers when we register to the global map
-    std::vector<Eigen::Vector3d> triangulate_3d = colmap::TriangulatePoints(proj_mat1, proj_mat2,
-                                                                    matched_vec1, matched_vec2);
-                                                                    
+    std::vector<Eigen::Vector3d> triangulate_3d;
+    TriangulateImage(last_image, new_cmp_image, camera, matched_vec1, matched_vec2,
+                    triangulate_3d);
+    
+    double min_ang = 0.0;                                      
     int curr_3d_len = global_3d_map.size();
     for (int i = 0; i < triangulate_3d.size(); i++){
         if(inlier_mask_rel[i] == 0)
             continue;
-
+        // check the quality of the triangulation
+        if(!CheckTriangulateQuality(last_image.ProjectionMatrix(),
+                                    new_cmp_image.ProjectionMatrix(),
+                                    last_image.ProjectionCenter(),
+                                    new_cmp_image.ProjectionCenter(),
+                                    triangulate_3d[i], min_ang)){
+            continue;
+        }
         int orig_idx1 = vec2d1_idx_map[i];
         int orig_idx2 = vec2d2_idx_map[i];
         if (last_image.Point2D(orig_idx1).HasPoint3D()){
             colmap::point3D_t curr3d_id = last_image.Point2D(orig_idx1).Point3DId();// type conversion??
-            //overlap the 3d point coord by the updated one
+            // overlap the 3d point coord by the updated one
             colmap::Point3D& curr_3d = global_3d_map[curr3d_id];
             curr_3d.SetXYZ(triangulate_3d[i]);
             curr_3d.Track().AddElement(new_id, orig_idx2);

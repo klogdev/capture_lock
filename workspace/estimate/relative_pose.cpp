@@ -49,5 +49,6 @@ size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
 
     *inlier_mask = report.inlier_mask;
     
+    // here the num of inliers are ones passed the Cheirality test
     return points3D.size();
 }
