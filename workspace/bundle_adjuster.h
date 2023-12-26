@@ -4,6 +4,8 @@
 
 #include "optim/bundle_adjustment.h"
 
+// Config contains staff to setup bundle adjustment problems,
+// i.e. specify constant poses, cameras
 class BundleAdjust_{
     public:
         BundleAdjust_(const colmap::BundleAdjustmentOptions& options,

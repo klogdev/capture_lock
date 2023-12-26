@@ -84,7 +84,7 @@ void IncrementOneImage(std::string image_path, int new_id,
 
     // start relative pose estimation w/ RANSAC for a pre-filtering
     colmap::RANSACOptions ransac_options = colmap::RANSACOptions();
-    ransac_options.max_error = 2.0;
+    ransac_options.max_error = 5.0;
     Eigen::Vector4d qvec_rel = Eigen::Vector4d(0, 0, 0, 1); // init relative pose
     Eigen::Vector3d tvec_rel = Eigen::Vector3d::Zero();     // randomly
     std::vector<char> inlier_mask_rel;
@@ -156,7 +156,9 @@ void IncrementOneImage(std::string image_path, int new_id,
     std::cout << "number of inliers 2d-3d pairs by PnP in " << new_id << " is: " 
                 << inliers << std::endl;
     std::cout << "result of " << new_id << " 's pose estimation" 
-                << " is: " << qvec_abs << std::endl;
+                << " is: " << std::endl;
+    std::cout << qvec_abs << std::endl;
+    std::cout << tvec_abs << std::endl;
 
 
     // start triangulation

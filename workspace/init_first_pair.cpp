@@ -37,9 +37,11 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     std::vector<Eigen::Vector2d> key_vec2 = SIFTPtsToVec(key_points2);
     colmap::Image cmp_image2 = SIFTtoCOLMAPImage(2, key_vec2, camera);
 
-    //register the first frame as the g.t.'s image 141
+    //register the first frame as the g.t.'s image 141 or 167
     Eigen::Vector4d qvec1 = Eigen::Vector4d(0.868254, 0.0224726, 0.474455, -0.143257);
     Eigen::Vector3d tvec1 = Eigen::Vector3d(-0.679221, 1.00351, 3.65061);
+    Eigen::Vector4d qvec_167 = Eigen::Vector4d(0.0986641, 0.00817242, 0.950918, -0.293179);
+    Eigen::Vector3d tvec_167 = Eigen::Vector3d(-0.127192, 0.869954, 2.9168);
     cmp_image1.SetQvec(qvec1);
     cmp_image1.SetTvec(tvec1);
 
@@ -61,7 +63,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
 
     // start relative pose estimation and register pose for the frame 2
     colmap::RANSACOptions ransac_options = colmap::RANSACOptions();
-    ransac_options.max_error = 1.0;
+    ransac_options.max_error = 3.0;
     Eigen::Vector4d qvec2 = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec2 = Eigen::Vector3d::Zero();
     std::vector<char> inlier_mask_rel;
@@ -82,12 +84,15 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     qvec2[2] = qvec2_q.y();
     qvec2[3] = qvec2_q.z();
 
-    // override the pose of second frame with g.t. image 142
-    Eigen::Vector4d qvec2_gt = Eigen::Vector4d(0.864347, 0.0331977, 0.477339, -0.154756);
-    Eigen::Vector3d tvec2_gt = Eigen::Vector3d(-0.756852, 0.980926, 3.58659);
+    // override the pose of second frame with g.t. image 142 or 168
+    Eigen::Vector4d qvec2_gt_142 = Eigen::Vector4d(0.864347, 0.0331977, 0.477339, -0.154756);
+    Eigen::Vector3d tvec2_gt_142 = Eigen::Vector3d(-0.756852, 0.980926, 3.58659);
 
-    cmp_image2.SetQvec(qvec2_gt);
-    cmp_image2.SetTvec(tvec2_gt);
+    Eigen::Vector4d qvec2_gt_168 = Eigen::Vector4d(0.0986538, 0.00897312, 0.955091, -0.279263);
+    Eigen::Vector3d tvec2_gt_168 = Eigen::Vector3d(-0.352987, 0.768079, 2.86639);
+
+    cmp_image2.SetQvec(qvec2_gt_142);
+    cmp_image2.SetTvec(tvec2_gt_142);
 
     std::cout << "rotation of first pair is: " << qvec2 << std::endl;
     std::cout << "translation of first pair is: " << tvec2 << std::endl;
@@ -166,8 +171,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
 
         global_3d_map[new_3d_id] = new_3d;
         cmp_image1.SetPoint3DForPoint2D(orig_idx1,new_3d_id);
-        cmp_image2.SetPoint3DForPoint2D(orig_idx2,new_3d_id);
-        
+        cmp_image2.SetPoint3DForPoint2D(orig_idx2,new_3d_id);    
     }
 
     std::cout << "rate of points with reprojection < 0.8 on image 0 is: "

@@ -18,7 +18,7 @@ bool BundleAdjust_::Solver(colmap::Camera& camera,
                           std::unordered_map<int,colmap::Image>& global_image_map,
                           std::unordered_map<int,colmap::Point3D>& global_3d_map){
     problem_ = std::make_unique<ceres::Problem>();
-    //default loss in options_: trivial loss
+    // default loss in options_: trivial loss
     ceres::LossFunction* loss_function = options_.CreateLossFunction();
     SetUp(loss_function, camera, global_image_map, global_3d_map);
 
@@ -32,9 +32,9 @@ void BundleAdjust_::SetUp(ceres::LossFunction* loss_function,
                           colmap::Camera& camera,
                           std::unordered_map<int,colmap::Image>& global_image_map,
                           std::unordered_map<int,colmap::Point3D>& global_3d_map){
-    //need call BA config for preprocess;
-    //the config_ is the private member of BA,
-    //and will be processed within the global_bundle
+    // need call BA config for preprocess;
+    // the config_ is the private member of BA,
+    // and will be processed within the global_bundle
     for (const colmap::image_t image_id : config_.Images()) {
         AddImageToProblem(image_id, camera, global_image_map, 
                           global_3d_map, loss_function);
@@ -44,7 +44,7 @@ void BundleAdjust_::SetUp(ceres::LossFunction* loss_function,
         AddPointToProblem(point3D_id, camera, global_image_map, 
                           global_3d_map, loss_function);
     }
-    //skip camera parameterization?
+    // skip camera parameterization?
     ParameterizePoints(global_3d_map);
 }
 
@@ -75,7 +75,7 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
         assert(curr_3d.Track().Length() > 1); //must have more than 1 obs, to have enough DoF
 
         ceres::CostFunction* cost_function = nullptr;
-        //constant pose init by both 2d point and extrinsic, only intrinsic/3d point as parametes
+        // constant pose init by both 2d point and extrinsic, only intrinsic/3d point as parametes
         if (constant_pose) {                                     
             cost_function =                                                    
                 BAConstPoseCostFxn::Create( 
@@ -111,7 +111,7 @@ void BundleAdjust_::AddPointToProblem(const colmap::point3D_t point3D_id,
         return;
 
     for (const auto& track_el: curr_3d.Track().Elements()){
-        //skip the obs if already added
+        // skip the obs if already added
         if (config_.HasImage(track_el.image_id)) {
             continue;
         }
