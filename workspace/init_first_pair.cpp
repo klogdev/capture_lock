@@ -200,8 +200,10 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
                                                 triangulate_3d, &qvec_abs, &tvec_abs,
                                                 &camera, &inliers, &inlier_mask_abs);
                     
-    std::cout << "abs rotation of first pair is: " << qvec_abs << std::endl;
-    std::cout << "abs translation of first pair is: " << tvec_abs << std::endl;
+    std::cout << "abs rotation of first pair is: " << std::endl;
+    std::cout << qvec_abs << std::endl;
+    std::cout << "abs translation of first pair is: " << std::endl;
+    std::cout << tvec_abs << std::endl;
 
     std::cout << "number of 2d-3d pairs in first pair is: " 
                 << inliers << std::endl;

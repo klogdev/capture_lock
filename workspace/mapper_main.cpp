@@ -96,10 +96,6 @@ int main(int argc, char** argv){
         std::vector<int> curr_const_pose;
         GetSlideWindow(window_size, i, curr_opt_window, curr_const_pose);
         // run ba for the local window
-        std::cout << "curr window is: " << std::endl;
-        for(int w: curr_opt_window)
-            std::cout << w << std::endl;
-            
         bool local_ba = GlobalBundleAdjuster(ba_options, camera, global_image_map,
                                             global_3d_map, curr_opt_window, 
                                             curr_const_pose);  
@@ -126,8 +122,9 @@ int main(int argc, char** argv){
         global_image_opt.push_back(img_id);
     }
 
+    std::vector<int> global_const_pose = {0};
     bool run_ba = GlobalBundleAdjuster(ba_options, camera, global_image_map,
-                                      global_3d_map, global_image_opt, init_const_pose);    
+                                      global_3d_map, global_image_opt, global_const_pose);    
 
     std::cout << "result of global BA is: " << run_ba << std::endl;
 

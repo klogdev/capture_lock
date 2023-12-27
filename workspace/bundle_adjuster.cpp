@@ -20,10 +20,18 @@ bool BundleAdjust_::Solver(colmap::Camera& camera,
     problem_ = std::make_unique<ceres::Problem>();
     // default loss in options_: trivial loss
     ceres::LossFunction* loss_function = options_.CreateLossFunction();
+    // DEBUGGING:
+    std::cout << "curr image set: " << std::endl;
+    for (const auto& element : config_.Images()) {
+        std::cout << element << " ";
+    }
+    std::cout << std::endl;
     SetUp(loss_function, camera, global_image_map, global_3d_map);
 
     ceres::Solver::Options solver_options = options_.solver_options;
+    std::cout << "no segfault before BA solver in this set " <<  std::endl;
     ceres::Solve(solver_options, problem_.get(), &summary_);
+    std::cout << "no segfault after BA solver in this set " <<  std::endl;
 
     return true;
 }

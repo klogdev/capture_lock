@@ -13,37 +13,51 @@ bool GlobalBundleAdjuster(const colmap::BundleAdjustmentOptions& ba_options,
                           std::vector<int>& image_to_opt,
                           const std::vector<int>& const_pose){
     colmap::BundleAdjustmentConfig ba_config;
+
     for (const int image_id : image_to_opt){
         // add image id via input indices
         ba_config.AddImage(image_id);
+        // bool img_avail = global_image_map.find(image_id) != global_image_map.end();
+        // std::cout << "check image " << image_id << "'s avail: " << std::endl;
+        // std::cout << img_avail << std::endl;
 
         colmap::Image curr_image = global_image_map[image_id];
 
         // add 3d points id via added images
         for(const colmap::Point2D& pts_2d: curr_image.Points2D()){
+          if(!pts_2d.HasPoint3D())
+            continue;
           colmap::point3D_t id_3d = pts_2d.Point3DId();
           ba_config.AddVariablePoint(id_3d);
+
+          bool pt_avail = global_3d_map.find(id_3d) != global_3d_map.end();
+          if(pt_avail == 0){
+            std::cout << "3D point " << id_3d << " is not avail: " << std::endl;
+          }
         }
     }
 
     // set the constant poses based on input, 0 indexed
-    if(const_pose[0] != -1){
-      for(const int id: const_pose)
-        ba_config.SetConstantPose(id);
+    std::cout << "constant poses id from global bundle with image from " 
+    << image_to_opt[0] << ": " << std::endl;
+    for(const int id: const_pose){
+      std::cout << id << std::endl;
+      ba_config.SetConstantPose(id);
     }
 
     // debug constant pose
-    colmap::Image first_image = global_image_map[0];
+    colmap::Image first_image = global_image_map[const_pose[0]];
 
-    std::cout << "debug first quat before BA: " << std::endl;
+    std::cout << "debug " << const_pose[0] << "'s quat before BA: " << std::endl;
     std::cout << first_image.Qvec() << std::endl;
-    std::cout << "debug first trans before BA: " << std::endl;
+    std::cout << "debug " << const_pose[0] << "'s trans before BA: " << std::endl;
     std::cout << first_image.Tvec() << std::endl;
 
   // Run bundle adjustment. SetUp is called inside the Solver
   // the bundle_adjuster_ will initialized by input image based on the
   // indices offered by ba_config
   BundleAdjust_ bundle_adjuster(ba_options, ba_config);
+  std::cout << "DEBUG: no segfault before local BA " << const_pose[0] << std::endl;
   if (!bundle_adjuster.Solver(camera, global_image_map, global_3d_map)) {
     return false;
   }
@@ -54,13 +68,18 @@ bool GlobalBundleAdjuster(const colmap::BundleAdjustmentOptions& ba_options,
 void GetSlideWindow(const int window_size, const int curr_idx,
                     std::vector<int>& curr_window, std::vector<int>& const_pose){
   int left_end = curr_idx + 1 - window_size;
-
-  if(left_end < 0)
-    std::cout << "not a valid window size" << std::endl;
-
   const_pose.push_back(left_end);
 
   for(int i = 0; i < window_size; i++){
     curr_window.push_back(left_end+i);
+  }
+
+  std::cout << "curr window from GetWindow is: " << std::endl;
+  for(int w: curr_window){
+      std::cout << w << std::endl;
+  }
+  std::cout << "curr constant poses from GetWindow is: " << std::endl;
+  for(int p: const_pose){
+      std::cout << p << std::endl;
   }
 }
