@@ -84,7 +84,7 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
 
         ceres::CostFunction* cost_function = nullptr;
         // constant pose init by both 2d point and extrinsic, only intrinsic/3d point as parametes
-        if (constant_pose) {                                     
+        if (constant_pose) {  
             cost_function =                                                    
                 BAConstPoseCostFxn::Create( 
                     image.Qvec(), image.Tvec(), point_2d.XY());                 
@@ -108,13 +108,13 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
 }
 
 void BundleAdjust_::AddPointToProblem(const colmap::point3D_t point3D_id,
-                                        colmap::Camera& camera,
-                                        std::unordered_map<int,colmap::Image>& global_image_map,
-                                        std::unordered_map<int,colmap::Point3D>& global_3d_map,
-                                        ceres::LossFunction* loss_function){
-    colmap::Point3D curr_3d = global_3d_map[point3D_id];
+                                      colmap::Camera& camera,
+                                      std::unordered_map<int,colmap::Image>& global_image_map,
+                                      std::unordered_map<int,colmap::Point3D>& global_3d_map,
+                                      ceres::LossFunction* loss_function){
+    colmap::Point3D& curr_3d = global_3d_map[point3D_id];
 
-    //all obs already processed
+    // all obs already processed
     if (point3D_num_observations_[point3D_id] == curr_3d.Track().Length())
         return;
 
@@ -125,8 +125,8 @@ void BundleAdjust_::AddPointToProblem(const colmap::point3D_t point3D_id,
         }
         point3D_num_observations_[point3D_id] += 1;
 
-        colmap::Image track_image = global_image_map[track_el.image_id];
-        const colmap::Point2D track_point_2d = track_image.Point2D(track_el.point2D_idx);
+        colmap::Image& track_image = global_image_map[track_el.image_id];
+        const colmap::Point2D& track_point_2d = track_image.Point2D(track_el.point2D_idx);
 
         ceres::CostFunction* cost_function = nullptr;
 

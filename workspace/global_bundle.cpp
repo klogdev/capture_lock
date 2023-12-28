@@ -68,9 +68,12 @@ bool GlobalBundleAdjuster(const colmap::BundleAdjustmentOptions& ba_options,
 void GetSlideWindow(const int window_size, const int curr_idx,
                     std::vector<int>& curr_window, std::vector<int>& const_pose){
   int left_end = curr_idx + 1 - window_size;
+  if(left_end < 0)
+    left_end = 0;
+
   const_pose.push_back(left_end);
 
-  for(int i = 0; i < window_size; i++){
+  for(int i = 0; i < std::min(window_size, curr_idx+1); i++){
     curr_window.push_back(left_end+i);
   }
 

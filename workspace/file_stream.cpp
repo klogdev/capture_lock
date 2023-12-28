@@ -18,7 +18,7 @@ std::vector<std::vector<std::string>> FilePathStream(const std::string folder_di
     std::vector<std::vector<std::string>> file_list;
 
     // Define ranges for the files you are looking for
-    std::vector<std::pair<int, int>> index_ranges = {{141, 146},{305,347}};
+    std::vector<std::pair<int, int>> index_ranges = {{141, 200},{305,347}};
 
     for (const auto& range : index_ranges) {
         std::vector<std::string> curr_list;

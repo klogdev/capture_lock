@@ -63,6 +63,8 @@ int main(int argc, char** argv){
     colmap::BundleAdjustmentOptions ba_options;
     ba_options.solver_options.num_threads = 1;
     ba_options.loss_function_type = colmap::BundleAdjustmentOptions::LossFunctionType::SOFT_L1;
+    ba_options.refine_focal_length = false;
+    ba_options.refine_extra_params = false;
 
     //triangulate first two 
     InitFirstPair(image_stream[0][0], image_stream[0][1], camera,
@@ -106,14 +108,14 @@ int main(int argc, char** argv){
         std::cout << frame_i.Qvec() << std::endl;
         std::cout << frame_i.Tvec() << std::endl;
         // debugging number of tracked features after all frames
-        for(const auto& point: global_3d_map){
-            colmap::Point3D curr_3d = point.second;
-            int curr_track_len = curr_3d.Track().Length();
-            if(curr_3d.Track().Length() > 5){
-                std::cout << "the 3D point " << point.first << " has tracked images: " << std::endl;
-                DebugTracks(curr_3d.Track());
-            }
-        }
+        // for(const auto& point: global_3d_map){
+        //     colmap::Point3D curr_3d = point.second;
+        //     int curr_track_len = curr_3d.Track().Length();
+        //     if(curr_3d.Track().Length() > 5){
+        //         std::cout << "the 3D point " << point.first << " has tracked images: " << std::endl;
+        //         DebugTracks(curr_3d.Track());
+        //     }
+        // }
     }
 
     // run global ba, the fixed pose is still the 0'th frame
