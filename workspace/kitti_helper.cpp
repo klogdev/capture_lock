@@ -17,7 +17,7 @@ std::vector<std::vector<double>> IntrinsicFromKittiCali(const std::string base_p
         std::vector<std::string> curr_line{std::istream_iterator<std::string>{iss}, 
                                            std::istream_iterator<std::string>{}};
 
-        //need to skip the name of the sensor, i.e. P0
+        // need to skip the name of the sensor, i.e. P0
         curr_line.erase(curr_line.begin(), curr_line.begin() + 1);
 
         std::vector<double> curr_cali;
@@ -33,7 +33,7 @@ Eigen::Matrix3d ProjMatFromCali(const std::vector<std::vector<double>> calib_vec
                                   const int sensor_num){
     std::vector<double> curr_sensor = calib_vec[sensor_num];
 
-    //need specify as row major, the default map is column major
+    // need specify as row major, the default map is column major
     Eigen::Map<Eigen::Matrix<double, 3, 4, Eigen::RowMajor>> proj_mat(curr_sensor.data());
 
     std::cout << "sensor calibration matrix: " << std::endl;

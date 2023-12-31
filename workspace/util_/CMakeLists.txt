@@ -21,3 +21,12 @@ target_include_directories(
   triangulate PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
   triangulate PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
+
+  add_library(save_pose STATIC
+  pose_save.h
+  pose_save.cpp
+  )
+  target_include_directories(
+    save_pose PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+  target_link_libraries(
+    save_pose PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)

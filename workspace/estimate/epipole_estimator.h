@@ -5,6 +5,11 @@
 
 #include "optim/ransac.h"
 
+/**
+* @brief This class is the ransac estimator of epipole
+* in which the matched features will be mapped into a same image
+* the line connects them should all pass the principal point 
+*/
 class EpipoleEstimator{
     public: 
         struct PixelPair
