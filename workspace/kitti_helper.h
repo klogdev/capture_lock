@@ -6,6 +6,8 @@
 /**
  * @brief convert the KITTI Odometry data's calibration file 
  * to vectors of doubles for all sensors
+ * noticed we load all sensor's calis, i.e. P0 to P4, but only
+ * do odometry for the first camera
  */
 std::vector<std::vector<double>> IntrinsicFromKittiCali(const std::string base_path, const std::string seq_num);
 
