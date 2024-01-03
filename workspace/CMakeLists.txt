@@ -46,14 +46,6 @@ target_link_libraries(
   init PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift relative_pose 
   reprojection triangulate)
 
-add_library(kitti STATIC
-kitti_helper.h
-kitti_helper.cpp
-)
-target_include_directories(
-  kitti PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
-target_link_libraries(
-  kitti PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
 
 add_executable(mapper mapper_main.cpp)
 target_include_directories(

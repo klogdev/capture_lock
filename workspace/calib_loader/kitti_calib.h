@@ -10,7 +10,8 @@ class KittiCalibReader: public CalibFileReader{
 
         colmap::Camera GetIntrinsicMat(const std::string base_path, const std::string seq_num, 
                                        const double downscale) const override{
-            std::vector<std::vector<double>> cali_info = IntrinsicFromKittiCali(calib_path,seq_num);
+            std::vector<std::vector<double>> cali_infos;
+            IntrinsicFromKittiCali(calib_path,seq_num, cali_infos);
 
             colmap::Camera new_camera;
             new_camera.SetCameraId(1); // camera type 1 by defult
