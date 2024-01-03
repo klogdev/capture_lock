@@ -9,4 +9,4 @@
 /**
  * @brief load list of colmap images as a stream
 */
-std::vector<std::vector<std::string>> FilePathStream(const std::string folder_dir);
+std::vector<std::vector<std::string>> COLMAPStream(const std::string folder_dir);

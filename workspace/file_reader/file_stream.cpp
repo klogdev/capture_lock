@@ -14,7 +14,7 @@
 #include <absl/strings/str_format.h>
 #include <opencv2/opencv.hpp>
 
-std::vector<std::vector<std::string>> FilePathStream(const std::string folder_dir) {
+std::vector<std::vector<std::string>> COLMAPStream(const std::string folder_dir) {
     std::vector<std::vector<std::string>> file_list;
 
     // Define ranges for the files you are looking for

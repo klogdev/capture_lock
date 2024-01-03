@@ -30,3 +30,11 @@ target_link_libraries(
     save_pose PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
   target_link_libraries(
     save_pose PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
+
+  add_library(gyro STATIC
+  gyro_calc.h
+  )
+  target_include_directories(
+    gyro PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+  target_link_libraries(
+    gyro PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)

@@ -70,6 +70,12 @@ target_link_libraries(
   kitti_test PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${OpenCV_LIBRARIES}
   ${absl_LIBRARIES} gyro stream kitti)
 
+add_executable(residual residual_cost_test.cpp)
+target_include_directories(
+  residual PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  residual PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES})
+
 # add_executable(calib_test calib_factory_test.cpp)
 # target_include_directories(
 #   calib_test PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}" 

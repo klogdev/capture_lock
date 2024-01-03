@@ -42,8 +42,9 @@ int main(int argc, char** argv){
 
     colmap::Reconstruction read_text = colmap::Reconstruction();
     read_text.ReadText(sparse_path);
-    //assume we only have one camera
-    colmap::Camera camera = read_text.Camera(1);//need to change focal, due to downsampling
+    // assume we only have one camera which loaded via the read_text instance
+    // the initialized camera instance contains intrinsic info of the camera
+    colmap::Camera camera = read_text.Camera(1); // need to change focal, due to downsampling
     std::cout << "debug camera_model_info " << camera.ModelId() << " " 
               << camera.ModelName() << " " << camera.Width() << " " 
               << camera.Height() << " " << camera.ParamsToString() << std::endl;
