@@ -13,7 +13,7 @@ target_include_directories(
 target_link_libraries(
   stream PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES} img sift)
 
-add_library(gyro STATIC
+add_library(gyro_load STATIC
 gyro_raw.h
 gyro_raw.cpp
 )
@@ -22,7 +22,7 @@ gyro_load PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
 gyro_load PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
 
-add_library(kitti STATIC
+add_library(kitti_odo STATIC
 kitti_odo_helper.h
 kitti_odo_helper.cpp
 )

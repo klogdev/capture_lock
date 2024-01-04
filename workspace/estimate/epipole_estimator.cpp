@@ -20,7 +20,7 @@ void EpipoleEstimator::Residuals(const std::vector<X_t>& pairs1,
                                  const std::vector<Y_t>& pairs2,
                                  const M_t& model, 
                                  std::vector<double>* residuals){
-    int n = points1.size();
+    int n = pairs1.size();
 
     for(int i = 0; i < n; i++){
         Eigen::Vector3d homo01 = Point2dToHomo(pairs1[i].point_lock);
@@ -37,8 +37,8 @@ void EpipoleEstimator::Residuals(const std::vector<X_t>& pairs1,
 }
 
 bool EstimateEpipole(const colmap::RANSACOptions& ransac_options,
-                     const std::vector<PixelPair>& pairs1
-                     const std::vector<PixelPair>& pairs2
+                     const std::vector<EpipoleEstimator::PixelPair>& pairs1,
+                     const std::vector<EpipoleEstimator::PixelPair>& pairs2,
                      std::vector<char>* inlier_mask, Eigen::Vector3d* model){
     colmap::RANSAC<EpipoleEstimator> ransac(ransac_options);
     const auto report = ransac.Estimate(pairs1, pairs2);
@@ -53,9 +53,9 @@ bool EstimateEpipole(const colmap::RANSACOptions& ransac_options,
     return report.success;
 }
 
-//helper functions
+// helper functions
 Eigen::Vector3d Point2dToHomo(Eigen::Vector2d point_2d){
-    homo = Eigen::Vector3d::Identity();
+    Eigen::Vector3d homo = Eigen::Vector3d::Identity();
     homo.topRows(2) = point_2d;
     return homo; 
 }

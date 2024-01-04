@@ -11,7 +11,7 @@ void IntrinsicFromKittiCali(const std::string base_path, const std::string seq_n
     std::string seq_path = base_path + seq_num + "/calib.txt";
     std::ifstream calis(seq_path);
     std::string line;
-
+    
     while(std::getline(calis, line)){
         std::istringstream iss(line);
         // the first iterator process the "line", the second is the dummy one as
@@ -47,6 +47,14 @@ void ExtrinsicFromKitti(const std::string base_path, const std::string seq_num,
         for(auto s: curr_line){
             curr_cali.push_back(std::stod(s));
         }
-        cali_infos.push_back(curr_cali);
+        pose_list.push_back(curr_cali);
     }
+}
+
+void GetCameraModelParams(std::vector<double>& row_major_cali, 
+                          std::vector<double>& simple_params){
+    // we assume the simple pinhole model's params has the order: f, cx, cy
+    simple_params.push_back(row_major_cali[0]);
+    simple_params.push_back(row_major_cali[2]);
+    simple_params.push_back(row_major_cali[6]);
 }

@@ -53,7 +53,7 @@ int main(int argc, char** argv){
 
     // we read different segements of image streams
     // now we are working on the first stream by manually process image_stream[0]
-    std::vector<std::vector<std::string>> image_stream = FilePathStream(image_path);
+    std::vector<std::vector<std::string>> image_stream = COLMAPStream(image_path, 141, 200);
     // start create global maps by init list of hashmaps
     std::unordered_map<int,colmap::Image> global_image_map;
     std::unordered_map<int,std::vector<sift::Keypoint>> global_keypts_map;

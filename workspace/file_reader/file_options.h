@@ -6,8 +6,7 @@
 struct FileOptions{
     std::string dataset;
     int camera_model;
-    float downsample_h;
-    float downsample_w;
+    float downsample;
 };
 
 struct COLMAPOptions{

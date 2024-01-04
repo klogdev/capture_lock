@@ -14,11 +14,12 @@
 #include <absl/strings/str_format.h>
 #include <opencv2/opencv.hpp>
 
-std::vector<std::vector<std::string>> COLMAPStream(const std::string folder_dir) {
+std::vector<std::vector<std::string>> COLMAPStream(const std::string folder_dir,
+                                                   int start, int end) {
     std::vector<std::vector<std::string>> file_list;
 
     // Define ranges for the files you are looking for
-    std::vector<std::pair<int, int>> index_ranges = {{141, 200},{305,347}};
+    std::vector<std::pair<int, int>> index_ranges = {{start, end},{305,347}};
 
     for (const auto& range : index_ranges) {
         std::vector<std::string> curr_list;

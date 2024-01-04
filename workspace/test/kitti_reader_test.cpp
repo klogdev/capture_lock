@@ -1,4 +1,4 @@
-#include "kitti_helper.h"
+#include "kitti_odo_helper.h"
 #include "file_stream.h"
 
 #include <string>
@@ -17,8 +17,12 @@ int main(int argc, char** argv){
     std::string calib_path = argv[1];
     std::string gyro_path = argv[2];
 
-    std::vector<std::vector<double>> cali_info = IntrinsicFromKittiCali(calib_path,seq_num);
+    std::vector<std::vector<double>> cali_infos;
+    IntrinsicFromKittiCali(calib_path, seq_num, cali_infos);
 
-    Eigen::Matrix3d K = ProjMatFromCali(cali_info,0);
+    Eigen::Map<Eigen::Matrix<double, 3, 4, Eigen::RowMajor>> intrinsic(cali_infos[0].data());
+
+    std::cout << "current sequence's intrinsic matrix: " << std::endl;
+    std::cout << intrinsic << std::endl;
 
 }

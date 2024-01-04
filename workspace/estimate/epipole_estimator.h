@@ -1,17 +1,20 @@
 #include <Eigen/Core>
 #include <vector>
-#include <sift>
-#include 
 
 #include "optim/ransac.h"
 
 /**
 * @brief This class is the ransac estimator of epipole
 * in which the matched features will be mapped into a same image
-* the line connects them should all pass the principal point 
+* the line connects them should all pass the projection center 
 */
 class EpipoleEstimator{
     public: 
+        /**
+         * @brief customized struct for the estimator
+         * @arg point_lock: 2D point on the fixed frame; 
+         * point_comp_: 2D point on the frames that to be rotation complemented 
+        */
         struct PixelPair
         {
             PixelPair(const Eigen::Vector2d& point_lock_, const Eigen::Vector2d& point_comp_)
@@ -27,7 +30,7 @@ class EpipoleEstimator{
         // The minimum number of samples needed to estimate a model.
         static const int kMinNumSamples = 1;
         
-        //should be a size one vector
+        // should be a size one vector
         Eigen::Vector3d Estimate(const std::vector<X_t>& pair1,
                                  const std::vector<Y_t>& pair2);
         
@@ -39,8 +42,8 @@ class EpipoleEstimator{
 };
 
 bool EstimateEpipole(const colmap::RANSACOptions& ransac_options,
-                     const std::vector<PixelPair>& pairs1
-                     const std::vector<PixelPair>& pairs2
+                     const std::vector<EpipoleEstimator::PixelPair>& pairs1,
+                     const std::vector<EpipoleEstimator::PixelPair>& pairs2,
                      std::vector<char>* inlier_mask, Eigen::Vector3d* model);
 
 //helper functions

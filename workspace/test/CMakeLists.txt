@@ -1,6 +1,7 @@
 link_directories("../feature")
 link_directories("../calib_loader")
 link_directories("/usr/local/lib/colmap/")
+link_directories("../file_reader")
 link_directories("../")
 include_directories(${WORKSPACE_DIR})
 
@@ -68,7 +69,7 @@ target_include_directories(
   "${OpenCV_INCLUDE_DIRS}")
 target_link_libraries(
   kitti_test PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${OpenCV_LIBRARIES}
-  ${absl_LIBRARIES} gyro stream kitti)
+  ${absl_LIBRARIES} gyro stream kitti_odo)
 
 add_executable(residual residual_cost_test.cpp)
 target_include_directories(

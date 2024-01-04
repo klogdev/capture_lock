@@ -30,7 +30,7 @@ int main(int argc, char** argv){
     colmap::Camera camera = read_text.Camera(1);
     
     camera.SetModelId(colmap::SimpleRadialCameraModel::model_id);
-    std::vector<std::vector<std::string>> image_stream = FilePathStream(image_path);
+    std::vector<std::vector<std::string>> image_stream = COLMAPStream(image_path, 141, 150);
 
     // start create global maps by init list of hashmaps
     std::unordered_map<int,colmap::Image> global_image_map;
