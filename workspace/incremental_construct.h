@@ -7,10 +7,11 @@
 #include "base/track.h"
 #include <string>
 
-colmap::Image SIFTtoCOLMAPImage(int image_id, std::vector<Eigen::Vector2d> features,
-                                const colmap::Camera& camera);
-
-//three global maps should have consistent ID
+/**
+ * @brief main fn to incrementally
+ * register new image frames
+ * three global maps should have consistent ID
+*/
 void IncrementOneImage(std::string image_path,int new_id,
                         int last_id, colmap::Camera& camera,
                         std::unordered_map<int,colmap::Image>& global_image_map,
@@ -18,10 +19,5 @@ void IncrementOneImage(std::string image_path,int new_id,
                         std::unordered_map<int,colmap::Point3D>& global_3d_map,
                         int resize_w, int resize_h);
 
-//generate sift keypoints from sift image
-std::vector<sift::Keypoint> GetKeyPoints(Image& image);
-
-//convert i,j coord from SIFT points to eigen vector for the init of colmap::Image
-std::vector<Eigen::Vector2d> SIFTPtsToVec(std::vector<sift::Keypoint> key_points);
 
     

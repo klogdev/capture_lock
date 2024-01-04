@@ -15,6 +15,7 @@
 #include "estimate/relative_pose.h"
 #include "util_/reprojection.h"
 #include "util_/triangulate.h"
+#include "util_/sift_colmap.h"
 
 void InitFirstPair(const std::string first_path, const std::string second_path,
                     colmap::Camera& camera,
