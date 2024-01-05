@@ -1,6 +1,8 @@
 #include "calib_base.h"
 #include "base/camera.h"
-#include "kitti_helper.h"
+#include "base/camera_models.h"
+
+#include "file_reader/kitti_odo_helper.h"
 
 #include <string>
 
@@ -13,10 +15,11 @@ class KittiCalibReader: public CalibFileReader{
                                        int width, int height) const override{
             std::vector<std::vector<double>> cali_infos;
             // call customized file parser (from file_reader)
-            IntrinsicFromKittiCali(calib_path, seq_num, cali_infos);
+            IntrinsicFromKittiCali(base_path, seq_num, cali_infos);
 
             std::vector<double> pinhole_params;
-            GetCameraModelParams(cali_infos, pinhole_params);
+            // manually get camera 0
+            GetCameraModelParams(cali_infos[0], pinhole_params);
 
             colmap::Camera new_camera;
             new_camera.SetHeight(height);
@@ -28,4 +31,4 @@ class KittiCalibReader: public CalibFileReader{
 
             return new_camera;
         }
-}
+};

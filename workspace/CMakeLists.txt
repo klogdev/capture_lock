@@ -53,7 +53,8 @@ target_include_directories(
   mapper PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
   mapper PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES}
-  img sift stream init increment ba ba_run cost save_pose)
+  img sift stream init increment ba ba_run cost 
+  save_pose file_option calib_loader)
 
 
 set(WORKSPACE_DIR ${CMAKE_CURRENT_SOURCE_DIR})

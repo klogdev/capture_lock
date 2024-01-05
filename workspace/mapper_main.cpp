@@ -11,16 +11,14 @@
 
 #include "feature/image_sift.h"
 #include "feature/sift.h"
-#include "file_stream.h"
+
 #include "incremental_construct.h"
 #include "init_first_pair.h"
 #include "bundle_adjuster.h"
 #include "global_bundle.h"
-#include "pose_save.h"
-
-const double downscale_x = 768.0/3072; // dowsacale of the image
-const double downscale_y = 576.0/2304;
-const double downscale_avg = (downscale_x + downscale_y)/2;
+#include "util_/pose_save.h"
+#include "file_reader/file_stream.h"
+#include "file_reader/file_options.h"
 
 void DebugTracks(colmap::Track track){
     std::vector<colmap::TrackElement>& curr_vec = track.Elements();
@@ -31,29 +29,40 @@ void DebugTracks(colmap::Track track){
 }
 
 int main(int argc, char** argv){
-    if (argc < 3)
+    if (argc < 2)
     {
         std::cout << "Standard Input" << std::endl;
-        std::cout << " " << argv[0] << " path to 3 .txt data files and image files" 
+        std::cout << " " << argv[0] << " need specify the dataset type" 
         << std::endl;
     }
-    std::string sparse_path = argv[1];
-    std::string image_path = argv[2];
+    std::string dataset = argv[1];
+    FileOptions files_to_run;
+    InstantiateFiles(files_to_run, dataset);
 
-    colmap::Reconstruction read_text = colmap::Reconstruction();
-    read_text.ReadText(sparse_path);
-    // assume we only have one camera which loaded via the read_text instance
-    // the initialized camera instance contains intrinsic info of the camera
-    colmap::Camera camera = read_text.Camera(1); // need to change focal, due to downsampling
-    std::cout << "debug camera_model_info " << camera.ModelId() << " " 
-              << camera.ModelName() << " " << camera.Width() << " " 
-              << camera.Height() << " " << camera.ParamsToString() << std::endl;
-    camera.SetModelId(colmap::SimpleRadialCameraModel::model_id);
-    camera.Rescale(downscale_x);
+    std::cout << "debug current data's calib path is: " << 
+    files_to_run.calib_path << std::endl;
+
+    CalibFileReader* file_reader = CalibFileReader::Create(dataset);
+
+    colmap::Camera camera = file_reader.GetIntrinsicMat(files_to_run.calib_path,
+                                                        files_to_run.seq_num,
+                                                        files_to_run.downsample); 
+
+    // colmap::Reconstruction read_text = colmap::Reconstruction();
+    // read_text.ReadText(sparse_path);
+    // // assume we only have one camera which loaded via the read_text instance
+    // // the initialized camera instance contains intrinsic info of the camera
+    // colmap::Camera camera = read_text.Camera(1); // need to change focal, due to downsampling
+    // std::cout << "debug camera_model_info " << camera.ModelId() << " " 
+    //           << camera.ModelName() << " " << camera.Width() << " " 
+    //           << camera.Height() << " " << camera.ParamsToString() << std::endl;
+    // camera.SetModelId(colmap::SimpleRadialCameraModel::model_id);
+    // camera.Rescale(downscale_x);
 
     // we read different segements of image streams
     // now we are working on the first stream by manually process image_stream[0]
-    std::vector<std::vector<std::string>> image_stream = COLMAPStream(image_path, 141, 200);
+    std::vector<std::vector<std::string>> image_stream = COLMAPStream(files_to_run.image_path, 
+                                                                      141, 200);
     // start create global maps by init list of hashmaps
     std::unordered_map<int,colmap::Image> global_image_map;
     std::unordered_map<int,std::vector<sift::Keypoint>> global_keypts_map;
