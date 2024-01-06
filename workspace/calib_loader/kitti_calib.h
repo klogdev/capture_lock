@@ -1,3 +1,6 @@
+#ifndef KITTI_CALIB_H_
+#define KITTI_CALIB_H_
+
 #include "calib_base.h"
 #include "base/camera.h"
 #include "base/camera_models.h"
@@ -11,7 +14,7 @@ class KittiCalibReader: public CalibFileReader{
         KittiCalibReader(){};
 
         colmap::Camera GetIntrinsicMat(const std::string base_path, const std::string seq_num, 
-                                       const double downscale,
+                                       double downscale,
                                        int width, int height) const override{
             std::vector<std::vector<double>> cali_infos;
             // call customized file parser (from file_reader)
@@ -26,9 +29,11 @@ class KittiCalibReader: public CalibFileReader{
             new_camera.SetWidth(width);
             new_camera.SetCameraId(1); // only one camera by defult
             new_camera.SetParams(pinhole_params);
-            new_camera.SetModelId(colmap::SimplePinholeCameraModel.model_id);
+            new_camera.SetModelId(colmap::SimplePinholeCameraModel::model_id);
             new_camera.Rescale(downscale);
 
             return new_camera;
         }
 };
+
+#endif  // KITTI_CALIB_H_

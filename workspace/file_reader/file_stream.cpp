@@ -14,27 +14,37 @@
 #include <absl/strings/str_format.h>
 #include <opencv2/opencv.hpp>
 
-std::vector<std::vector<std::string>> COLMAPStream(const std::string folder_dir,
-                                                   int start, int end) {
-    std::vector<std::vector<std::string>> file_list;
+void COLMAPStream(std::vector<std::string>& file_list, const std::string folder_dir,
+                  int start, int end) {
 
     // Define ranges for the files you are looking for
-    std::vector<std::pair<int, int>> index_ranges = {{start, end},{305,347}};
+    std::pair<int, int> index_range = {start, end};
 
-    for (const auto& range : index_ranges) {
-        std::vector<std::string> curr_list;
-        for (int index = range.first; index <= range.second; ++index) {
-            const std::string image_name = absl::StrFormat("P118%04d.JPG", index);
-            const std::string image_path = absl::StrFormat("%s/%s", folder_dir, image_name);
+    for (int index = index_range.first; index <= index_range.second; index++) {
+        const std::string image_name = absl::StrFormat("P118%04d.JPG", index);
+        const std::string image_path = absl::StrFormat("%s/%s", folder_dir, image_name);
 
-            cv::Mat image = cv::imread(image_path);
-            if (image.data != nullptr) {
-                curr_list.push_back(image_path);
-            }
+        cv::Mat image = cv::imread(image_path);
+        if (image.data != nullptr) {
+            file_list.push_back(image_path);
         }
-        file_list.push_back(curr_list);
     }
-    return file_list;
+
 }
 
 
+void KITTIStream(std::vector<std::string>& file_list, const std::string folder_dir, 
+                  int start, int end) {
+    // Define ranges for the files you are looking for
+    std::pair<int, int> index_range = {start, end};
+
+    for (int index = index_range.first; index <= index_range.second; index++) {
+        const std::string image_name = absl::StrFormat("%06d.PNG", index);
+        const std::string image_path = absl::StrFormat("%s/%s", folder_dir, image_name);
+
+        cv::Mat image = cv::imread(image_path);
+        if (image.data != nullptr) {
+            file_list.push_back(image_path);
+        }
+    }
+}

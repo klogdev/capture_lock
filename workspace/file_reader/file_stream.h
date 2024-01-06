@@ -7,7 +7,11 @@
 #include <absl/strings/str_format.h>
 
 /**
- * @brief load list of colmap images as a stream
+ * @brief load list of colmap image paths as a stream
 */
-std::vector<std::vector<std::string>> COLMAPStream(const std::string folder_dir,
-                                                   int start, int end);
+void COLMAPStream(std::vector<std::string>& file_list, const std::string folder_dir, int start, int end);
+
+/**
+ * @brief load list of kitti gray image paths as a stream
+*/
+void KITTIStream(std::vector<std::string>& file_list, const std::string folder_dir, int start, int end);

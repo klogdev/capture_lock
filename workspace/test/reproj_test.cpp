@@ -30,7 +30,8 @@ int main(int argc, char** argv){
     colmap::Camera camera = read_text.Camera(1);
     
     camera.SetModelId(colmap::SimpleRadialCameraModel::model_id);
-    std::vector<std::vector<std::string>> image_stream = COLMAPStream(image_path, 141, 150);
+    std::vector<std::string> image_stream; 
+    COLMAPStream(image_stream, image_path, 141, 150);
 
     // start create global maps by init list of hashmaps
     std::unordered_map<int,colmap::Image> global_image_map;
@@ -38,7 +39,7 @@ int main(int argc, char** argv){
     std::unordered_map<int,colmap::Point3D> global_3d_map;
 
     //triangulate first two 
-    InitFirstPair(image_stream[0][0], image_stream[0][1], camera,
+    InitFirstPair(image_stream[0], image_stream[1], camera,
                 global_image_map, global_keypts_map,global_3d_map, 3072, 2304);
 
     return 0;

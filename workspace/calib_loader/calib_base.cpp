@@ -1,17 +1,26 @@
+#include <string>
+#include <memory>
+
+#include "file_reader/data_types.h"
+
 #include "calib_base.h"
 #include "kitti_calib.h"
 #include "colmap_calib.h"
 
-#include <string>
-
 // factory pattern
-static CalibFileReader* CalibFileReader::Create(std::string file_type){
+std::unique_ptr<CalibFileReader> 
+CalibFileReader::CalibFileCreate(const Dataset file_type) {
     switch(file_type){
-        case("kitti"):
-            return new KittiCalibReader();
-        case("colmap"):
-            return new ColmapCalibReader();
+        case(Kitti):
+            return std::make_unique<KittiCalibReader>(KittiCalibReader());
+        case(Colmap): {
+            // std::unique_ptr<CalibFileReader> reader;
+            // reader.reset(new ColmapCalibReader());
+            // return reader; 
+            return std::make_unique<ColmapCalibReader>(ColmapCalibReader());
+        }
         default:
             throw std::runtime_error("Unknown dataset");
     }
+    return nullptr;
 }

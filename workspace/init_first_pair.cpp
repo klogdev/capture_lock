@@ -24,8 +24,13 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
                     std::unordered_map<int,colmap::Point3D>& global_3d_map,
                     int resize_w, int resize_h){
     // initialize the Image class by its path (via lib: feature/image_sift)
+    std::cout << "no segfault before img init in InitFirstPair" << std::endl;
+
     Image image1(first_path, resize_w, resize_h);
     Image image2(second_path, resize_w, resize_h);
+
+    std::cout << "no segfault after img init in InitFirstPair" << std::endl;
+
 
     std::vector<sift::Keypoint> key_points1 = GetKeyPoints(image1);
     std::vector<sift::Keypoint> key_points2 = GetKeyPoints(image2);

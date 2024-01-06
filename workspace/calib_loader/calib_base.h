@@ -5,8 +5,11 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <memory>
 
 #include "base/camera.h"
+
+#include "file_reader/data_types.h"
 
 /**
  * @brief base class to loading the calibration data
@@ -14,11 +17,12 @@
 */
 class CalibFileReader{
     public:
-        static CalibFileReader* Create(const std::string file_type);
         virtual colmap::Camera GetIntrinsicMat(const std::string base_path, const std::string seq_num,
-                                               const double downscale) const = 0;
-
-    protected:
+                                               double downscale,
+                                               int width, int height) const = 0;
+        static std::unique_ptr<CalibFileReader> CalibFileCreate(const Dataset file_type);
+    
         virtual ~CalibFileReader() = default;        
 };
+
 #endif  // CALIB_FILE_READER_H  
