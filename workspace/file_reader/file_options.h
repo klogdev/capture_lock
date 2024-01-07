@@ -1,13 +1,14 @@
 #include <iostream>
 #include <string>
 
-#include "calib_base.h"
+#include "calib_loader/calib_base.h"
 #include "base/camera_models.h"
 #include "data_types.h"
 
 struct FileOptions{
     std::string calib_path;
     std::string image_path;
+    std::string pose_path;
     std::string seq_num;
     std::string output;
     int camera_model;
@@ -34,6 +35,7 @@ void InstantiateFiles(FileOptions& files, Dataset dataset){
     else if(dataset == Dataset::Kitti){
         files.calib_path = "/tmp3/KITTI_Odometry/gray/";
         files.image_path = "/tmp3/KITTI_Odometry/gray/image_0";
+        files.pose_path = "/tmp3/KITTI_Odometry/poses/";
         files.camera_model = colmap::SimpleRadialCameraModel::model_id;
         files.downsample = 1.0;
         files.seq_num = "00";

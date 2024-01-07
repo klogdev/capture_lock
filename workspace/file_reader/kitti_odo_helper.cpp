@@ -1,4 +1,5 @@
 #include <Eigen/Core>
+
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -47,6 +48,7 @@ void ExtrinsicFromKitti(const std::string base_path, const std::string seq_num,
         for(auto s: curr_line){
             curr_cali.push_back(std::stod(s));
         }
+        // Eigen::Map<Eigen::Matrix<double, 3, 4, Eigen::RowMajor>> extrinsic(curr_cali.data());
         pose_list.push_back(curr_cali);
     }
 }

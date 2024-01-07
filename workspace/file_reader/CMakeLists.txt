@@ -19,7 +19,7 @@ file_options.h
 target_include_directories(
 file_option PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-file_option PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES})
+file_option PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES} calib_base)
 
 add_library(data_type STATIC
 data_types.h
@@ -45,4 +45,4 @@ kitti_odo_helper.cpp
 target_include_directories(
   kitti_odo PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  kitti_odo PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
+  kitti_odo PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})

@@ -1,6 +1,7 @@
 #include <iostream> 
 #include <string>
 #include <fstream>
+
 #include <Eigen/Core>
 
 /**
@@ -18,6 +19,7 @@ void IntrinsicFromKittiCali(const std::string base_path, const std::string seq_n
 
 /**
  * @brief read a single sequence of extrinsic matrices from G.T.
+ * we convert each extrinsic vector to a Eigen matrix directly
 */
 void ExtrinsicFromKitti(const std::string base_path, const std::string seq_num,
                         std::vector<std::vector<double>>& pose_list);

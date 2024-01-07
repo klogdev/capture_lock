@@ -46,6 +46,8 @@ int main(int argc, char** argv){
     std::cout << "debug current data's calib path is: " << 
     files_to_run.calib_path << std::endl;
 
+    std::vector<Eigen::Matrix3x4d> test_init;
+
     std::unique_ptr<CalibFileReader> file_reader = CalibFileReader::CalibFileCreate(dataset);
 
     colmap::Camera camera = file_reader->GetIntrinsicMat(files_to_run.calib_path,

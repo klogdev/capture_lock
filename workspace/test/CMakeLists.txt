@@ -69,7 +69,7 @@ target_include_directories(
   "${OpenCV_INCLUDE_DIRS}")
 target_link_libraries(
   kitti_test PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${OpenCV_LIBRARIES}
-  ${absl_LIBRARIES} gyro stream kitti_odo)
+  ${absl_LIBRARIES} gyro stream kitti_odo file_option data_type calib_loader)
 
 add_executable(residual residual_cost_test.cpp)
 target_include_directories(
