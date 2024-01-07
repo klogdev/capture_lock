@@ -10,13 +10,12 @@ include_directories(${WORKSPACE_DIR})
 # colmap_calib.cpp
 # )
 
-add_library(calib_loader STATIC
-#calib_base.h
+add_library(calib_base STATIC
+calib_base.h
 calib_base.cpp
-#kitti_calib.h
 )
 target_include_directories(
-  calib_loader PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+  calib_base PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  calib_loader PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} kitti_odo data_type)
+  calib_base PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} kitti_odo data_type)
 

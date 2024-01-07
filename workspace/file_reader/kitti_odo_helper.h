@@ -22,7 +22,8 @@ void IntrinsicFromKittiCali(const std::string base_path, const std::string seq_n
  * we convert each extrinsic vector to a Eigen matrix directly
 */
 void ExtrinsicFromKitti(const std::string base_path, const std::string seq_num,
-                        std::vector<std::vector<double>>& pose_list);
+                        std::vector<std::vector<double>>& pose_list); 
+                        // will fail the compilation process if changes the type to std::vector<Eigen::Matrix3x4d>&
 /**
  * @brief this method extracts intrisic params info from KITTI's
  * row major vector reading; we assume KITTI's camera is simple pinhole

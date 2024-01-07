@@ -35,6 +35,7 @@ int main(int argc, char** argv){
     std::vector<std::vector<double>> extrinsic_test;
     ExtrinsicFromKitti(files_to_run.pose_path, files_to_run.seq_num,
                        extrinsic_test);
+    std::cout << "debug pose path: " << files_to_run.pose_path << std::endl;
     std::cout << "first frame's extrinsic matrix: " << std::endl;
     Eigen::Map<Eigen::Matrix<double, 3, 4, Eigen::RowMajor>> extrinsic(extrinsic_test[0].data());
     std::cout << extrinsic << std::endl;

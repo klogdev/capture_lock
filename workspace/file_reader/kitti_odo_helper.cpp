@@ -33,7 +33,7 @@ void IntrinsicFromKittiCali(const std::string base_path, const std::string seq_n
 
 void ExtrinsicFromKitti(const std::string base_path, const std::string seq_num,
                         std::vector<std::vector<double>>& pose_list){
-    std::string pose_path = base_path + seq_num;
+    std::string pose_path = base_path + seq_num + ".txt";
     std::ifstream calis(pose_path);
     std::string line;
 
