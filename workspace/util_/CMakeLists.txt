@@ -47,3 +47,12 @@ target_include_directories(
   gyro PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
   gyro PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
+
+add_library(kitti_pose STATIC
+kitti_pose.h
+kitti_pose.cpp
+)
+target_include_directories(
+  kitti_pose PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  kitti_pose PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})

@@ -29,4 +29,4 @@ void ExtrinsicFromKitti(const std::string base_path, const std::string seq_num,
  * row major vector reading; we assume KITTI's camera is simple pinhole
 */
 void GetCameraModelParams(std::vector<double>& row_major_cali, 
-                           std::vector<double>& simple_params);
+                          std::vector<double>& simple_params);

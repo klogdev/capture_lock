@@ -8,6 +8,7 @@
 #include "base/camera.h"
 #include "base/triangulation.h"
 #include "base/projection.h"
+#include "base/pose.h"
 #include "feature/sift.h"
 #include "feature/image_sift.h"
 #include "incremental_construct.h"
