@@ -17,6 +17,7 @@
 #include "bundle_adjuster.h"
 #include "global_bundle.h"
 #include "util_/pose_save.h"
+#include "util_/kitti_pose.h"
 #include "file_reader/file_stream.h"
 #include "file_reader/file_options.h"
 #include "file_reader/data_types.h"
@@ -44,9 +45,6 @@ int main(int argc, char** argv){
     FileOptions files_to_run;
     InstantiateFiles(files_to_run, dataset);
 
-    std::cout << "debug current data's calib path is: " << 
-    files_to_run.calib_path << std::endl;
-
     std::vector<Eigen::Matrix3x4d> test_init;
 
     std::unique_ptr<CalibFileReader> file_reader = CalibFileReader::CalibFileCreate(dataset);
@@ -59,8 +57,19 @@ int main(int argc, char** argv){
 
     // read colmap's south building images of the first segment
     std::vector<std::string> image_stream;
-    COLMAPStream(image_stream, files_to_run.image_path, 
-                 files_to_run.start, files_to_run.end);
+    if (dataset == Colmap) {
+        COLMAPStream(image_stream, files_to_run.image_path, 
+                        files_to_run.start, files_to_run.end);
+    }
+    else if (dataset == Kitti) {
+        std::cout << "enter the Kitti stream option" << std::endl;
+        KITTIStream(image_stream, files_to_run.image_path,
+                    files_to_run.start, files_to_run.end);
+    }
+    std::cout << "debug current data's image path is: " << 
+    files_to_run.image_path << std::endl;
+
+
     // start create global maps by init list of hashmaps
     std::unordered_map<int,colmap::Image> global_image_map;
     std::unordered_map<int,std::vector<sift::Keypoint>> global_keypts_map;
@@ -87,12 +96,25 @@ int main(int argc, char** argv){
     // read kitti's g.t. poses, this request the user specifies the sequence num
     std::vector<std::vector<double>> extrinsic_kitti;
     ExtrinsicFromKitti(files_to_run.pose_path, files_to_run.seq_num,
-                       extrinsic_kitti);
+                    extrinsic_kitti);
+    std::cout << "debug dataset option" << std::endl;
+    const Eigen::Map<const Eigen::Matrix<double, 3, 4, Eigen::RowMajor>> kitti_frame0(extrinsic_kitti[0].data());
+    const Eigen::Map<const Eigen::Matrix<double, 3, 4, Eigen::RowMajor>> kitti_frame1(extrinsic_kitti[1].data());
+
+    // init the g.t. poses for the first pair of Kitti
+    Eigen::Vector4d qvec_kitti0;
+    Eigen::Vector3d tvec_kitti0;
+    Eigen::Vector4d qvec_kitti1;
+    Eigen::Vector3d tvec_kitti1;
+
+    QuatTransFromExtrinsic(qvec_kitti0, tvec_kitti0, kitti_frame0);
+    QuatTransFromExtrinsic(qvec_kitti1, tvec_kitti1, kitti_frame1);
     // triangulate the first pair
     InitFirstPair(image_stream[0], image_stream[1], camera,
-                global_image_map, global_keypts_map, global_3d_map, 
-                768, 576,
-                qvec_141, tvec_141, qvec_142, tvec_142);
+                  global_image_map, global_keypts_map, global_3d_map, 
+                  (int)files_to_run.width*files_to_run.downsample,
+                  (int)files_to_run.height*files_to_run.downsample,
+                  qvec_kitti0, tvec_kitti0, qvec_kitti1, tvec_kitti1); // hard coded init pair
 
     std::vector<int> init_image_opt = {0,1};
     std::vector<int> init_const_pose = {0};

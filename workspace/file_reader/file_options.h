@@ -34,13 +34,15 @@ void InstantiateFiles(FileOptions& files, Dataset dataset){
     }
     else if(dataset == Dataset::Kitti){
         files.calib_path = "/tmp3/KITTI_Odometry/gray/";
-        files.image_path = "/tmp3/KITTI_Odometry/gray/image_0";
-        files.pose_path = "/tmp3/KITTI_Odometry/poses/";
-        files.camera_model = colmap::SimpleRadialCameraModel::model_id;
-        files.downsample = 1.0;
         files.seq_num = "00";
+        files.image_path = files.calib_path + files.seq_num + "/image_0";
+        files.pose_path = "/tmp3/KITTI_Odometry/poses/";
+        files.camera_model = colmap::SimplePinholeCameraModel::model_id;
+        files.downsample = 1.0;
         files.width = 1241;
         files.height = 376;
+        files.start = 0;
+        files.end = 3;
         files.output = "/tmp3/KITTI_Odometry/kitti_poses.txt";
     }
 }

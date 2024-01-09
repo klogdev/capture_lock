@@ -8,4 +8,4 @@
  * @arg quat, trans: the pose to be decomposed
 */
 void QuatTransFromExtrinsic(Eigen::Vector4d& quat, Eigen::Vector3d& trans,
-                            Eigen::Matrix3x4d& extrinsic);
+                            const Eigen::Matrix3x4d& extrinsic);
