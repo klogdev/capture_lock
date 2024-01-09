@@ -38,9 +38,16 @@ int main(int argc, char** argv){
     std::unordered_map<int,std::vector<sift::Keypoint>> global_keypts_map;
     std::unordered_map<int,colmap::Point3D> global_3d_map;
 
-    //triangulate first two 
+    // specify the g.t. poses for the first pair
+    Eigen::Vector4d qvec_141 = Eigen::Vector4d(0.868254, 0.0224726, 0.474455, -0.143257);
+    Eigen::Vector3d tvec_141 = Eigen::Vector3d(-0.679221, 1.00351, 3.65061);
+    Eigen::Vector4d qvec_142 = Eigen::Vector4d(0.864347, 0.0331977, 0.477339, -0.154756);
+    Eigen::Vector3d tvec_142 = Eigen::Vector3d(-0.756852, 0.980926, 3.58659);
+
+    // triangulate first pair
     InitFirstPair(image_stream[0], image_stream[1], camera,
-                global_image_map, global_keypts_map,global_3d_map, 3072, 2304);
+                global_image_map, global_keypts_map,global_3d_map, 3072, 2304,
+                qvec_141, tvec_141, qvec_142, tvec_142);
 
     return 0;
 }

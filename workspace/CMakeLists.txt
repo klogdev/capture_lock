@@ -45,7 +45,7 @@ target_include_directories(
   init PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
   init PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift relative_pose 
-  reprojection triangulate sift_colmap)
+  reprojection triangulate sift_colmap kitti_pose)
 
 
 add_executable(mapper mapper_main.cpp)

@@ -20,6 +20,7 @@
 #include "file_reader/file_stream.h"
 #include "file_reader/file_options.h"
 #include "file_reader/data_types.h"
+#include "file_reader/kitti_odo_helper.h"
 
 void DebugTracks(colmap::Track track){
     std::vector<colmap::TrackElement>& curr_vec = track.Elements();
@@ -56,8 +57,7 @@ int main(int argc, char** argv){
                                                          files_to_run.width,
                                                          files_to_run.height); 
 
-    // we read different segements of image streams
-    // now we are working on the first stream by manually process image_stream[0]
+    // read colmap's south building images of the first segment
     std::vector<std::string> image_stream;
     COLMAPStream(image_stream, files_to_run.image_path, 
                  files_to_run.start, files_to_run.end);
@@ -74,13 +74,25 @@ int main(int argc, char** argv){
     ba_options.refine_focal_length = false;
     ba_options.refine_extra_params = false;
 
+    // specify the g.t. poses for the first pair
+    Eigen::Vector4d qvec_141 = Eigen::Vector4d(0.868254, 0.0224726, 0.474455, -0.143257);
+    Eigen::Vector3d tvec_141 = Eigen::Vector3d(-0.679221, 1.00351, 3.65061);
+    Eigen::Vector4d qvec_167 = Eigen::Vector4d(0.0986641, 0.00817242, 0.950918, -0.293179);
+    Eigen::Vector3d tvec_167 = Eigen::Vector3d(-0.127192, 0.869954, 2.9168);
+    // override the pose of second frame with colmap's g.t.
+    Eigen::Vector4d qvec_142 = Eigen::Vector4d(0.864347, 0.0331977, 0.477339, -0.154756);
+    Eigen::Vector3d tvec_142 = Eigen::Vector3d(-0.756852, 0.980926, 3.58659);
+    Eigen::Vector4d qvec_168 = Eigen::Vector4d(0.0986538, 0.00897312, 0.955091, -0.279263);
+    Eigen::Vector3d tvec_168 = Eigen::Vector3d(-0.352987, 0.768079, 2.86639);
+    // read kitti's g.t. poses, this request the user specifies the sequence num
+    std::vector<std::vector<double>> extrinsic_kitti;
+    ExtrinsicFromKitti(files_to_run.pose_path, files_to_run.seq_num,
+                       extrinsic_kitti);
     // triangulate the first pair
-    std::cout << "check the 1st image: " << image_stream[0] << std::endl;
-    std::cout << "no segfault before the InitFirstPair" << std::endl;
-
     InitFirstPair(image_stream[0], image_stream[1], camera,
-                global_image_map, global_keypts_map, global_3d_map, 768, 576);
-    std::cout << "no segfault after first pair" << std::endl;
+                global_image_map, global_keypts_map, global_3d_map, 
+                768, 576,
+                qvec_141, tvec_141, qvec_142, tvec_142);
 
     std::vector<int> init_image_opt = {0,1};
     std::vector<int> init_const_pose = {0};
