@@ -7,16 +7,16 @@
 
 class BACostFxn{
     public:
-        explicit BACostFxn(const Eigen::Vector2d& point_2d)
-            :obs_x(point_2d(0)), obs_y(point_2d(1)){}
-
-        //num_res, list[dim_paras]
+        explicit BACostFxn(const Eigen::Vector2d& point_2d, const colmap::CameraModel& cam)
+            :obs_x(point_2d(0)), obs_y(point_2d(1)), camera_option(cam){}
+        // need add a logic to select camera model and its params
+        // num_res, list[dim_paras]
         static ceres::CostFunction* Create(const Eigen::Vector2d& point_2d){
             return new ceres::AutoDiffCostFunction<BACostFxn,2,4,3,3,4>(
                 new BACostFxn(point_2d)
             );
         }
-        //4,3,3,4 => qvec, tvec, point_3d, simple pinhole camera params
+        // 4,3,3,4 => qvec, tvec, point_3d, simple pinhole camera params
         template<typename T>
         bool operator()(const T* const qvec, const T* const tvec,
                   const T* const point_3d, const T* const camera_params,
@@ -62,13 +62,15 @@ class BACostFxn{
     private:
         const double obs_x;
         const double obs_y;
+        const colmap::CameraModel camera_option;
 };
 
 class BAConstPoseCostFxn {
  public:
     BAConstPoseCostFxn(const Eigen::Vector4d& qvec,
                         const Eigen::Vector3d& tvec,
-                        const Eigen::Vector2d& point_2d)
+                        const Eigen::Vector2d& point_2d,
+                        const colmap::CameraModel& cam)
       : qw_(qvec(0)),
         qx_(qvec(1)),
         qy_(qvec(2)),
@@ -77,7 +79,8 @@ class BAConstPoseCostFxn {
         ty_(tvec(1)),
         tz_(tvec(2)),
         obs_x(point_2d(0)),
-        obs_y(point_2d(1)) {}
+        obs_y(point_2d(1))
+        camera_option(cam) {}
 
     static ceres::CostFunction* Create(const Eigen::Vector4d& qvec,
                                        const Eigen::Vector3d& tvec,
@@ -127,4 +130,5 @@ class BAConstPoseCostFxn {
     const double tz_;
     const double obs_x;
     const double obs_y;
+    const colmap::CameraModel camera_option;
 };

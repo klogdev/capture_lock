@@ -29,11 +29,6 @@ bool GlobalBundleAdjuster(const colmap::BundleAdjustmentOptions& ba_options,
             continue;
           colmap::point3D_t id_3d = pts_2d.Point3DId();
           ba_config.AddVariablePoint(id_3d);
-
-          bool pt_avail = global_3d_map.find(id_3d) != global_3d_map.end();
-          if(pt_avail == 0){
-            std::cout << "3D point " << id_3d << " is not avail: " << std::endl;
-          }
         }
     }
 

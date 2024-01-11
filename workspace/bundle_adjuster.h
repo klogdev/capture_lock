@@ -36,10 +36,12 @@ class BundleAdjust_{
         
     protected:
         void ParameterizePoints(std::unordered_map<int,colmap::Point3D>& global_point3d_map);
+        void ParameterizeCameras(const colmap::Camera& camera);
 
         const colmap::BundleAdjustmentOptions options_;
         colmap::BundleAdjustmentConfig config_;
         std::unique_ptr<ceres::Problem> problem_;
         ceres::Solver::Summary summary_;
         std::unordered_map<colmap::point3D_t, size_t> point3D_num_observations_;
+        std::unordered_set<colmap::camera_t> camera_ids_;
 };

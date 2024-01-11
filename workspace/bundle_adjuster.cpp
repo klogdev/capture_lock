@@ -12,12 +12,15 @@
 //options are adopt from colmap's BA option
 BundleAdjust_::BundleAdjust_(const colmap::BundleAdjustmentOptions& options,
                             const colmap::BundleAdjustmentConfig& config)
-    : options_(options), config_(config) {}
+    : options_(options), config_(config) {
+        // different from colmap, we move init of problem_ 
+        // from Solver to the constructor
+        problem_ = std::make_unique<ceres::Problem>();
+    }
 
 bool BundleAdjust_::Solver(colmap::Camera& camera,
                           std::unordered_map<int,colmap::Image>& global_image_map,
                           std::unordered_map<int,colmap::Point3D>& global_3d_map){
-    problem_ = std::make_unique<ceres::Problem>();
     // default loss in options_: trivial loss
     ceres::LossFunction* loss_function = options_.CreateLossFunction();
     // DEBUGGING:
@@ -26,6 +29,7 @@ bool BundleAdjust_::Solver(colmap::Camera& camera,
         std::cout << element << " ";
     }
     std::cout << std::endl;
+
     SetUp(loss_function, camera, global_image_map, global_3d_map);
 
     ceres::Solver::Options solver_options = options_.solver_options;
@@ -80,7 +84,7 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
         point3D_num_observations_[point_2d.Point3DId()] += 1;
 
         colmap::Point3D& curr_3d = global_3d_map[point_2d.Point3DId()];
-        assert(curr_3d.Track().Length() > 1); //must have more than 1 obs, to have enough DoF
+        assert(curr_3d.Track().Length() > 1); // must have more than 1 obs, to have enough DoF
 
         ceres::CostFunction* cost_function = nullptr;
         // constant pose init by both 2d point and extrinsic, only intrinsic/3d point as parametes
@@ -90,18 +94,22 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
                     image.Qvec(), image.Tvec(), point_2d.XY());                 
 
             problem_->AddResidualBlock(cost_function, loss_function,
-                                        curr_3d.XYZ().data(), camera_params_data);
+                                       curr_3d.XYZ().data(), camera_params_data);
             } 
 
         else{                                      
             cost_function = BACostFxn::Create(point_2d.XY()); 
            
             problem_->AddResidualBlock(cost_function, loss_function, qvec_data,
-                                        tvec_data, curr_3d.XYZ().data(),
-                                        camera_params_data); 
+                                       tvec_data, curr_3d.XYZ().data(),
+                                       camera_params_data); 
          }
     }
     
+    if (num_observations > 0) {
+        camera_ids_.insert(image.CameraId()); // should check camera id's def
+    }
+
     if (!constant_pose){
         colmap::SetQuaternionManifold(problem_.get(), qvec_data);
     }    
@@ -146,4 +154,12 @@ void BundleAdjust_::ParameterizePoints(
         }
     }
 }
+
+void BundleAdjust_::ParameterizeCameras(const colmap::Camera& camera){
+    const bool constant_camera = !options_.refine_focal_length &&
+                                 !options_.refine_principal_point &&
+                                 !options_.refine_extra_params;
+    
+}
+
 
