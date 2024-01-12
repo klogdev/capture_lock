@@ -6,12 +6,15 @@
 #include "base/point2d.h"
 #include "base/image.h"
 
+#include "file_reader/data_types.h"
+
 bool GlobalBundleAdjuster(const colmap::BundleAdjustmentOptions& ba_options,
                           colmap::Camera& camera,
                           std::unordered_map<int,colmap::Image>& global_image_map,
                           std::unordered_map<int, colmap::Point3D>& global_3d_map,
                           std::vector<int>& image_to_opt,
-                          const std::vector<int>& const_pose){
+                          const std::vector<int>& const_pose,
+                          Dataset data){
     colmap::BundleAdjustmentConfig ba_config;
 
     for (const int image_id : image_to_opt){
@@ -51,7 +54,7 @@ bool GlobalBundleAdjuster(const colmap::BundleAdjustmentOptions& ba_options,
   // Run bundle adjustment. SetUp is called inside the Solver
   // the bundle_adjuster_ will initialized by input image based on the
   // indices offered by ba_config
-  BundleAdjust_ bundle_adjuster(ba_options, ba_config);
+  BundleAdjust_ bundle_adjuster(ba_options, ba_config, data);
   std::cout << "DEBUG: no segfault before local BA " << const_pose[0] << std::endl;
   if (!bundle_adjuster.Solver(camera, global_image_map, global_3d_map)) {
     return false;

@@ -8,11 +8,13 @@
 #include "base/camera_models.h"
 #include "base/cost_functions.h"
 
-//config: include all images&point should be setup in priori
-//options are adopt from colmap's BA option
+#include "file_reader/data_types.h"
+
+
 BundleAdjust_::BundleAdjust_(const colmap::BundleAdjustmentOptions& options,
-                            const colmap::BundleAdjustmentConfig& config)
-    : options_(options), config_(config) {
+                             const colmap::BundleAdjustmentConfig& config,
+                             const Dataset data)
+    : options_(options), config_(config), dataset_(data) {
         // different from colmap, we move init of problem_ 
         // from Solver to the constructor
         problem_ = std::make_unique<ceres::Problem>();
@@ -56,8 +58,9 @@ void BundleAdjust_::SetUp(ceres::LossFunction* loss_function,
         AddPointToProblem(point3D_id, camera, global_image_map, 
                           global_3d_map, loss_function);
     }
-    // skip camera parameterization?
+    // need to set camera parameter block, if it specified as a constant
     ParameterizePoints(global_3d_map);
+    ParameterizeCameras(camera);
 }
 
 void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
@@ -89,27 +92,38 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
         ceres::CostFunction* cost_function = nullptr;
         // constant pose init by both 2d point and extrinsic, only intrinsic/3d point as parametes
         if (constant_pose) {  
-            cost_function =                                                    
-                BAConstPoseCostFxn::Create( 
-                    image.Qvec(), image.Tvec(), point_2d.XY());                 
+            if (dataset_ == Dataset::Colmap){
+                cost_function =                                                    
+                    BAConstPoseCostFxn<colmap::SimpleRadialCameraModel>::Create( 
+                        image.Qvec(), image.Tvec(), point_2d.XY()); 
+            }  
+            else if (dataset_ == Dataset::Kitti){
+                cost_function =                                                    
+                    BAConstPoseCostFxn<colmap::SimplePinholeCameraModel>::Create( 
+                        image.Qvec(), image.Tvec(), point_2d.XY()); 
+            }              
 
             problem_->AddResidualBlock(cost_function, loss_function,
                                        curr_3d.XYZ().data(), camera_params_data);
-            } 
+        } 
 
-        else{                                      
-            cost_function = BACostFxn::Create(point_2d.XY()); 
+        else{ 
+            if (dataset_ == Dataset::Colmap){                                     
+                cost_function = BACostFxn<colmap::SimpleRadialCameraModel>::Create(point_2d.XY()); 
+            }
+            else if (dataset_ == Dataset::Kitti){
+                cost_function = BACostFxn<colmap::SimplePinholeCameraModel>::Create(point_2d.XY()); 
+            }
            
             problem_->AddResidualBlock(cost_function, loss_function, qvec_data,
                                        tvec_data, curr_3d.XYZ().data(),
                                        camera_params_data); 
-         }
+        }
     }
     
-    if (num_observations > 0) {
-        camera_ids_.insert(image.CameraId()); // should check camera id's def
-    }
-
+    
+    // we do not need to register cam id with non-zero observations
+    // as we assume all images added has at least 1 observation
     if (!constant_pose){
         colmap::SetQuaternionManifold(problem_.get(), qvec_data);
     }    
@@ -138,8 +152,12 @@ void BundleAdjust_::AddPointToProblem(const colmap::point3D_t point3D_id,
 
         ceres::CostFunction* cost_function = nullptr;
 
-        cost_function = BAConstPoseCostFxn::Create(track_image.Qvec(), track_image.Tvec(), track_point_2d.XY());                 
-                
+        if (dataset_ == Dataset::Colmap){
+            cost_function = BAConstPoseCostFxn<colmap::SimpleRadialCameraModel>::Create(track_image.Qvec(), track_image.Tvec(), track_point_2d.XY());                 
+        }   
+        else if (dataset_ == Dataset::Kitti){
+            cost_function = BAConstPoseCostFxn<colmap::SimplePinholeCameraModel>::Create(track_image.Qvec(), track_image.Tvec(), track_point_2d.XY()); 
+        }
         problem_->AddResidualBlock(cost_function, loss_function,
                                curr_3d.XYZ().data(), camera.ParamsData());
     }
@@ -155,11 +173,38 @@ void BundleAdjust_::ParameterizePoints(
     }
 }
 
-void BundleAdjust_::ParameterizeCameras(const colmap::Camera& camera){
+void BundleAdjust_::ParameterizeCameras(colmap::Camera& camera){
     const bool constant_camera = !options_.refine_focal_length &&
                                  !options_.refine_principal_point &&
                                  !options_.refine_extra_params;
-    
+    // we only have one camera, thus do not need to check constant cam id
+    if (constant_camera) {
+      problem_->SetParameterBlockConstant(camera.ParamsData());
+    } else {
+      std::vector<int> const_camera_params;
+
+      if (!options_.refine_focal_length) {
+        const std::vector<size_t>& params_idxs = camera.FocalLengthIdxs();
+        const_camera_params.insert(const_camera_params.end(),
+                                   params_idxs.begin(), params_idxs.end());
+      }
+      if (!options_.refine_principal_point) {
+        const std::vector<size_t>& params_idxs = camera.PrincipalPointIdxs();
+        const_camera_params.insert(const_camera_params.end(),
+                                   params_idxs.begin(), params_idxs.end());
+      }
+      if (!options_.refine_extra_params) {
+        const std::vector<size_t>& params_idxs = camera.ExtraParamsIdxs();
+        const_camera_params.insert(const_camera_params.end(),
+                                   params_idxs.begin(), params_idxs.end());
+      }
+
+      if (const_camera_params.size() > 0) {
+        colmap::SetSubsetManifold(static_cast<int>(camera.NumParams()),
+                          const_camera_params, problem_.get(),
+                          camera.ParamsData());
+      }
+    }
 }
 
 
