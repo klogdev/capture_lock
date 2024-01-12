@@ -29,7 +29,7 @@ void InstantiateFiles(FileOptions& files, Dataset dataset){
         files.width = 3072;
         files.height = 2304;
         files.start = 141;
-        files.end = 150;
+        files.end = 147;
         files.output = "/tmp2/optim_poses.txt";
     }
     else if(dataset == Dataset::Kitti){

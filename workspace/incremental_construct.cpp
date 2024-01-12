@@ -31,6 +31,7 @@ void IncrementOneImage(std::string image_path, int new_id,
     std::vector<sift::Keypoint> curr_key_points = GetKeyPoints(new_image);
     // convert sift keypts to eigen, 
     // will pick inlier matches by ransac via essential mat model
+    // can use epipole model if we have gyro readings
     std::vector<Eigen::Vector2d> curr_keypts_vec = SIFTPtsToVec(curr_key_points);
     colmap::Image new_cmp_image = SIFTtoCOLMAPImage(new_id, curr_keypts_vec, camera);
     colmap::Image last_image = global_image_map[last_id];
@@ -45,8 +46,8 @@ void IncrementOneImage(std::string image_path, int new_id,
 
     // collect matched vector with relative pose w/ RANSAC
     // as a pre-filtering
-    std::unordered_map<int,int> vec2d1_idx_map; //map of idx of matched vec for relative pose
-    std::unordered_map<int,int> vec2d2_idx_map; //to the idx of original feature vector
+    std::unordered_map<int,int> vec2d1_idx_map; // map of idx of matched vec for relative pose
+    std::unordered_map<int,int> vec2d2_idx_map; // to the idx of original feature vector
     std::vector<Eigen::Vector2d> matched_vec1;
     std::vector<Eigen::Vector2d> matched_vec2;
 
@@ -63,7 +64,7 @@ void IncrementOneImage(std::string image_path, int new_id,
     colmap::RANSACOptions ransac_options = colmap::RANSACOptions();
     ransac_options.max_error = 5.0;
     Eigen::Vector4d qvec_rel = Eigen::Vector4d(0, 0, 0, 1); // init relative pose
-    Eigen::Vector3d tvec_rel = Eigen::Vector3d::Zero();     // randomly
+    Eigen::Vector3d tvec_rel = Eigen::Vector3d::Zero();     // w/ 0 rot and trans
     std::vector<char> inlier_mask_rel;
     // use customized relative pose estimator w/ inlier masks
     size_t num_inliers = 
@@ -73,10 +74,32 @@ void IncrementOneImage(std::string image_path, int new_id,
     int test_inliers = 0; // for Debugging
     int inlier_repro = 0;
 
-    // we dont need to record the original vector id 
+    // we don't need to record the original vector id 
     // as the PnP only estimate the inliers as an intermediate step
     std::vector<Eigen::Vector3d> matched3d_from2d;
     std::vector<Eigen::Vector2d> matched2d_curr;
+
+    std::cout << "double-check image " << last_id << " 's qvec is: " << std::endl;
+    std::cout << last_image.Qvec() << std::endl;
+    std::cout << "double-check image " << last_id << " 's tvec is: " << std::endl;
+    std::cout << last_image.Tvec() << std::endl;
+
+    Eigen::Matrix3d calibration = camera.CalibrationMatrix();
+    std::cout << "check calibration matrix for the incremental: " << std::endl;
+    std::cout << calibration << std::endl;
+    // check reprojection via a hard coded point
+    Eigen::Vector3d hard_3d = Eigen::Vector3d(3.62843, -0.423305, -1.29701);
+    Eigen::Vector2d hard_2d = Eigen::Vector2d(465, 281);
+    Eigen::Vector4d qvec_142 = Eigen::Vector4d(0.864347, 0.0331977, 0.477339, -0.154756);
+    Eigen::Vector3d tvec_142 = Eigen::Vector3d(-0.756852, 0.980926, 3.58659);
+    double repro_hard = colmap::CalculateSquaredReprojectionError(hard_2d,
+                                                                  hard_3d,
+                                                                  qvec_142,
+                                                                  tvec_142,
+                                                                  camera);
+    std::cout << "check the reprojection error of hard coded point: " << std::endl;
+    std::cout << repro_hard << std::endl;
+
     for (int i = 0; i < matches.size(); i++){
 
         if(inlier_mask_rel[i] == 0)
@@ -85,19 +108,24 @@ void IncrementOneImage(std::string image_path, int new_id,
         test_inliers++;
 
         // assume sift::key_points' id of last image are consistent with the id
-        // registered in points2d
-        colmap::point2D_t last_2d_id = matches[i].first; //need type conversion
+        // that registered in points2d
+        colmap::point2D_t last_2d_id = matches[i].first; // automatic type conversion
         colmap::Point2D last_2d = last_image.Point2D(last_2d_id);
         if (!last_2d.HasPoint3D()){
             continue;
         }
 
         colmap::point3D_t global_3d_key = last_2d.Point3DId();
-        Eigen::Vector3d from2d_to3d = global_3d_map[global_3d_key].XYZ();//extract vector from point3d's attr
+        Eigen::Vector3d from2d_to3d = global_3d_map[global_3d_key].XYZ(); // extract vector from point3d's attr
         matched3d_from2d.push_back(from2d_to3d);
         
         // DEBUGGING: check the reprojection error
         Eigen::Vector2d last_2d_pt = last_2d.XY();
+        std::cout << "reprojecting the 3d points w/ coord: " << std::endl;
+        std::cout << from2d_to3d << std::endl;
+        std::cout << "reprojecting on the 2d points w/ coord: " << std::endl;
+        std::cout << last_2d_pt << std::endl;
+        
         double repro_err = colmap::CalculateSquaredReprojectionError(last_2d_pt,
                                                                      from2d_to3d,
                                                                      last_image.Qvec(),

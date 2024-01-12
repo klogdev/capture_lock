@@ -44,7 +44,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     std::vector<Eigen::Vector2d> key_vec2 = SIFTPtsToVec(key_points2);
     colmap::Image cmp_image2 = SIFTtoCOLMAPImage(2, key_vec2, camera);
 
-    // register the first frame as the colmap's g.t.
+    // register the first frame as the g.t.
     cmp_image1.SetQvec(gt_quat1);
     cmp_image1.SetTvec(gt_trans1);
 
@@ -83,9 +83,9 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
 
     // start triangulation
     Eigen::Matrix3d calibration = camera.CalibrationMatrix();
-    std::cout << "check calibration matrix: " << std::endl;
+    std::cout << "check calibration matrix for the first pair: " << std::endl;
     std::cout << calibration << std::endl;
-    Eigen::Matrix3x4d extrinsic_mat1 = cmp_image1.ProjectionMatrix(); //under proj.cc, only compose extrinsic
+    Eigen::Matrix3x4d extrinsic_mat1 = cmp_image1.ProjectionMatrix(); // under proj.cc, only compose extrinsic
     Eigen::Matrix3x4d extrinsic_mat2 = cmp_image2.ProjectionMatrix();
 
     std::cout << "check extrinsic matrix of image 2: " << std::endl;
@@ -97,7 +97,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
                     triangulate_3d);
 
     // triangulate_3d should has identical length of matched_vec and inlier_mask
-    // we skip the outlier of inlier_mask
+    // we skip the outlier by checking inlier_mask
     std::cout << "2D indices of the first pair: " << std::endl;
     int curr_3d_len = 0;
     int inlier_img0 = 0; // debugging inliers of reprojection
@@ -140,6 +140,11 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
             inlier_img0++;
 
         Eigen::Vector2d curr_2d_from1 = key_vec2[orig_idx2];
+        if(orig_idx2 == 150){
+            std::cout << "check point 2d with id 150's on image 1: " << std::endl;
+            std::cout <<curr_2d_from1 << std::endl; 
+            std::cout << triangulate_3d[i] << std::endl;
+        }
         double repro_2 = colmap::CalculateSquaredReprojectionError(curr_2d_from1,
                                                                    triangulate_3d[i],
                                                                    cmp_image2.Qvec(),
@@ -179,7 +184,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     Eigen::Vector4d qvec_abs = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec_abs = Eigen::Vector3d::Zero();
     std::vector<char> inlier_mask_abs;
-    size_t inliers = triangulate_3d.size(); //need check def
+    size_t inliers = triangulate_3d.size(); // need check def
     bool abs_pose = colmap::EstimateAbsolutePose(absolute_options, matched_vec2,
                                                 triangulate_3d, &qvec_abs, &tvec_abs,
                                                 &camera, &inliers, &inlier_mask_abs);
