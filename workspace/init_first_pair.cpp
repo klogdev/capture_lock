@@ -85,12 +85,6 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     Eigen::Matrix3d calibration = camera.CalibrationMatrix();
     std::cout << "check calibration matrix for the first pair: " << std::endl;
     std::cout << calibration << std::endl;
-    Eigen::Matrix3x4d extrinsic_mat1 = cmp_image1.ProjectionMatrix(); // under proj.cc, only compose extrinsic
-    Eigen::Matrix3x4d extrinsic_mat2 = cmp_image2.ProjectionMatrix();
-
-    std::cout << "check extrinsic matrix of image 2: " << std::endl;
-    std::cout << extrinsic_mat2 << std::endl;
-
 
     std::vector<Eigen::Vector3d> triangulate_3d;
     TriangulateImage(cmp_image1, cmp_image2, camera, matched_vec1, matched_vec2,

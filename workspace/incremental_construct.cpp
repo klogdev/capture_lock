@@ -69,7 +69,7 @@ void IncrementOneImage(std::string image_path, int new_id,
     // use customized relative pose estimator w/ inlier masks
     size_t num_inliers = 
         RelativePoseWMask(ransac_options, matched_vec1, matched_vec2, 
-                                     &qvec_rel, &tvec_rel, &inlier_mask_rel);
+                                    &qvec_rel, &tvec_rel, &inlier_mask_rel);
 
     int test_inliers = 0; // for Debugging
     int inlier_repro = 0;
@@ -87,18 +87,11 @@ void IncrementOneImage(std::string image_path, int new_id,
     Eigen::Matrix3d calibration = camera.CalibrationMatrix();
     std::cout << "check calibration matrix for the incremental: " << std::endl;
     std::cout << calibration << std::endl;
-    // check reprojection via a hard coded point
-    Eigen::Vector3d hard_3d = Eigen::Vector3d(3.62843, -0.423305, -1.29701);
-    Eigen::Vector2d hard_2d = Eigen::Vector2d(465, 281);
-    Eigen::Vector4d qvec_142 = Eigen::Vector4d(0.864347, 0.0331977, 0.477339, -0.154756);
-    Eigen::Vector3d tvec_142 = Eigen::Vector3d(-0.756852, 0.980926, 3.58659);
-    double repro_hard = colmap::CalculateSquaredReprojectionError(hard_2d,
-                                                                  hard_3d,
-                                                                  qvec_142,
-                                                                  tvec_142,
-                                                                  camera);
-    std::cout << "check the reprojection error of hard coded point: " << std::endl;
-    std::cout << repro_hard << std::endl;
+    std::vector<double> camera_para_after = camera.Params();
+    std::cout << "camera parameters inside incremental is: " << std::endl;
+    for(int i = 0; i < camera_para_after.size(); i++)
+        std::cout << camera_para_after[i] << " ";
+    std::cout << std::endl;
 
     for (int i = 0; i < matches.size(); i++){
 
@@ -118,14 +111,16 @@ void IncrementOneImage(std::string image_path, int new_id,
         colmap::point3D_t global_3d_key = last_2d.Point3DId();
         Eigen::Vector3d from2d_to3d = global_3d_map[global_3d_key].XYZ(); // extract vector from point3d's attr
         matched3d_from2d.push_back(from2d_to3d);
+
+        Eigen::Vector2d last_2d_pt = last_2d.XY();
         
         // DEBUGGING: check the reprojection error
-        Eigen::Vector2d last_2d_pt = last_2d.XY();
-        std::cout << "reprojecting the 3d points w/ coord: " << std::endl;
-        std::cout << from2d_to3d << std::endl;
-        std::cout << "reprojecting on the 2d points w/ coord: " << std::endl;
-        std::cout << last_2d_pt << std::endl;
-        
+        if(last_2d_id == 150){
+            std::cout << "reprojecting the 3d points w/ coord: " << std::endl;
+            std::cout << from2d_to3d << std::endl;
+            std::cout << "reprojecting on the 2d points w/ coord: " << std::endl;
+            std::cout << last_2d_pt << std::endl;
+        }
         double repro_err = colmap::CalculateSquaredReprojectionError(last_2d_pt,
                                                                      from2d_to3d,
                                                                      last_image.Qvec(),
