@@ -95,11 +95,11 @@ int main(int argc, char** argv){
     Eigen::Vector4d qvec_168 = Eigen::Vector4d(0.0986538, 0.00897312, 0.955091, -0.279263);
     Eigen::Vector3d tvec_168 = Eigen::Vector3d(-0.352987, 0.768079, 2.86639);
     // read kitti's g.t. poses, this request the user specifies the sequence num
-    // std::vector<std::vector<double>> extrinsic_kitti;
-    // ExtrinsicFromKitti(files_to_run.pose_path, files_to_run.seq_num,
-    //                 extrinsic_kitti);
-    // const Eigen::Map<const Eigen::Matrix<double, 3, 4, Eigen::RowMajor>> kitti_frame0(extrinsic_kitti[0].data());
-    // const Eigen::Map<const Eigen::Matrix<double, 3, 4, Eigen::RowMajor>> kitti_frame1(extrinsic_kitti[1].data());
+    std::vector<std::vector<double>> extrinsic_kitti;
+    ExtrinsicFromKitti(files_to_run.pose_path, files_to_run.seq_num,
+                    extrinsic_kitti);
+    const Eigen::Map<const Eigen::Matrix<double, 3, 4, Eigen::RowMajor>> kitti_frame0(extrinsic_kitti[0].data());
+    const Eigen::Map<const Eigen::Matrix<double, 3, 4, Eigen::RowMajor>> kitti_frame1(extrinsic_kitti[1].data());
 
     // init the g.t. poses for the first pair of Kitti
     Eigen::Vector4d qvec_kitti0;
@@ -107,28 +107,28 @@ int main(int argc, char** argv){
     Eigen::Vector4d qvec_kitti1;
     Eigen::Vector3d tvec_kitti1;
 
-    // QuatTransFromExtrinsic(qvec_kitti0, tvec_kitti0, kitti_frame0);
-    // QuatTransFromExtrinsic(qvec_kitti1, tvec_kitti1, kitti_frame1);
+    QuatTransFromExtrinsic(qvec_kitti0, tvec_kitti0, kitti_frame0);
+    QuatTransFromExtrinsic(qvec_kitti1, tvec_kitti1, kitti_frame1);
     // triangulate the first pair
     InitFirstPair(image_stream[0], image_stream[1], camera,
                   global_image_map, global_keypts_map, global_3d_map, 
-                  768, // (int)files_to_run.width*files_to_run.downsample,
-                  576, // (int)files_to_run.height*files_to_run.downsample,
-                  qvec_141, tvec_141, qvec_142, tvec_142); // hard coded init pair
+                  (int)files_to_run.width*files_to_run.downsample,
+                  (int)files_to_run.height*files_to_run.downsample,
+                  qvec_kitti0, tvec_kitti0, qvec_kitti1, tvec_kitti1); // hard coded init pair
 
-    std::vector<int> init_image_opt = {0,1};
-    std::vector<int> init_const_pose = {0};
+    std::vector<int> init_image_opt = {0, 1};
+    std::vector<int> init_const_pose = {0, 1};
 
     // run ba for the first pair
-    // bool init_ba = GlobalBundleAdjuster(ba_options, camera, global_image_map,
-    //                                     global_3d_map, init_image_opt, 
-    //                                     init_const_pose, dataset);  
+    bool init_ba = GlobalBundleAdjuster(ba_options, camera, global_image_map,
+                                        global_3d_map, init_image_opt, 
+                                        init_const_pose, dataset);  
     // DEBUGGING: check the pose after init ba
-    // std::cout << "BA result for the first pair is: " << init_ba << std::endl;
-    // colmap::Image frame_1 = global_image_map[1];
-    // std::cout << "frame 1 pose after init BA is: " << std::endl;
-    // std::cout << frame_1.Qvec() << std::endl;
-    // std::cout << frame_1.Tvec() << std::endl;
+    std::cout << "BA result for the first pair is: " << init_ba << std::endl;
+    colmap::Image frame_1 = global_image_map[1];
+    std::cout << "frame 1 pose after init BA is: " << std::endl;
+    std::cout << frame_1.Qvec() << std::endl;
+    std::cout << frame_1.Tvec() << std::endl;
 
 
     // manually init the sliding window size for local ba
@@ -137,7 +137,9 @@ int main(int argc, char** argv){
     // increment remaining frames
     for (int i = 2; i < image_stream.size(); i++){
         IncrementOneImage(image_stream[i], i, i-1, camera,
-                        global_image_map, global_keypts_map, global_3d_map, 768, 576);
+                        global_image_map, global_keypts_map, global_3d_map, 
+                        (int)files_to_run.width*files_to_run.downsample,
+                        (int)files_to_run.height*files_to_run.downsample);
         std::cout << "num of 3d points after process image " << i << " is: " 
                   << global_3d_map.size() << std::endl;
 

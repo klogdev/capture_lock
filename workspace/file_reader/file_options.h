@@ -29,7 +29,7 @@ void InstantiateFiles(FileOptions& files, Dataset dataset){
         files.width = 3072;
         files.height = 2304;
         files.start = 141;
-        files.end = 147;
+        files.end = 200;
         files.output = "/tmp2/optim_poses.txt";
     }
     else if(dataset == Dataset::Kitti){
@@ -42,7 +42,7 @@ void InstantiateFiles(FileOptions& files, Dataset dataset){
         files.width = 1241;
         files.height = 376;
         files.start = 0;
-        files.end = 3;
+        files.end = 30;
         files.output = "/tmp3/KITTI_Odometry/kitti_poses.txt";
     }
 }

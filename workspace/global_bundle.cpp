@@ -20,9 +20,6 @@ bool GlobalBundleAdjuster(const colmap::BundleAdjustmentOptions& ba_options,
     for (const int image_id : image_to_opt){
         // add image id via input indices
         ba_config.AddImage(image_id);
-        // bool img_avail = global_image_map.find(image_id) != global_image_map.end();
-        // std::cout << "check image " << image_id << "'s avail: " << std::endl;
-        // std::cout << img_avail << std::endl;
 
         colmap::Image curr_image = global_image_map[image_id];
 
