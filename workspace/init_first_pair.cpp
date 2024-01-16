@@ -66,7 +66,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
 
     // start relative pose estimation and register pose for the frame 2
     colmap::RANSACOptions ransac_options = colmap::RANSACOptions();
-    ransac_options.max_error = 3.0;
+    ransac_options.max_error = 1.0;
     Eigen::Vector4d qvec_init = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec_init = Eigen::Vector3d::Zero();
     std::vector<char> inlier_mask_rel;
@@ -80,6 +80,12 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     // set the 2nd frame's pose as g.t.
     cmp_image2.SetQvec(gt_quat2);
     cmp_image2.SetTvec(gt_trans2);
+
+    // check the relative motion via essential mat
+    std::cout << "relative rotation of the first pair is: " << std::endl;
+    std::cout << qvec_init << std::endl;
+    std::cout << "relative translation of the first pair is: " << std::endl;
+    std::cout << tvec_init << std::endl;
 
     // start triangulation
     Eigen::Matrix3d calibration = camera.CalibrationMatrix();

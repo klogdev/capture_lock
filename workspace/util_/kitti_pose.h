@@ -9,3 +9,10 @@
 */
 void QuatTransFromExtrinsic(Eigen::Vector4d& quat, Eigen::Vector3d& trans,
                             const Eigen::Matrix3x4d& extrinsic);
+
+/**
+ * @brief inverse the extrinsic matrix to a kitti pose or vice versa by
+ * converting [R|t] to [-R^T|-R^T*t]
+*/
+void InverseExtrinsic(const Eigen::Matrix3x4d& kitti_pose, 
+                      Eigen::Matrix3x4d& extrinsic);

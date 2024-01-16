@@ -52,7 +52,7 @@ bool GlobalBundleAdjuster(const colmap::BundleAdjustmentOptions& ba_options,
   // the bundle_adjuster_ will initialized by input image based on the
   // indices offered by ba_config
   BundleAdjust_ bundle_adjuster(ba_options, ba_config, data);
-  std::cout << "DEBUG: no segfault before local BA " << const_pose[0] << std::endl;
+  std::cout << "DEBUG: no segfault before local BA w. window" << const_pose[0] << std::endl;
   if (!bundle_adjuster.Solver(camera, global_image_map, global_3d_map)) {
     return false;
   }

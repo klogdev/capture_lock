@@ -56,13 +56,13 @@ int main(int argc, char** argv){
                                                          files_to_run.height); 
 
     // read colmap's south building images of the first segment
+    // or kitti's image with specified seq num
     std::vector<std::string> image_stream;
     if (dataset == Colmap) {
         COLMAPStream(image_stream, files_to_run.image_path, 
                         files_to_run.start, files_to_run.end);
     }
     else if (dataset == Kitti) {
-        std::cout << "enter the Kitti stream option" << std::endl;
         KITTIStream(image_stream, files_to_run.image_path,
                     files_to_run.start, files_to_run.end);
     }
@@ -101,6 +101,16 @@ int main(int argc, char** argv){
     const Eigen::Map<const Eigen::Matrix<double, 3, 4, Eigen::RowMajor>> kitti_frame0(extrinsic_kitti[0].data());
     const Eigen::Map<const Eigen::Matrix<double, 3, 4, Eigen::RowMajor>> kitti_frame1(extrinsic_kitti[1].data());
 
+    Eigen::Matrix3d R = kitti_frame1.block<3, 3>(0, 0);
+    Eigen::Vector3d t = kitti_frame1.col(3);
+    Eigen::Vector3d tvec_inv = -R * t;
+
+    // std::cout << "inv vector before swap: " << tvec_inv << std::endl;
+    // std::swap(tvec_inv.x(), tvec_inv.z());
+    // std::cout << "inv vector after swap: " << tvec_inv << std::endl;
+
+
+
     // init the g.t. poses for the first pair of Kitti
     Eigen::Vector4d qvec_kitti0;
     Eigen::Vector3d tvec_kitti0;
@@ -114,7 +124,7 @@ int main(int argc, char** argv){
                   global_image_map, global_keypts_map, global_3d_map, 
                   (int)files_to_run.width*files_to_run.downsample,
                   (int)files_to_run.height*files_to_run.downsample,
-                  qvec_kitti0, tvec_kitti0, qvec_kitti1, tvec_kitti1); // hard coded init pair
+                  qvec_kitti0, tvec_kitti0, qvec_kitti1, tvec_inv); // hard coded init pair
 
     std::vector<int> init_image_opt = {0, 1};
     std::vector<int> init_const_pose = {0, 1};

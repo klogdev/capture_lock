@@ -62,7 +62,7 @@ void IncrementOneImage(std::string image_path, int new_id,
 
     // start relative pose estimation w/ RANSAC for a pre-filtering
     colmap::RANSACOptions ransac_options = colmap::RANSACOptions();
-    ransac_options.max_error = 5.0;
+    ransac_options.max_error = 1.0;
     Eigen::Vector4d qvec_rel = Eigen::Vector4d(0, 0, 0, 1); // init relative pose
     Eigen::Vector3d tvec_rel = Eigen::Vector3d::Zero();     // w/ 0 rot and trans
     std::vector<char> inlier_mask_rel;
@@ -79,10 +79,6 @@ void IncrementOneImage(std::string image_path, int new_id,
     std::vector<Eigen::Vector3d> matched3d_from2d;
     std::vector<Eigen::Vector2d> matched2d_curr;
 
-    std::cout << "double-check image " << last_id << " 's qvec is: " << std::endl;
-    std::cout << last_image.Qvec() << std::endl;
-    std::cout << "double-check image " << last_id << " 's tvec is: " << std::endl;
-    std::cout << last_image.Tvec() << std::endl;
 
     Eigen::Matrix3d calibration = camera.CalibrationMatrix();
     std::cout << "check calibration matrix for the incremental: " << std::endl;
@@ -143,7 +139,7 @@ void IncrementOneImage(std::string image_path, int new_id,
 
     //start absolute pose estimation
     colmap::AbsolutePoseEstimationOptions absolute_options = colmap::AbsolutePoseEstimationOptions();
-    absolute_options.ransac_options.max_error = 3.0;
+    absolute_options.ransac_options.max_error = 1.0;
     Eigen::Vector4d qvec_abs = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec_abs = Eigen::Vector3d::Zero();
     std::vector<char> inlier_mask;

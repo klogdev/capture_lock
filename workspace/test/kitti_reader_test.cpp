@@ -39,5 +39,13 @@ int main(int argc, char** argv){
     std::cout << "first frame's extrinsic matrix: " << std::endl;
     Eigen::Map<Eigen::Matrix<double, 3, 4, Eigen::RowMajor>> extrinsic(extrinsic_test[0].data());
     std::cout << extrinsic << std::endl;
+
+    // test relative motion of kitti via essential mat
+    std::vector<std::string> image_stream;
+    KITTIStream(image_stream, files_to_run.image_path,
+                    files_to_run.start, files_to_run.end);
+
+    
+
     return 0;
 }
