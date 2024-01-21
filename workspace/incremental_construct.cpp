@@ -1,3 +1,5 @@
+#include <map>
+
 #include "sfm/incremental_mapper.h"
 #include "sfm/incremental_triangulator.h"
 
@@ -25,6 +27,7 @@ void IncrementOneImage(std::string image_path, int new_id,
                         std::unordered_map<int,colmap::Image>& global_image_map,
                         std::unordered_map<int,std::vector<sift::Keypoint>>& global_keypts_map,
                         std::unordered_map<int,colmap::Point3D>& global_3d_map,
+                        std::map<int, std::pair<Eigen::Vector4d,Eigen::Vector3d>> gt_map,
                         int resize_w, int resize_h){
                             
     Image new_image(image_path, resize_w, resize_h);
@@ -147,8 +150,16 @@ void IncrementOneImage(std::string image_path, int new_id,
     bool abs_pose = colmap::EstimateAbsolutePose(absolute_options, matched2d_curr,
                                                 matched3d_from2d, &qvec_abs, &tvec_abs,
                                                 &camera, &inliers, &inlier_mask);
-    new_cmp_image.SetQvec(qvec_abs);
-    new_cmp_image.SetTvec(tvec_abs);
+    
+    // use g.t. poses if we specified in the map
+    if(gt_map.find(new_id) != gt_map.end()){
+        new_cmp_image.SetQvec(gt_map[new_id].first);
+        new_cmp_image.SetTvec(gt_map[new_id].second);
+    }
+    else{
+        new_cmp_image.SetQvec(qvec_abs);
+        new_cmp_image.SetTvec(tvec_abs);
+    }
     std::cout << "number of inliers 2d-3d pairs by PnP in " << new_id << " is: " 
                 << inliers << std::endl;
     std::cout << "result of " << new_id << " 's pose estimation" 

@@ -1,5 +1,7 @@
 #include <string>
 #include <Eigen/Core>
+#include <map>
+
 #include "base/reconstruction.h"
 #include "base/image.h"
 #include "base/camera.h"
@@ -22,6 +24,7 @@
 #include "file_reader/file_options.h"
 #include "file_reader/data_types.h"
 #include "file_reader/kitti_odo_helper.h"
+#include "util_/gt_map.h"
 
 void DebugTracks(colmap::Track track){
     std::vector<colmap::TrackElement>& curr_vec = track.Elements();
@@ -98,33 +101,21 @@ int main(int argc, char** argv){
     std::vector<std::vector<double>> extrinsic_kitti;
     ExtrinsicFromKitti(files_to_run.pose_path, files_to_run.seq_num,
                     extrinsic_kitti);
-    const Eigen::Map<const Eigen::Matrix<double, 3, 4, Eigen::RowMajor>> kitti_frame0(extrinsic_kitti[0].data());
-    const Eigen::Map<const Eigen::Matrix<double, 3, 4, Eigen::RowMajor>> kitti_frame1(extrinsic_kitti[1].data());
 
-    Eigen::Matrix3d R = kitti_frame1.block<3, 3>(0, 0);
-    Eigen::Vector3d t = kitti_frame1.col(3);
-    Eigen::Vector3d tvec_inv = -R * t;
+    // specify the g.t. poses needed for initial and incremental processes
+    // and init the g.t. poses map
+    std::vector<int> gt_poses_num = {0, 1, 2};
+    std::map<int, std::pair<Eigen::Vector4d,Eigen::Vector3d>> gt_map;
+    CreateGTMap(gt_map, gt_poses_num, extrinsic_kitti);
 
-    // std::cout << "inv vector before swap: " << tvec_inv << std::endl;
-    // std::swap(tvec_inv.x(), tvec_inv.z());
-    // std::cout << "inv vector after swap: " << tvec_inv << std::endl;
-
-
-
-    // init the g.t. poses for the first pair of Kitti
-    Eigen::Vector4d qvec_kitti0;
-    Eigen::Vector3d tvec_kitti0;
-    Eigen::Vector4d qvec_kitti1;
-    Eigen::Vector3d tvec_kitti1;
-
-    QuatTransFromExtrinsic(qvec_kitti0, tvec_kitti0, kitti_frame0);
-    QuatTransFromExtrinsic(qvec_kitti1, tvec_kitti1, kitti_frame1);
+    
     // triangulate the first pair
     InitFirstPair(image_stream[0], image_stream[1], camera,
                   global_image_map, global_keypts_map, global_3d_map, 
                   (int)files_to_run.width*files_to_run.downsample,
                   (int)files_to_run.height*files_to_run.downsample,
-                  qvec_kitti0, tvec_kitti0, qvec_kitti1, tvec_inv); // hard coded init pair
+                  gt_map[0].first, gt_map[0].second, 
+                  gt_map[1].first, gt_map[1].second); // hard coded init pair
 
     std::vector<int> init_image_opt = {0, 1};
     std::vector<int> init_const_pose = {0, 1};
@@ -147,7 +138,8 @@ int main(int argc, char** argv){
     // increment remaining frames
     for (int i = 2; i < image_stream.size(); i++){
         IncrementOneImage(image_stream[i], i, i-1, camera,
-                        global_image_map, global_keypts_map, global_3d_map, 
+                        global_image_map, global_keypts_map, global_3d_map,
+                        gt_map, 
                         (int)files_to_run.width*files_to_run.downsample,
                         (int)files_to_run.height*files_to_run.downsample);
         std::cout << "num of 3d points after process image " << i << " is: " 

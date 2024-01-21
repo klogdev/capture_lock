@@ -1,5 +1,6 @@
 link_directories("../feature")
 link_directories("../calib_loader")
+link_directories("../file_reader")
 link_directories("/usr/local/lib/colmap/")
 link_directories("../")
 include_directories(${WORKSPACE_DIR})
@@ -56,3 +57,12 @@ target_include_directories(
   kitti_pose PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
   kitti_pose PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
+
+add_library(gt_map STATIC
+gt_map.h
+gt_map.cpp
+)
+target_include_directories(
+  gt_map PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  gt_map PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} kitti_pose)
