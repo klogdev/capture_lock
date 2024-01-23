@@ -77,6 +77,23 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     std::cout << "inliers from relative pose: " << num_inliers << std::endl;
     std::cout << "length of inlier masks: " << inlier_mask_rel.size() << std::endl;
 
+
+    // Rotate the g.t. 1's pose by the relative rotation
+    // first: convert to Eigen::Quaterniond
+    Eigen::Quaterniond q1(gt_quat1.w(), gt_quat1.x(), gt_quat1.y(), gt_quat1.z());
+    Eigen::Quaterniond q2(qvec_init.w(), qvec_init.x(), qvec_init.y(), qvec_init.z());
+    // Perform the rotation (quaternion multiplication)
+    Eigen::Quaterniond q_rotated = q1 * q2;
+    // Convert back to Eigen::Vector4d
+    Eigen::Vector4d q_rotated_vec(q_rotated.w(), q_rotated.vec().x(), q_rotated.vec().y(), q_rotated.vec().z());
+
+    // rescale the estimated trans vector
+    double ratio = gt_trans2.norm()/tvec_init.norm();
+    // tvec_init *= ratio;
+
+    // hard coded 2nd pose
+    Eigen::Vector4d qvec_2_made = Eigen::Vector4d(0.999998, 0.00173027, -4.405e-05, -0.000124149);
+
     // set the 2nd frame's pose as g.t.
     cmp_image2.SetQvec(gt_quat2);
     cmp_image2.SetTvec(gt_trans2);
@@ -86,6 +103,12 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     std::cout << qvec_init << std::endl;
     std::cout << "relative translation of the first pair is: " << std::endl;
     std::cout << tvec_init << std::endl;
+
+    // check the g.t. 2's pose
+    std::cout << "rotation of the 2nd g.t. is: " << std::endl;
+    std::cout << gt_quat2 << std::endl;
+    std::cout << "rotation after apply rel rot is: " << std::endl;
+    std::cout << q_rotated_vec << std::endl;
 
     // start triangulation
     Eigen::Matrix3d calibration = camera.CalibrationMatrix();

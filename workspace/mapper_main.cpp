@@ -104,7 +104,7 @@ int main(int argc, char** argv){
 
     // specify the g.t. poses needed for initial and incremental processes
     // and init the g.t. poses map
-    std::vector<int> gt_poses_num = {0, 1, 2};
+    std::vector<int> gt_poses_num = {0, 1, 2, 3, 4};
     std::map<int, std::pair<Eigen::Vector4d,Eigen::Vector3d>> gt_map;
     CreateGTMap(gt_map, gt_poses_num, extrinsic_kitti);
 
@@ -133,7 +133,7 @@ int main(int argc, char** argv){
 
 
     // manually init the sliding window size for local ba
-    int window_size = 3;
+    int window_size = 5;
 
     // increment remaining frames
     for (int i = 2; i < image_stream.size(); i++){
@@ -158,15 +158,6 @@ int main(int argc, char** argv){
         std::cout << "frame " << curr_const_pose[0] << " pose after local BA is: " << std::endl;
         std::cout << frame_i.Qvec() << std::endl;
         std::cout << frame_i.Tvec() << std::endl;
-        // debugging number of tracked features after all frames
-        // for(const auto& point: global_3d_map){
-        //     colmap::Point3D curr_3d = point.second;
-        //     int curr_track_len = curr_3d.Track().Length();
-        //     if(curr_3d.Track().Length() > 5){
-        //         std::cout << "the 3D point " << point.first << " has tracked images: " << std::endl;
-        //         DebugTracks(curr_3d.Track());
-        //     }
-        // }
     }
 
     // run global ba, the fixed pose is still the 0'th frame

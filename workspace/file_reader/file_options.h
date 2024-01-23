@@ -43,6 +43,6 @@ void InstantiateFiles(FileOptions& files, Dataset dataset){
         files.height = 376;
         files.start = 0;
         files.end = 15;
-        files.output = "/tmp3/KITTI_Odometry/kitti_poses_15_neg.txt";
+        files.output = "/tmp3/KITTI_Odometry/kitti_poses_15_fix0.txt";
     }
 }
