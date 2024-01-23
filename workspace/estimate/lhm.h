@@ -26,41 +26,56 @@ class LHMEstimator {
         //
         // @return           Most probable pose as length-1 vector of a 3x4 matrix.
         static std::vector<M_t> Estimate(const std::vector<X_t>& points2D,
-                                        const std::vector<Y_t>& points3D);
+                                         const std::vector<Y_t>& points3D);
 
     private:
-        void lhmEstPose(const std::vector<Eigen::Vector2d>& points2D,
-                    const std::vector<Eigen::Vector3d>& points3D,
-                    std::vector<Y_t>& wkpts3D,
-                    const std::vector<int>& ptsidx,
-                    Eigen::Matrix3x4d* proj_matrix,
-                    bool verbose);
+        /**
+         * @brief estimate the absolute pose via LHM from corresponded 
+         * 2D, 3D points
+        */
+        bool EstimateLHMPose(const std::vector<Eigen::Vector2d>& points2D,
+                             const std::vector<Eigen::Vector3d>& points3D,
+                             Eigen::Matrix3x4d* proj_matrix);
 
-        void lhmCalcRt(const std::vector<Eigen::Vector3d>& points3D0,
-                    const std::vector<Eigen::Vector3d>& points3D1,
-                    const std::vector<int>& index,
-                    const std::vector<Eigen::Matrix3d>& V,
-                    const Eigen::Matrix3d& Tfact,
-                    Eigen::Matrix3d& R,
-                    Eigen::Vector3d& t);
+        /**
+         * @brief calculate relative rotation & translation with the scale of depth
+         * from two sets of point clouds
+         * @arg 
+         * V: list of line of sight projection for each pixel, eqn. 6
+         * Tfact: the factor to get optimal translation 
+         * up to the current rotation, eqn. 20
+        */
+        bool CalcLHMRotTrans(const std::vector<Eigen::Vector3d>& points3D0,
+                       const std::vector<Eigen::Vector3d>& points3D1,
+                       const std::vector<Eigen::Matrix3d>& V,
+                       const Eigen::Matrix3d& Tfact,
+                       Eigen::Matrix3d& R,
+                       Eigen::Vector3d& t);
 
-        void lhmTFromR(const std::vector<Eigen::Vector3d>& pts3D,
-                    const std::vector<int>& ptsidx,
-                    const std::vector<Eigen::Matrix3d>& V,
-                    const Eigen::Matrix3d& R,
-                    const Eigen::Vector3d& Tfact,
-                    Eigen::Vector3d& t);
+        /**
+         * @brief get the translation via current estimated rotation
+        */
+        void TransFromRotLHM(const std::vector<Eigen::Vector3d>& points3D,
+                             const std::vector<Eigen::Matrix3d>& V,
+                             const Eigen::Matrix3d& R,
+                             const Eigen::Vector3d& Tfact,
+                             Eigen::Vector3d& t);
 
-        double lhmObjSpaceErr(const std::vector<Eigen::Vector3d>& pts3D,
-                            const std::vector<int>& ptsidx,
-                            const std::vector<Eigen::Matrix3d>& V);
+        /**
+         * @brief calculate the collinearity error, eqn. 17-19
+         * @arg points3D: here the points are transformed points 
+         * via current estimated rotation and translation
+        */
+        double ObjSpaceLHMErr(const std::vector<Eigen::Vector3d>& points3D,
+                              const std::vector<Eigen::Matrix3d>& V);
 
-        double lhmImgSpaceErr(const std::vector<Eigen::Vector2d>& pts2D,
-                            const std::vector<Eigen::Vector3d>& pts3D,
-                            const std::vector<int>& ptsidx,
-                            Eigen::Matrix3d& R,
-                            Eigen::Vector3d& t);
-
+        /**
+         * @brief calculate the standard reprojection error
+        */
+        double ImgSpaceLHMErr(const std::vector<Eigen::Vector2d>& points2D,
+                              const std::vector<Eigen::Vector3d>& points3D,
+                              Eigen::Matrix3d& R,
+                              Eigen::Vector3d& t);
 };
 
 #endif  // ESTIMATE_LHM_H_
