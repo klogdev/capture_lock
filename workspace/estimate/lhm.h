@@ -46,19 +46,19 @@ class LHMEstimator {
          * up to the current rotation, eqn. 20
         */
         bool CalcLHMRotTrans(const std::vector<Eigen::Vector3d>& points3D0,
-                       const std::vector<Eigen::Vector3d>& points3D1,
-                       const std::vector<Eigen::Matrix3d>& V,
-                       const Eigen::Matrix3d& Tfact,
-                       Eigen::Matrix3d& R,
-                       Eigen::Vector3d& t);
+                             const std::vector<Eigen::Vector3d>& points3D1,
+                             const std::vector<Eigen::Matrix3d>& V,
+                             const Eigen::Matrix3d& Tfact,
+                             Eigen::Matrix3d& R,
+                             Eigen::Vector3d& t);
 
         /**
          * @brief get the translation via current estimated rotation
         */
         void TransFromRotLHM(const std::vector<Eigen::Vector3d>& points3D,
                              const std::vector<Eigen::Matrix3d>& V,
-                             const Eigen::Matrix3d& R,
                              const Eigen::Vector3d& Tfact,
+                             const Eigen::Matrix3d& R,
                              Eigen::Vector3d& t);
 
         /**
@@ -76,6 +76,18 @@ class LHMEstimator {
                               const std::vector<Eigen::Vector3d>& points3D,
                               Eigen::Matrix3d& R,
                               Eigen::Vector3d& t);
+
+        /**
+         * @brief calculate relative rotation and translation up to a scale of
+         * depth for the initial guess of the pose via Weak Perspective model
+         * the registration using closed form method w/ quat and profile matrix:
+         * Horn, "Closed-form Solution of Absolute Orientation Using Unit Quaternions",
+         * JOSAA (4):4, 1987, pp.629
+        */
+        bool WeakPerspectiveQuat(const std::vector<Eigen::Vector3d>& points3D0,
+                                 const std::vector<Eigen::Vector3d>& points3D1,
+                                 Eigen::Matrix3d& R,
+                                 Eigen::Vector3d& t);
 };
 
 #endif  // ESTIMATE_LHM_H_

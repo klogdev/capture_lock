@@ -42,7 +42,7 @@ void InstantiateFiles(FileOptions& files, Dataset dataset){
         files.width = 1241;
         files.height = 376;
         files.start = 0;
-        files.end = 60;
-        files.output = "/tmp3/KITTI_Odometry/kitti_poses_60_inv.txt";
+        files.end = 20;
+        files.output = "/tmp3/KITTI_Odometry/kitti_poses_20_no_init.txt";
     }
 }
