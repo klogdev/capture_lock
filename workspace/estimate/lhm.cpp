@@ -1,4 +1,6 @@
 #include <Eigen/Core>
+#include <limits>
+
 #include "estimate/lhm.h"
 
 bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
@@ -42,17 +44,39 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
     bool init_pose = TransFromRotLHM(point3D, V, Tfact, init_rot, init_trans);
 
     int iter = 0;
+    double curr_err = std::numeric_limits<double>::max();
+    double old_err = -1.0; // dummy old error to start the while loop
 
-    std::vector<Eigen::Matrix3d> temp_rotated;
+
+    std::vector<Eigen::Vector3d> temp_rotated; // can be overwrite during iteration
     temp_rotated.resize(n_points);
 
-    while(iter < options_.lhm_iter) {
+    while(abs((old_err - curr_err)/old_err) > options_.lhm_tolerance && 
+          && curr_err > options_.lhm_epsilon && iter < options_.lhm_iter) {
         for (int i = 0; i < n_points; ++i) {
             temp_rotated[i] = init_rot * points3D[i] + init_trans;
         }
 
-        double curr_err = ObjSpaceLHMErr(temp_rotated, V);
+        old_err = curr_err;
+        curr_err = ObjSpaceLHMErr(temp_rotated, V); // eqn. 17
 
-        
+        for (int i = 0; i < n_points; ++i) {
+            temp_rotated[i] = V[i] * temp_rotated[i]; // further polish the points by line of sight projection
+        }
+
+        bool update_pose = CalcLHMRotTrans(points3D, temp_rotated, V, Tfact,
+                                           init_rot, init_trans);
+        iter++;
     }
+
+    return true;
+}
+
+bool LHMEstimator::CalcLHMRotTrans(const std::vector<Eigen::Vector3d>& points3D0,
+                             const std::vector<Eigen::Vector3d>& points3D1,
+                             const std::vector<Eigen::Matrix3d>& V,
+                             const Eigen::Matrix3d& Tfact,
+                             Eigen::Matrix3d& R,
+                             Eigen::Vector3d& t) {
+    
 }
