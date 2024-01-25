@@ -9,7 +9,7 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
     Eigen::Matrix3d sum_Vk; // summation of V in eqn. 20
     sum_Vk.setZero();
 
-    std::vector<Eigen::Vector3d>& homogeneous_pts; // for later use in weak perspective model
+    std::vector<Eigen::Vector3d>& homogeneous_pts; // for later use in the weak perspective model
 
     for(const auto& p : points2D) {
         Eigen::Vector3d homogeneousPoint(p[0], p[1], 1.0);
@@ -40,4 +40,19 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
                                           init_rot, init_trans); 
     // obatain the transaltion from initialized R
     bool init_pose = TransFromRotLHM(point3D, V, Tfact, init_rot, init_trans);
+
+    int iter = 0;
+
+    std::vector<Eigen::Matrix3d> temp_rotated;
+    temp_rotated.resize(n_points);
+
+    while(iter < options_.lhm_iter) {
+        for (int i = 0; i < n_points; ++i) {
+            temp_rotated[i] = init_rot * points3D[i] + init_trans;
+        }
+
+        double curr_err = ObjSpaceLHMErr(temp_rotated, V);
+
+        
+    }
 }

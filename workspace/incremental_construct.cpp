@@ -23,12 +23,12 @@
 #include "estimate/relative_pose.h"
 
 void IncrementOneImage(std::string image_path, int new_id,
-                        int last_id, colmap::Camera& camera,
-                        std::unordered_map<int,colmap::Image>& global_image_map,
-                        std::unordered_map<int,std::vector<sift::Keypoint>>& global_keypts_map,
-                        std::unordered_map<int,colmap::Point3D>& global_3d_map,
-                        std::map<int, std::pair<Eigen::Vector4d,Eigen::Vector3d>> gt_map,
-                        int resize_w, int resize_h){
+                       int last_id, colmap::Camera& camera,
+                       std::unordered_map<int,colmap::Image>& global_image_map,
+                       std::unordered_map<int,std::vector<sift::Keypoint>>& global_keypts_map,
+                       std::unordered_map<int,colmap::Point3D>& global_3d_map,
+                       std::map<int, std::pair<Eigen::Vector4d,Eigen::Vector3d>> gt_map,
+                       int resize_w, int resize_h) {
                             
     Image new_image(image_path, resize_w, resize_h);
     std::vector<sift::Keypoint> curr_key_points = GetKeyPoints(new_image);
@@ -86,11 +86,6 @@ void IncrementOneImage(std::string image_path, int new_id,
     Eigen::Matrix3d calibration = camera.CalibrationMatrix();
     std::cout << "check calibration matrix for the incremental: " << std::endl;
     std::cout << calibration << std::endl;
-    std::vector<double> camera_para_after = camera.Params();
-    std::cout << "camera parameters inside incremental is: " << std::endl;
-    for(int i = 0; i < camera_para_after.size(); i++)
-        std::cout << camera_para_after[i] << " ";
-    std::cout << std::endl;
 
     for (int i = 0; i < matches.size(); i++){
 
@@ -215,5 +210,5 @@ void IncrementOneImage(std::string image_path, int new_id,
         }
     }
     global_image_map[new_id] = new_cmp_image;
-    global_keypts_map[new_id] = curr_key_points; //sift Keypoint
+    global_keypts_map[new_id] = curr_key_points; // sift Keypoint
 }

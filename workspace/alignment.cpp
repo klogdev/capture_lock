@@ -4,7 +4,7 @@
 
 #include <Eigen/Core>
 
-#include "epipole_estimator.h"
+#include "estimate/epipole_estimator.h"
 #include "incremental_construct.h"
 
 Eigen::Vector3d FinalAlignment(std::vector<sift::Keypoint>& locked_keypts, 

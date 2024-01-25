@@ -5,6 +5,19 @@
 
 #include <Eigen/Core>
 
+struct LHMOptions
+{  
+    // convergence tolerance of lhm
+    double lhm_tolerance = 1e-5;
+
+    // lower bound of objective fxn
+    double lhm_epsilon = 1e-8;
+
+    // max iteration for current estimation
+    int lhm_iter = 35;
+};
+
+
 // Implementation of the LHM method
 class LHMEstimator {
     public:
@@ -88,6 +101,8 @@ class LHMEstimator {
                                  const std::vector<Eigen::Vector3d>& points3D1,
                                  Eigen::Matrix3d& R,
                                  Eigen::Vector3d& t);
+
+        LHMOptions options_;
 };
 
 #endif  // ESTIMATE_LHM_H_

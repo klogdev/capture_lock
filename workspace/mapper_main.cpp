@@ -118,7 +118,7 @@ int main(int argc, char** argv){
                   gt_map[1].first, gt_map[1].second); // hard coded init pair
 
     std::vector<int> init_image_opt = {0, 1};
-    std::vector<int> init_const_pose = {0, 1};
+    std::vector<int> init_const_pose = {0, 1, 2, 3, 4};
 
     // run ba for the first pair
     // bool init_ba = GlobalBundleAdjuster(ba_options, camera, global_image_map,
