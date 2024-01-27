@@ -118,18 +118,18 @@ int main(int argc, char** argv){
                   gt_map[1].first, gt_map[1].second); // hard coded init pair
 
     std::vector<int> init_image_opt = {0, 1};
-    std::vector<int> init_const_pose = {0, 1, 2, 3, 4};
+    std::vector<int> init_const_pose = {0, 1};
 
     // run ba for the first pair
-    // bool init_ba = GlobalBundleAdjuster(ba_options, camera, global_image_map,
-    //                                     global_3d_map, init_image_opt, 
-    //                                     init_const_pose, dataset);  
-    // // DEBUGGING: check the pose after init ba
-    // std::cout << "BA result for the first pair is: " << init_ba << std::endl;
-    // colmap::Image frame_1 = global_image_map[1];
-    // std::cout << "frame 1 pose after init BA is: " << std::endl;
-    // std::cout << frame_1.Qvec() << std::endl;
-    // std::cout << frame_1.Tvec() << std::endl;
+    bool init_ba = GlobalBundleAdjuster(ba_options, camera, global_image_map,
+                                        global_3d_map, init_image_opt, 
+                                        init_const_pose, dataset);  
+    // DEBUGGING: check the pose after init ba
+    std::cout << "BA result for the first pair is: " << init_ba << std::endl;
+    colmap::Image frame_1 = global_image_map[1];
+    std::cout << "frame 1 pose after init BA is: " << std::endl;
+    std::cout << frame_1.Qvec() << std::endl;
+    std::cout << frame_1.Tvec() << std::endl;
 
 
     // manually init the sliding window size for local ba

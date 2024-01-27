@@ -78,5 +78,38 @@ bool LHMEstimator::CalcLHMRotTrans(const std::vector<Eigen::Vector3d>& points3D0
                              const Eigen::Matrix3d& Tfact,
                              Eigen::Matrix3d& R,
                              Eigen::Vector3d& t) {
-    
+    Eigen::Vector3d pc = Eigen::Vector3d::Zero();
+    Eigen::Vector3d qc = Eigen::Vector3d::Zero();
+
+    // Compute centroids
+    for (const auto& p : points3D0) {
+        pc += p;
+    }
+    for (const auto& q : points3D1) {
+        qc += q;
+    }
+    pc /= pts0.size();
+    qc /= pts1.size();
+
+    // Compute M from centered points
+    Eigen::Matrix3d M = Eigen::Matrix3d::Zero();
+    for (size_t i = 0; i < points3D0.size(); i++) {
+        Eigen::Vector3d p = points3D0[i] - pc;
+        Eigen::Vector3d q = points3D1[i] - qc;
+
+        M += p * q.transpose(); // Outer product
+    }
+
+    // Perform SVD
+    Eigen::JacobiSVD<Eigen::Matrix3d> svd(M, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    Eigen::Matrix3d U = svd.matrixU();
+    Eigen::Matrix3d Vt = svd.matrixV().transpose();
+
+    // Compute Rotation matrix
+    R = U * Vt;
+
+    // Computer translation
+    TransFromRotLHM(points3D0, V, Tfact, R, t);
+
+    return true;
 }
