@@ -5,6 +5,8 @@
 
 #include <Eigen/Core>
 
+#include "base/camera.h"
+
 struct LHMOptions
 {  
     // convergence tolerance of lhm
@@ -103,6 +105,8 @@ class LHMEstimator {
                                  Eigen::Vector3d& t);
 
         LHMOptions options_;
+
+        colmap::Camera camera;
 };
 
 #endif  // ESTIMATE_LHM_H_

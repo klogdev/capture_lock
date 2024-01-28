@@ -3,6 +3,9 @@
 
 #include "estimate/lhm.h"
 
+#include "base/projection.h"
+#include "base/camera.h"
+
 bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
                                   const std::vector<Eigen::Vector3d>& points3D,
                                   Eigen::Matrix3x4d* proj_matrix) {
@@ -40,7 +43,7 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
 
     bool weak_persp = WeakPerspectiveQuat(points3D, homogeneous_pts,
                                           init_rot, init_trans); 
-    // obatain the transaltion from initialized R
+    // obtain the initial transaltion from initialized R
     bool init_pose = TransFromRotLHM(point3D, V, Tfact, init_rot, init_trans);
 
     int iter = 0;
@@ -73,11 +76,20 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
 }
 
 bool LHMEstimator::CalcLHMRotTrans(const std::vector<Eigen::Vector3d>& points3D0,
-                             const std::vector<Eigen::Vector3d>& points3D1,
-                             const std::vector<Eigen::Matrix3d>& V,
-                             const Eigen::Matrix3d& Tfact,
-                             Eigen::Matrix3d& R,
-                             Eigen::Vector3d& t) {
+                                   const std::vector<Eigen::Vector3d>& points3D1,
+                                   const std::vector<Eigen::Matrix3d>& V,
+                                   const Eigen::Matrix3d& Tfact,
+                                   Eigen::Matrix3d& R,
+                                   Eigen::Vector3d& t) {
+    if (points3D0.size() < 3) {
+        std::cerr << "At least 3 points are necessary for estimating R, t in 
+        [" << points3D0.size() << "]" << std::endl;
+        
+        R.setZero();
+        t.setZero();
+
+        return false; // Indicating an error or insufficient data
+    }
     Eigen::Vector3d pc = Eigen::Vector3d::Zero();
     Eigen::Vector3d qc = Eigen::Vector3d::Zero();
 
@@ -88,8 +100,8 @@ bool LHMEstimator::CalcLHMRotTrans(const std::vector<Eigen::Vector3d>& points3D0
     for (const auto& q : points3D1) {
         qc += q;
     }
-    pc /= pts0.size();
-    qc /= pts1.size();
+    pc /= points3D0.size();
+    qc /= points3D1.size();
 
     // Compute M from centered points
     Eigen::Matrix3d M = Eigen::Matrix3d::Zero();
@@ -112,4 +124,53 @@ bool LHMEstimator::CalcLHMRotTrans(const std::vector<Eigen::Vector3d>& points3D0
     TransFromRotLHM(points3D0, V, Tfact, R, t);
 
     return true;
+}
+
+bool LHMEstimator::TransFromRotLHM(const std::vector<Eigen::Vector3d>& points3D,
+                                   const std::vector<Eigen::Matrix3d>& V,
+                                   const Eigen::Vector3d& Tfact,
+                                   const Eigen::Matrix3d& R,
+                                   Eigen::Vector3d& t) {
+    Eigen::Vector3d sum_term = Eigen::Vector3d::Zero(); // the last sum term of eqn. 20
+    
+    for (size_t i = 0; i < point23D.size(); ++k) {
+        //  \sum_(Vk - I) * R * pk
+        sum_term += (V[k] - Eigen::Matrix3d::Identity()) * R * points3D[i];
+    }
+
+    // t = Tfact * sum_term, here Tfact already averaged by the first 1/n
+    t = Tfact * sum_term;
+}
+
+double ObjSpaceLHMErr(const std::vector<Eigen::Vector3d>& points3D,
+                      const std::vector<Eigen::Matrix3d>& V) {
+    double obj_err = 0.0;
+    Eigen::Vector3d temp_val;
+
+
+    for(size_t i = 0; i < points3D.size(); i++){
+        temp_val = (Eigen::Matrix3d::Identity() - V[i]) * points3D[i];
+        obj_err += temp_val.squaredNorm();
+    }
+
+    return obj_err;
+}
+
+double ImgSpaceLHMErr(const std::vector<Eigen::Vector2d>& points2D,
+                      const std::vector<Eigen::Vector3d>& points3D,
+                      Eigen::Matrix3d& R,
+                      Eigen::Vector3d& t) {
+    double repro_err; 
+    Eigen::Matrix3x4d extrinsic;
+
+    extrinsic.block<3, 3>(0, 0) = R;
+    extrinsic.col(3) = t;
+
+    for(size_t i = 0; i < points2D.size(); i++) {
+        repro_err += colmap::CalculateSquaredReprojectionError(points2D,
+                                                               points3D,
+                                                               extrinsic,
+                                                               camera);
+    }
+    return repro_err;
 }
