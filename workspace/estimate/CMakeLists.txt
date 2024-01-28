@@ -13,6 +13,15 @@ target_include_directories(
 target_link_libraries(
   relative_pose PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
 
+add_library(lhm STATIC
+lhm.h
+lhm.cpp
+)
+target_include_directories(
+  lhm PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  lhm PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
+
 # add_library(epipole_estimate STATIC
 # epipole_estimator.h
 # epipole_estimator.cpp

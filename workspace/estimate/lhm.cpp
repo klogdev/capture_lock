@@ -5,6 +5,25 @@
 
 #include "base/projection.h"
 #include "base/camera.h"
+#include "estimators/utils.h"
+
+std::vector<LHMEstimator::M_t> LHMEstimator::Estimate(
+    const std::vector<X_t>& points2D, const std::vector<Y_t>& points3D) {
+    
+    LHMEstimator lhm;
+    M_t proj_matrix;
+    if (!lhm.ComputeLHMPose(points2D, points3D, &proj_matrix)) {
+        return std::vector<LHMEstimator::M_t>({});
+    }
+
+    return std::vector<LHMEstimator::M_t>({proj_matrix});
+}
+
+static void Residuals(const std::vector<X_t>& points2D,
+                      const std::vector<Y_t>& points3D,
+                      const M_t& proj_matrix, std::vector<double>* residuals) {
+    colmap::ComputeSquaredReprojectionError(points2D, points3D, proj_matrix, residuals);
+}
 
 bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
                                   const std::vector<Eigen::Vector3d>& points3D,
@@ -142,7 +161,7 @@ bool LHMEstimator::TransFromRotLHM(const std::vector<Eigen::Vector3d>& points3D,
     t = Tfact * sum_term;
 }
 
-double ObjSpaceLHMErr(const std::vector<Eigen::Vector3d>& points3D,
+double LHMEstimstor::ObjSpaceLHMErr(const std::vector<Eigen::Vector3d>& points3D,
                       const std::vector<Eigen::Matrix3d>& V) {
     double obj_err = 0.0;
     Eigen::Vector3d temp_val;
@@ -156,7 +175,7 @@ double ObjSpaceLHMErr(const std::vector<Eigen::Vector3d>& points3D,
     return obj_err;
 }
 
-double ImgSpaceLHMErr(const std::vector<Eigen::Vector2d>& points2D,
+double LHMEstimstor::ImgSpaceLHMErr(const std::vector<Eigen::Vector2d>& points2D,
                       const std::vector<Eigen::Vector3d>& points3D,
                       Eigen::Matrix3d& R,
                       Eigen::Vector3d& t) {
@@ -166,6 +185,7 @@ double ImgSpaceLHMErr(const std::vector<Eigen::Vector2d>& points2D,
     extrinsic.block<3, 3>(0, 0) = R;
     extrinsic.col(3) = t;
 
+    // use colmap's built-in fxn
     for(size_t i = 0; i < points2D.size(); i++) {
         repro_err += colmap::CalculateSquaredReprojectionError(points2D,
                                                                points3D,
