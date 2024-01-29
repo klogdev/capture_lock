@@ -27,12 +27,13 @@ int main() {
         points3D_faulty[i](0) = 20;
     }
 
-    for (double qx = 0; qx < 1; qx += 0.2) {
-        for (double tx = 0; tx < 1; tx += 0.1) {
+    for (double qx = 0; qx < 0.3; qx += 0.2) {
+        for (double tx = 0; tx < 0.2; tx += 0.1) {
             const colmap::SimilarityTransform3 orig_tform(1, Eigen::Vector4d(1, qx, 0, 0),
-                                                    Eigen::Vector3d(tx, 0, 0));
+                                                          Eigen::Vector3d(tx, 0, 0));
 
-            // Project points to camera coordinate system.
+            // Project points to camera coordinate system
+            // here we project the original 3D points
             std::vector<Eigen::Vector2d> points2D;
             for (size_t i = 0; i < points3D.size(); ++i) {
                 Eigen::Vector3d point3D_camera = points3D[i];
@@ -55,6 +56,10 @@ int main() {
             // Test if correct transformation has been determined.
             const double matrix_diff =
                 (orig_tform.Matrix().topLeftCorner<3, 4>() - report.model).norm();
+            std::cout << "current estimated matrix: " << std::endl;
+            std::cout << report.model << std::endl;
+            std::cout << "current matrix norm: " << std::endl;
+            std::cout << matrix_diff << std::endl;
             if(matrix_diff < 1e-2){
                 std::cout << "current Frobenius norm as expected" << std::endl;
             }
@@ -66,6 +71,8 @@ int main() {
             std::vector<double> residuals;
             LHMEstimator::Residuals(points2D, points3D, report.model, &residuals);
             for (size_t i = 0; i < residuals.size(); ++i) {
+                std::cout <<"residual of the original point: " << std::endl;
+                std::cout << residuals[i] << std::endl;
                 if(residuals[i] < 1e-3){
                     std::cout << "residuals of exact point " << i << " is reasonable" << std::endl;
                 }
@@ -77,6 +84,7 @@ int main() {
             for (size_t i = 0; i < residuals.size(); ++i) {
                 if(residuals[i] > 0.1){
                     std::cout << "residuals of faulty point " << i << " is reasonable" << std::endl;
+                    std::cout << residuals[i] << std::endl;
                 }
             }
         }

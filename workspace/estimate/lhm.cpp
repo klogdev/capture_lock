@@ -59,6 +59,8 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
 
     // Compute Tfact directly from the eqn. 20
     Eigen::Matrix3d Tfact = (I - n_inv * sum_Vk).inverse() * n_inv;
+    // std::cout << "DEBUG: current Tfac matrix" << std::endl;
+    // std::cout << Tfact << std::endl;
 
     // Calculate the initial guess of rotation and translation
     Eigen::Matrix3d init_rot;
@@ -66,8 +68,16 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
 
     bool weak_persp = WeakPerspectiveQuat(points3D, homogeneous_pts,
                                           init_rot, init_trans); 
+    // std::cout << "DEBUG: rot after weak persp" << std::endl;
+    // std::cout << init_rot << std::endl;
+    // std::cout << "DEBUG: trans after weak persp" << std::endl;
+    // std::cout << init_trans << std::endl;
     // obtain the initial transaltion from initialized R
     TransFromRotLHM(points3D, V, Tfact, init_rot, init_trans);
+    // std::cout << "DEBUG: rot after eqn. 20" << std::endl;
+    // std::cout << init_rot << std::endl;
+    // std::cout << "DEBUG: trans after eqn. 20" << std::endl;
+    // std::cout << init_trans << std::endl;
 
     int iter = 0;
     double curr_err = std::numeric_limits<double>::max();
@@ -94,6 +104,13 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
                                            init_rot, init_trans);
         iter++;
     }
+
+    std::cout << "DEBUG: rot after update " << iter << " times: " << std::endl;
+    std::cout << init_rot << std::endl;
+
+    // Compose the extrinsic matrix
+    proj_matrix->block<3, 3>(0, 0) = init_rot;
+    proj_matrix->col(3) = init_trans;
 
     return true;
 }
