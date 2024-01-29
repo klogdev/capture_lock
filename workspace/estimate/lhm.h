@@ -80,7 +80,7 @@ class LHMEstimator {
         */
         void TransFromRotLHM(const std::vector<Eigen::Vector3d>& points3D,
                              const std::vector<Eigen::Matrix3d>& V,
-                             const Eigen::Vector3d& Tfact,
+                             const Eigen::Matrix3d& Tfact,
                              const Eigen::Matrix3d& R,
                              Eigen::Vector3d& t);
 
@@ -92,13 +92,6 @@ class LHMEstimator {
         double ObjSpaceLHMErr(const std::vector<Eigen::Vector3d>& points3D,
                               const std::vector<Eigen::Matrix3d>& V);
 
-        /**
-         * @brief calculate the standard reprojection error
-        */
-        double ImgSpaceLHMErr(const std::vector<Eigen::Vector2d>& points2D,
-                              const std::vector<Eigen::Vector3d>& points3D,
-                              Eigen::Matrix3d& R,
-                              Eigen::Vector3d& t);
 
         /**
          * @brief calculate relative rotation and translation up to a scale of
@@ -106,13 +99,16 @@ class LHMEstimator {
          * the registration using closed form method w/ quat and profile matrix:
          * Horn, "Closed-form Solution of Absolute Orientation Using Unit Quaternions",
          * JOSAA (4):4, 1987, pp.629
+         * we always use eqn. 39 for the scale w/o any guess
         */
         bool WeakPerspectiveQuat(const std::vector<Eigen::Vector3d>& points3D0,
                                  const std::vector<Eigen::Vector3d>& points3D1,
                                  Eigen::Matrix3d& R,
                                  Eigen::Vector3d& t);
 
-        LHMOptions options_;
+        // init options for LHM manually; 
+        // should implement a helper function to save the option we are using
+        LHMOptions options_ = LHMOptions();
 
         colmap::Camera camera;
 };

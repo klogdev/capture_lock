@@ -2,6 +2,7 @@ link_directories("../feature")
 link_directories("../calib_loader")
 link_directories("/usr/local/lib/colmap/")
 link_directories("../file_reader")
+link_directories("../estimate")
 link_directories("../")
 include_directories(${WORKSPACE_DIR})
 
@@ -21,6 +22,13 @@ ceres_gpt PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
 ceres_gpt PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES}
 img sift test_util)
+
+add_executable(pnp pnp_test.cpp)
+target_include_directories(
+pnp PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+pnp PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES}
+img sift test_util lhm)
 
 add_executable(reproj reproj_test.cpp)
 target_include_directories(

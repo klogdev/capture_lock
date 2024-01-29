@@ -1,5 +1,9 @@
 #include <Eigen/Core>
+#include <Eigen/Dense>
+#include <Eigen/Geometry>
+
 #include <limits>
+#include <iostream>
 
 #include "estimate/lhm.h"
 
@@ -19,7 +23,7 @@ std::vector<LHMEstimator::M_t> LHMEstimator::Estimate(
     return std::vector<LHMEstimator::M_t>({proj_matrix});
 }
 
-static void Residuals(const std::vector<X_t>& points2D,
+void LHMEstimator::Residuals(const std::vector<X_t>& points2D,
                       const std::vector<Y_t>& points3D,
                       const M_t& proj_matrix, std::vector<double>* residuals) {
     colmap::ComputeSquaredReprojectionError(points2D, points3D, proj_matrix, residuals);
@@ -33,7 +37,7 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
     Eigen::Matrix3d sum_Vk; // summation of V in eqn. 20
     sum_Vk.setZero();
 
-    std::vector<Eigen::Vector3d>& homogeneous_pts; // for later use in the weak perspective model
+    std::vector<Eigen::Vector3d> homogeneous_pts; // for later use in the weak perspective model
 
     for(const auto& p : points2D) {
         Eigen::Vector3d homogeneousPoint(p[0], p[1], 1.0);
@@ -51,7 +55,7 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
     }
 
     Eigen::Matrix3d I = Eigen::Matrix3d::Identity();  // Identity matrix
-    double n_inv = 1.0 / npts;  // Inverse of the number of points
+    double n_inv = 1.0 / n_points;  // Inverse of the number of points
 
     // Compute Tfact directly from the eqn. 20
     Eigen::Matrix3d Tfact = (I - n_inv * sum_Vk).inverse() * n_inv;
@@ -63,7 +67,7 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
     bool weak_persp = WeakPerspectiveQuat(points3D, homogeneous_pts,
                                           init_rot, init_trans); 
     // obtain the initial transaltion from initialized R
-    bool init_pose = TransFromRotLHM(point3D, V, Tfact, init_rot, init_trans);
+    TransFromRotLHM(points3D, V, Tfact, init_rot, init_trans);
 
     int iter = 0;
     double curr_err = std::numeric_limits<double>::max();
@@ -74,7 +78,7 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
     temp_rotated.resize(n_points);
 
     while(abs((old_err - curr_err)/old_err) > options_.lhm_tolerance && 
-          && curr_err > options_.lhm_epsilon && iter < options_.lhm_iter) {
+               curr_err > options_.lhm_epsilon && iter < options_.lhm_iter) {
         for (int i = 0; i < n_points; ++i) {
             temp_rotated[i] = init_rot * points3D[i] + init_trans;
         }
@@ -101,14 +105,14 @@ bool LHMEstimator::CalcLHMRotTrans(const std::vector<Eigen::Vector3d>& points3D0
                                    Eigen::Matrix3d& R,
                                    Eigen::Vector3d& t) {
     if (points3D0.size() < 3) {
-        std::cerr << "At least 3 points are necessary for estimating R, t in 
-        [" << points3D0.size() << "]" << std::endl;
+        std::cerr << "At least 3 points are necessary for estimating R, t in: " << points3D0.size() << std::endl;
         
         R.setZero();
         t.setZero();
 
         return false; // Indicating an error or insufficient data
     }
+
     Eigen::Vector3d pc = Eigen::Vector3d::Zero();
     Eigen::Vector3d qc = Eigen::Vector3d::Zero();
 
@@ -145,23 +149,23 @@ bool LHMEstimator::CalcLHMRotTrans(const std::vector<Eigen::Vector3d>& points3D0
     return true;
 }
 
-bool LHMEstimator::TransFromRotLHM(const std::vector<Eigen::Vector3d>& points3D,
+void LHMEstimator::TransFromRotLHM(const std::vector<Eigen::Vector3d>& points3D,
                                    const std::vector<Eigen::Matrix3d>& V,
-                                   const Eigen::Vector3d& Tfact,
+                                   const Eigen::Matrix3d& Tfact,
                                    const Eigen::Matrix3d& R,
                                    Eigen::Vector3d& t) {
     Eigen::Vector3d sum_term = Eigen::Vector3d::Zero(); // the last sum term of eqn. 20
     
-    for (size_t i = 0; i < point23D.size(); ++k) {
+    for (size_t i = 0; i < points3D.size(); i++) {
         //  \sum_(Vk - I) * R * pk
-        sum_term += (V[k] - Eigen::Matrix3d::Identity()) * R * points3D[i];
+        sum_term += (V[i] - Eigen::Matrix3d::Identity()) * R * points3D[i];
     }
 
     // t = Tfact * sum_term, here Tfact already averaged by the first 1/n
     t = Tfact * sum_term;
 }
 
-double LHMEstimstor::ObjSpaceLHMErr(const std::vector<Eigen::Vector3d>& points3D,
+double LHMEstimator::ObjSpaceLHMErr(const std::vector<Eigen::Vector3d>& points3D,
                       const std::vector<Eigen::Matrix3d>& V) {
     double obj_err = 0.0;
     Eigen::Vector3d temp_val;
@@ -175,22 +179,79 @@ double LHMEstimstor::ObjSpaceLHMErr(const std::vector<Eigen::Vector3d>& points3D
     return obj_err;
 }
 
-double LHMEstimstor::ImgSpaceLHMErr(const std::vector<Eigen::Vector2d>& points2D,
-                      const std::vector<Eigen::Vector3d>& points3D,
-                      Eigen::Matrix3d& R,
-                      Eigen::Vector3d& t) {
-    double repro_err; 
-    Eigen::Matrix3x4d extrinsic;
+bool LHMEstimator::WeakPerspectiveQuat(const std::vector<Eigen::Vector3d>& points3D0,
+                                 const std::vector<Eigen::Vector3d>& points3D1,
+                                 Eigen::Matrix3d& R,
+                                 Eigen::Vector3d& t) {
+    Eigen::Vector3d pc = Eigen::Vector3d::Zero();
+    Eigen::Vector3d qc = Eigen::Vector3d::Zero();
 
-    extrinsic.block<3, 3>(0, 0) = R;
-    extrinsic.col(3) = t;
-
-    // use colmap's built-in fxn
-    for(size_t i = 0; i < points2D.size(); i++) {
-        repro_err += colmap::CalculateSquaredReprojectionError(points2D,
-                                                               points3D,
-                                                               extrinsic,
-                                                               camera);
+    // Compute centroids
+    for (const auto& p : points3D0) {
+        pc += p;
     }
-    return repro_err;
+    for (const auto& q : points3D1) {
+        qc += q;
+    }
+    pc /= points3D0.size();
+    qc /= points3D1.size();
+
+    // Compute M from centered points and dq, dp's squares
+    Eigen::Matrix3d S = Eigen::Matrix3d::Zero();
+    Eigen::Matrix4d M = Eigen::Matrix4d::Zero();
+
+    double dpsum = 0.0, dqsum = 0.0;
+
+    for (size_t i = 0; i < points3D0.size(); i++) {
+        Eigen::Vector3d p = points3D0[i] - pc;
+        Eigen::Vector3d q = points3D1[i] - qc;
+
+        dpsum += p.squaredNorm();
+        dqsum += q.squaredNorm();
+
+        S += p * q.transpose(); // Outer product
+    }
+
+    // Diagonal elements
+    M(0, 0) = S.trace(); // Sxx + Syy + Szz
+    M(1, 1) = S(0, 0) - S(1, 1) - S(2, 2); // Sxx - Syy - Szz
+    M(2, 2) = -S(0, 0) + S(1, 1) - S(2, 2); // -Sxx + Syy - Szz
+    M(3, 3) = -S(0, 0) - S(1, 1) + S(2, 2); // -Sxx - Syy + Szz
+
+    // Off-diagonal elements
+    M(0, 1) = M(1, 0) = S(1, 2) - S(2, 1); // Syz - Szy
+    M(0, 2) = M(2, 0) = S(2, 0) - S(0, 2); // Szx - Sxz
+    M(0, 3) = M(3, 0) = S(0, 1) - S(1, 0); // Sxy - Syx
+
+    M(1, 2) = M(2, 1) = S(0, 1) + S(1, 0); // Sxy + Syx
+    M(1, 3) = M(3, 1) = S(2, 0) + S(0, 2); // Szx + Sxz
+
+    M(2, 3) = M(3, 2) = S(1, 2) + S(2, 1); // Syz + Szy
+
+    double scale = std::sqrt(dqsum / dpsum);
+
+    // Eigenvalue decomposition of a symmetric matrix
+    Eigen::SelfAdjointEigenSolver<Eigen::Matrix4d> eigensolver(M);
+    if (eigensolver.info() != Eigen::Success) {
+        std::cerr << "Eigenvalue decomposition failed!" << std::endl;
+        return false;
+    }
+
+    // use the eigensolver
+    Eigen::Vector4d eigenvec = eigensolver.eigenvectors().col(3); // Last column for largest eigenvalue
+
+    // Convert Quaternion to Rotation Matrix
+    // Normalize the eigenvector to ensure it represents a valid rotation
+    eigenvec.normalize();
+
+    // Create a Quaternion from the eigenvector
+    Eigen::Quaterniond quaternion(eigenvec(0), eigenvec(1), eigenvec(2), eigenvec(3));
+
+    // Convert the quaternion to a rotation matrix
+    R = quaternion.toRotationMatrix();
+
+    // Assuming pc and qc are centroids of pts0 and pts1, and scale is computed
+    t = qc - scale * (R * pc); // t = qc - R * scale * pc;
+
+    return true;
 }

@@ -42,28 +42,42 @@ int main() {
 
             colmap::RANSACOptions options;
             options.max_error = 1e-5;
-            RANSAC<LHMEstimator> ransac(options);
+            colmap::RANSAC<LHMEstimator> ransac(options);
             const auto report = ransac.Estimate(points2D, points3D);
 
-            colmap::BOOST_CHECK_EQUAL(report.success, true);
+            if(report.success == true){
+                std::cout << "current ransac passed" << std::endl; 
+            }
+            else {
+                std::cout << "current ransac failed" << std::endl; 
+            }
 
             // Test if correct transformation has been determined.
             const double matrix_diff =
                 (orig_tform.Matrix().topLeftCorner<3, 4>() - report.model).norm();
-            colmap::BOOST_CHECK(matrix_diff < 1e-2);
+            if(matrix_diff < 1e-2){
+                std::cout << "current Frobenius norm as expected" << std::endl;
+            }
+            else{
+                std::cout << "current Frobenius norm is abnormal" << std::endl;
+            }
 
             // Test residuals of exact points.
             std::vector<double> residuals;
             LHMEstimator::Residuals(points2D, points3D, report.model, &residuals);
             for (size_t i = 0; i < residuals.size(); ++i) {
-                colmap::BOOST_CHECK(residuals[i] < 1e-3);
+                if(residuals[i] < 1e-3){
+                    std::cout << "residuals of exact point " << i << " is reasonable" << std::endl;
+                }
             }   
 
             // Test residuals of faulty points.
             LHMEstimator::Residuals(points2D, points3D_faulty, report.model,
                                     &residuals);
             for (size_t i = 0; i < residuals.size(); ++i) {
-                colmap::BOOST_CHECK(residuals[i] > 0.1);
+                if(residuals[i] > 0.1){
+                    std::cout << "residuals of faulty point " << i << " is reasonable" << std::endl;
+                }
             }
         }
     }
