@@ -105,9 +105,6 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
         iter++;
     }
 
-    std::cout << "DEBUG: rot after update " << iter << " times: " << std::endl;
-    std::cout << init_rot << std::endl;
-
     // Compose the extrinsic matrix
     proj_matrix->block<3, 3>(0, 0) = init_rot;
     proj_matrix->col(3) = init_trans;
@@ -197,9 +194,9 @@ double LHMEstimator::ObjSpaceLHMErr(const std::vector<Eigen::Vector3d>& points3D
 }
 
 bool LHMEstimator::WeakPerspectiveQuat(const std::vector<Eigen::Vector3d>& points3D0,
-                                 const std::vector<Eigen::Vector3d>& points3D1,
-                                 Eigen::Matrix3d& R,
-                                 Eigen::Vector3d& t) {
+                                       const std::vector<Eigen::Vector3d>& points3D1,
+                                       Eigen::Matrix3d& R,
+                                       Eigen::Vector3d& t) {
     Eigen::Vector3d pc = Eigen::Vector3d::Zero();
     Eigen::Vector3d qc = Eigen::Vector3d::Zero();
 
