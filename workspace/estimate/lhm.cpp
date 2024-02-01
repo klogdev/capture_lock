@@ -59,9 +59,7 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
 
     // Compute Tfact directly from the eqn. 20
     Eigen::Matrix3d Tfact = (I - n_inv * sum_Vk).inverse() * n_inv;
-    // std::cout << "DEBUG: current Tfac matrix" << std::endl;
-    // std::cout << Tfact << std::endl;
-
+    
     // Calculate the initial guess of rotation and translation
     Eigen::Matrix3d init_rot;
     Eigen::Vector3d init_trans;

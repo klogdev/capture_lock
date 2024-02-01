@@ -104,3 +104,72 @@ void MMatrix(const std::vector<Eigen::Vector3d>& points3D,
         std::cerr << "cannot divided by zero when constructing M" << std::endl;
     }
 }
+
+void MakeAdjugate(Eigen::Matrix4d& matrix, Eigen::Matrix4d& adjugate) {
+    Eigen::Matrix4d cofactorMatrix;
+
+    for (int row = 0; row < 4; ++row) {
+        for (int col = 0; col < 4; ++col) {
+            // Create the minor matrix by removing the current row and column
+            Eigen::Matrix3d minor; // init the minor matrix
+            int minor_row = 0;
+            for (int i = 0; i < 4; ++i) {
+                if (i == row) continue;
+                int minor_col = 0;
+                for (int j = 0; j < 4; ++j) {
+                    if (j == col) continue;
+                    minor(minor_row, minor_col) = matrix(i, j);
+                    minor_col++;
+                }
+                minor_row++;
+            }
+
+            // Compute the cofactor
+            double cofactor = std::pow(-1, row + col) * minor.determinant();
+            cofactorMatrix(row, col) = cofactor;
+        }
+    }
+
+    // The adjugate is the transpose of the cofactor matrix
+    adjugate = cofactorMatrix.transpose();
+}
+
+void BarItzhackOptRot(const std::vector<Eigen::Vector3d>& points3D, 
+                      const std::vector<Eigen::Vector2d>& points2D,
+                      Eigen::Matrix3d& opt_rot) {
+    Eigen::Matrix4d M;
+    MMatrix(points3D, points2D, M);
+
+    // Eigenvalue decomposition of M
+    Eigen::SelfAdjointEigenSolver<Eigen::Matrix4d> eigensolver(M);
+    if (eigensolver.info() != Eigen::Success) {
+        // Handle the error - computation failed
+        std::cerr << "Eigenvalue decomposition failed!" << std::endl;
+        opt_rot = Eigen::Matrix3d::Identity(); 
+    }
+
+    Eigen::VectorXd eigenvalues = eigensolver.eigenvalues();
+    Eigen::Matrix4d chi = M - Eigen::Matrix4d::Identity() * eigenvalues(3);
+
+    Eigen::Matrix4d adjugate; 
+    MakeAdjugate(chi, adjugate);
+
+    // Finding the quaternion with the maximum diagonal element
+    int max_diag_index = 0;
+    double max_diag_value = -1.0;
+    for (int i = 0; i < 4; ++i) {
+        double diag_value = std::abs(adjugate(i, i));
+        if (diag_value > max_diag_value) {
+            max_diag_value = diag_value;
+            max_diag_index = i;
+        }
+    }
+
+    Eigen::Vector4d quat_estimate = adjugate.row(max_diag_index).normalized();
+
+    // Converting quaternion to rotation matrix
+    Eigen::Quaterniond quat(quat_estimate(0), quat_estimate(1), quat_estimate(2), quat_estimate(3));
+    opt_rot = quat.toRotationMatrix();
+}
+
+

@@ -25,3 +25,15 @@ void MakeRTilde(const std::vector<Eigen::Vector3d>& points3D,
 void MMatrix(const std::vector<Eigen::Vector3d>& points3D, 
              const std::vector<Eigen::Vector2d>& points2D,
              Eigen::Matrix4d& M);
+
+/**
+ * @brief compute adjugate by cofactor matrix
+*/
+void MakeAdjugate(const Eigen::Matrix4d& matrix, Eigen::Matrix4d& adjugate);
+
+/**
+ * @brief make the Bar-Itzhack correction for the DRaM estimated rotation
+*/
+void BarItzhackOptRot(const std::vector<Eigen::Vector3d>& points3D, 
+                      const std::vector<Eigen::Vector2d>& points2D,
+                      Eigen::Matrix3d& opt_rot);

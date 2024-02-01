@@ -6,6 +6,7 @@
 #include <Eigen/Core>
 
 #include "base/camera.h"
+#include "estimate/adj_quat.h"
 
 struct LHMOptions
 {  
@@ -17,6 +18,12 @@ struct LHMOptions
 
     // max iteration for current estimation
     int lhm_iter = 35;
+
+    // option to use DRaM & Bar-Itzhack as initial guess
+    bool dram = false;
+
+    // optimization method for the iteration
+    std::string = "lhm";
 };
 
 
@@ -105,6 +112,14 @@ class LHMEstimator {
                                  const std::vector<Eigen::Vector3d>& points3D1,
                                  Eigen::Matrix3d& R,
                                  Eigen::Vector3d& t);
+        
+        /**
+         * @brief use adjugate quaternion based solution to 
+         * have a better init rotation
+        */
+        void DRaMInit(const std::vector<Eigen::Vector2d>& points2D,
+                      const std::vector<Eigen::Vector3d>& points3D,
+                      Eigen::Matrix3d& rot_opt);
 
         // init options for LHM manually; 
         // should implement a helper function to save the option we are using
