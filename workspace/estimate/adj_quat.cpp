@@ -87,7 +87,7 @@ void MakeRTilde(const std::vector<Eigen::Vector3d>& points3D,
 void MMatrix(const std::vector<Eigen::Vector3d>& points3D, 
              const std::vector<Eigen::Vector2d>& points2D,
              Eigen::Matrix4d& M) {
-    std::vector<double> dets;
+    std::vector<double> dets; // this BI correction still need DRaM, but not for R tilde?
     MakeDeterminants2D(points3D, points2D, dets);
 
     M << dets[6] - dets[4] + dets[9], -(dets[2] - dets[8]), -(dets[5] - dets[1]), -(-dets[3] - dets[7]),
@@ -134,7 +134,7 @@ void MakeAdjugate(Eigen::Matrix4d& matrix, Eigen::Matrix4d& adjugate) {
     adjugate = cofactorMatrix.transpose();
 }
 
-void BarItzhackOptRot(const std::vector<Eigen::Vector3d>& points3D, 
+bool BarItzhackOptRot(const std::vector<Eigen::Vector3d>& points3D, 
                       const std::vector<Eigen::Vector2d>& points2D,
                       Eigen::Matrix3d& opt_rot) {
     Eigen::Matrix4d M;
@@ -146,6 +146,7 @@ void BarItzhackOptRot(const std::vector<Eigen::Vector3d>& points3D,
         // Handle the error - computation failed
         std::cerr << "Eigenvalue decomposition failed!" << std::endl;
         opt_rot = Eigen::Matrix3d::Identity(); 
+        return false;
     }
 
     Eigen::VectorXd eigenvalues = eigensolver.eigenvalues();
@@ -170,6 +171,8 @@ void BarItzhackOptRot(const std::vector<Eigen::Vector3d>& points3D,
     // Converting quaternion to rotation matrix
     Eigen::Quaterniond quat(quat_estimate(0), quat_estimate(1), quat_estimate(2), quat_estimate(3));
     opt_rot = quat.toRotationMatrix();
+
+    return true;
 }
 
 

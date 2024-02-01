@@ -19,8 +19,9 @@ struct LHMOptions
     // max iteration for current estimation
     int lhm_iter = 35;
 
-    // option to use DRaM & Bar-Itzhack as initial guess
-    bool dram = false;
+    // option to use DRaM & Bar-Itzhack as initial guess for rotation
+    // or standard SVD et.al.
+    std::string rot_init_est = "svd";
 
     // optimization method for the iteration
     std::string = "lhm";
@@ -66,6 +67,14 @@ class LHMEstimator {
         bool ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
                             const std::vector<Eigen::Vector3d>& points3D,
                             Eigen::Matrix3x4d* proj_matrix);
+
+        /**
+         * @brief estimate the absolute pose via LHM with initialization
+         * by DRaM
+        */
+        bool ComputeAdjQuatPose(const std::vector<Eigen::Vector2d>& points2D,
+                                const std::vector<Eigen::Vector3d>& points3D,
+                                Eigen::Matrix3x4d* proj_matrix);
 
         /**
          * @brief calculate relative rotation & translation with the scale of depth
@@ -114,18 +123,37 @@ class LHMEstimator {
                                  Eigen::Vector3d& t);
         
         /**
-         * @brief use adjugate quaternion based solution to 
-         * have a better init rotation
+         * @brief use adjugate quaternion based solution on
+         * 3D-3D registration to have a better init rotation
         */
-        void DRaMInit(const std::vector<Eigen::Vector2d>& points2D,
-                      const std::vector<Eigen::Vector3d>& points3D,
-                      Eigen::Matrix3d& rot_opt);
+        bool WeakPerspectiveDRaMInit3D(const std::vector<Eigen::Vector3d>& points3D0,
+                                       const std::vector<Eigen::Vector3d>& points3D1,
+                                       Eigen::Matrix3d& rot_opt);
+
+        /**
+         * @brief use adjugate quaternion based solution on
+         * 3D-2D registration to have a better init rotation
+         * with the Bar-Itzhack correction.
+         * to be consistent with other initialization method, we pass 
+         * the 3D homogeneaous coordinates as input, but will
+         * project them back as 2D pixels inside the function
+        */
+        void WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>& points3D0,
+                                       const std::vector<Eigen::Vector3d>& points3D1,
+                                       Eigen::Matrix3d& rot_opt);
+
+        /**
+         * @brief preprocess of the weak perspective model by getting
+         * the centroid of both point clouds.
+        */
+        void GetCentroid(const std::vector<Eigen::Vector2d>& points3D0,
+                         const std::vector<Eigen::Vector3d>& points3D1,
+                         Eigen::Vector3d& pc, Eigen::Vector3d& qc);
 
         // init options for LHM manually; 
         // should implement a helper function to save the option we are using
         LHMOptions options_ = LHMOptions();
 
-        colmap::Camera camera;
 };
 
 #endif  // ESTIMATE_LHM_H_

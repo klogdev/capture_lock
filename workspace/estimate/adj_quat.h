@@ -34,6 +34,6 @@ void MakeAdjugate(const Eigen::Matrix4d& matrix, Eigen::Matrix4d& adjugate);
 /**
  * @brief make the Bar-Itzhack correction for the DRaM estimated rotation
 */
-void BarItzhackOptRot(const std::vector<Eigen::Vector3d>& points3D, 
+bool BarItzhackOptRot(const std::vector<Eigen::Vector3d>& points3D, 
                       const std::vector<Eigen::Vector2d>& points2D,
                       Eigen::Matrix3d& opt_rot);
