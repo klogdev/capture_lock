@@ -20,7 +20,16 @@ lhm.cpp
 target_include_directories(
   lhm PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  lhm PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
+  lhm PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} adj_quat)
+
+add_library(adj_quat STATIC
+adj_quat.h
+adj_quat.cpp
+)
+target_include_directories(
+  adj_quat PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  adj_quat PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
 
 # add_library(epipole_estimate STATIC
 # epipole_estimator.h

@@ -15,7 +15,7 @@ void MakeDeterminants2D(const std::vector<Eigen::Vector3d>& points3D,
     Eigen::ArrayXd y_components(points3D.size());
     Eigen::ArrayXd z_components(points3D.size());
 
-    for (size_t i = 0; i < points3D.size(); ++i) {
+    for (size_t i = 0; i < points3D.size(); i++) {
         x_components(i) = points3D[i].x();
         y_components(i) = points3D[i].y();
         z_components(i) = points3D[i].z();
@@ -24,10 +24,9 @@ void MakeDeterminants2D(const std::vector<Eigen::Vector3d>& points3D,
     Eigen::ArrayXd u_components(points2D.size());
     Eigen::ArrayXd v_components(points2D.size());
     // Extract u and v components from points2D
-    std::vector<double> u_components, v_components;
-    for (const auto& point : points2D) {
-        u_components(i) = points3D[i].x();
-        v_components(i) = points3D[i].y();
+    for (size_t i = 0; i < points3D.size(); i++) {
+        u_components(i) = points2D[i].x();
+        v_components(i) = points2D[i].y();
     }
 
     // Obtain cross matrix's entries
@@ -75,7 +74,7 @@ void MakeDeterminants2D(const std::vector<Eigen::Vector3d>& points3D,
 
 void MakeRTilde(const std::vector<Eigen::Vector3d>& points3D, 
                 const std::vector<Eigen::Vector2d>& points2D,
-                Eigen::Matrix3d& r_tilde); {
+                Eigen::Matrix3d& r_tilde) {
     std::vector<double> dets;
     MakeDeterminants2D(points3D, points2D, dets);
 

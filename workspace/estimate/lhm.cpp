@@ -65,11 +65,35 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
     Eigen::Matrix3d init_rot;
     Eigen::Vector3d init_trans;
 
-    bool weak_persp = WeakPerspectiveQuat(points3D, homogeneous_pts,
-                                          init_rot, init_trans); 
+    if(options_.rot_init_est == "horn"){
+        bool weak_persp = WeakPerspectiveQuat(points3D, homogeneous_pts,
+                                              init_rot, init_trans); 
+    }
+    else{
+        bool weak_persp = WeakPerspectiveDRaMInit2D(points3D, homogeneous_pts,
+                                                    init_rot, init_trans);
+    }
     
+    // init trans after obatain the init rotation
     TransFromRotLHM(points3D, V, Tfact, init_rot, init_trans);
 
+    if(options_.optim_option == "lhm"){
+        bool opt_result = IterationLHM(points3D, V, Tfact, init_rot, init_trans);
+    }
+
+    // Compose the extrinsic matrix
+    proj_matrix->block<3, 3>(0, 0) = init_rot;
+    proj_matrix->col(3) = init_trans;
+
+    return true;
+}
+
+bool LHMEstimator::IterationLHM(const std::vector<Eigen::Vector3d>& points3D,
+                                const std::vector<Eigen::Matrix3d>& V,
+                                const Eigen::Matrix3d& Tfact,
+                                Eigen::Matrix3d& init_rot,
+                                Eigen::Vector3d& init_trans) {
+    int n_points = points3D.size();
     int iter = 0;
     double curr_err = std::numeric_limits<double>::max();
     double old_err = -1.0; // dummy old error to start the while loop
@@ -94,25 +118,7 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
                                            init_rot, init_trans);
         iter++;
     }
-
-    // Compose the extrinsic matrix
-    proj_matrix->block<3, 3>(0, 0) = init_rot;
-    proj_matrix->col(3) = init_trans;
-
     return true;
-}
-
-bool LHMEstimator::ComputeAdjQuatPose(const std::vector<Eigen::Vector2d>& points2D,
-                                      const std::vector<Eigen::Vector3d>& points3D,
-                                      Eigen::Matrix3x4d* proj_matrix) {
-    std::vector<Eigen::Vector3d> homogeneous_pts; // for later use in the weak perspective model
-
-    for(const auto& p : points2D) {
-        Eigen::Vector3d homogeneousPoint(p[0], p[1], 1.0);
-        homogeneous_pts.push_back(homogeneousPoint);
-    }
-
-
 }
 
 bool LHMEstimator::CalcLHMRotTrans(const std::vector<Eigen::Vector3d>& points3D0,
@@ -267,17 +273,18 @@ bool LHMEstimator::WeakPerspectiveQuat(const std::vector<Eigen::Vector3d>& point
 
 bool LHMEstimator::WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>& points3D0,
                                              const std::vector<Eigen::Vector3d>& points3D1,
-                                             Eigen::Matrix3d& rot_opt) {
+                                             Eigen::Matrix3d& rot_opt,
+                                             Eigen::Vector3d& trans_init) {
     Eigen::Vector3d pc = Eigen::Vector3d::Zero();
     Eigen::Vector3d qc = Eigen::Vector3d::Zero();
 
     GetCentroid(points3D0, points3D1, pc, qc);
-    Eigen::Vector3d guess_trans = qc - pc; // relative trans between homogeneaous coord and scene points
+    trans_init = qc - pc; // relative trans between homogeneaous coord and scene points
 
     std::vector<Eigen::Vector3d> shifted_pts;
     std::vector<Eigen::Vector2d> projected_pts;
     for(size_t i = 0; i < points3D0.size(); i++){
-        shifted_pts.push_back(points3D0[i] + guess_trans);
+        shifted_pts.push_back(points3D0[i] + trans_init);
         projected_pts.emplace_back(points3D1[i][0]/points3D1[i][2], points3D1[i][1]/points3D1[i][2]);
     }
 
@@ -290,7 +297,7 @@ bool LHMEstimator::WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>&
         return false;
 }
 
-void LHMEstimator::GetCentroid(const std::vector<Eigen::Vector2d>& points3D0,
+void LHMEstimator::GetCentroid(const std::vector<Eigen::Vector3d>& points3D0,
                                const std::vector<Eigen::Vector3d>& points3D1,
                                Eigen::Vector3d& pc, Eigen::Vector3d& qc) {
     // Compute centroids

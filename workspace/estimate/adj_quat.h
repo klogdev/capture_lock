@@ -37,3 +37,5 @@ void MakeAdjugate(const Eigen::Matrix4d& matrix, Eigen::Matrix4d& adjugate);
 bool BarItzhackOptRot(const std::vector<Eigen::Vector3d>& points3D, 
                       const std::vector<Eigen::Vector2d>& points2D,
                       Eigen::Matrix3d& opt_rot);
+
+#endif  // ESTIMATE_ADJ_QUAT_H_

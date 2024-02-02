@@ -16,15 +16,15 @@ struct LHMOptions
     // lower bound of objective fxn
     double lhm_epsilon = 1e-8;
 
-    // max iteration for current estimation
-    int lhm_iter = 35;
+    // max iteration for lhm's optimization
+    int lhm_iter = 50;
 
     // option to use DRaM & Bar-Itzhack as initial guess for rotation
     // or standard SVD et.al.
-    std::string rot_init_est = "svd";
+    std::string rot_init_est = "dram";
 
     // optimization method for the iteration
-    std::string = "lhm";
+    std::string optim_option = "lhm";
 };
 
 
@@ -108,6 +108,14 @@ class LHMEstimator {
         double ObjSpaceLHMErr(const std::vector<Eigen::Vector3d>& points3D,
                               const std::vector<Eigen::Matrix3d>& V);
 
+        /**
+         * @brief iterative optimization by using LHM's pipeline
+        */
+        bool IterationLHM(const std::vector<Eigen::Vector3d>& points3D,
+                          const std::vector<Eigen::Matrix3d>& V,
+                          const Eigen::Matrix3d& Tfact,
+                          Eigen::Matrix3d& init_rot,
+                          Eigen::Vector3d& init_trans);
 
         /**
          * @brief calculate relative rotation and translation up to a scale of
@@ -128,7 +136,8 @@ class LHMEstimator {
         */
         bool WeakPerspectiveDRaMInit3D(const std::vector<Eigen::Vector3d>& points3D0,
                                        const std::vector<Eigen::Vector3d>& points3D1,
-                                       Eigen::Matrix3d& rot_opt);
+                                       Eigen::Matrix3d& rot_opt,
+                                       Eigen::Vector3d& trans_init);
 
         /**
          * @brief use adjugate quaternion based solution on
@@ -138,15 +147,16 @@ class LHMEstimator {
          * the 3D homogeneaous coordinates as input, but will
          * project them back as 2D pixels inside the function
         */
-        void WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>& points3D0,
+        bool WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>& points3D0,
                                        const std::vector<Eigen::Vector3d>& points3D1,
-                                       Eigen::Matrix3d& rot_opt);
+                                       Eigen::Matrix3d& rot_opt,
+                                       Eigen::Vector3d& trans_init);
 
         /**
          * @brief preprocess of the weak perspective model by getting
          * the centroid of both point clouds.
         */
-        void GetCentroid(const std::vector<Eigen::Vector2d>& points3D0,
+        void GetCentroid(const std::vector<Eigen::Vector3d>& points3D0,
                          const std::vector<Eigen::Vector3d>& points3D1,
                          Eigen::Vector3d& pc, Eigen::Vector3d& qc);
 
