@@ -280,6 +280,7 @@ bool LHMEstimator::WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>&
 
     GetCentroid(points3D0, points3D1, pc, qc);
     trans_init = qc - pc; // relative trans between homogeneaous coord and scene points
+    trans_init.z() = 0; // as DRaM not rely on depth, we only translate x, y component
 
     std::vector<Eigen::Vector3d> shifted_pts;
     std::vector<Eigen::Vector2d> projected_pts;

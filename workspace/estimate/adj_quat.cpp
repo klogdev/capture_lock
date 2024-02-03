@@ -24,7 +24,7 @@ void MakeDeterminants2D(const std::vector<Eigen::Vector3d>& points3D,
     Eigen::ArrayXd u_components(points2D.size());
     Eigen::ArrayXd v_components(points2D.size());
     // Extract u and v components from points2D
-    for (size_t i = 0; i < points3D.size(); i++) {
+    for (size_t i = 0; i < points2D.size(); i++) {
         u_components(i) = points2D[i].x();
         v_components(i) = points2D[i].y();
     }
@@ -95,13 +95,13 @@ void MMatrix(const std::vector<Eigen::Vector3d>& points3D,
         -(-dets[3] - dets[7]), dets[5] + dets[1], dets[2] + dets[8], -dets[6] + dets[4] + dets[9];
 
     // Ensure d1 is not zero to avoid division by zero
-    if (std::abs(dets[0]) > std::numeric_limits<double>::epsilon()) {
-        M /= dets[0];
-    } else {
-        // Handle the zero division case, possibly set M to zero or an identity matrix, or handle as per your application's needs
-        M.setZero(); // Example: Setting M to zero
-        std::cerr << "cannot divided by zero when constructing M" << std::endl;
-    }
+    // if (std::abs(dets[0]) > std::numeric_limits<double>::epsilon()) {
+    //     M /= dets[0];
+    // } else {
+    //     // Handle the zero division case, possibly set M to zero or an identity matrix, or handle as per your application's needs
+    //     M.setZero(); // Example: Setting M to zero
+    //     std::cerr << "cannot divided by zero when constructing M" << std::endl;
+    // }
 }
 
 void MakeAdjugate(Eigen::Matrix4d& matrix, Eigen::Matrix4d& adjugate) {

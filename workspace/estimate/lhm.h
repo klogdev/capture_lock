@@ -17,11 +17,11 @@ struct LHMOptions
     double lhm_epsilon = 1e-8;
 
     // max iteration for lhm's optimization
-    int lhm_iter = 50;
+    int lhm_iter = 100;
 
     // option to use DRaM & Bar-Itzhack as initial guess for rotation
     // or standard SVD et.al.
-    std::string rot_init_est = "dram";
+    std::string rot_init_est = "horn";
 
     // optimization method for the iteration
     std::string optim_option = "lhm";

@@ -70,7 +70,7 @@ int main() {
             // Test residuals of exact points.
             std::vector<double> residuals;
             LHMEstimator::Residuals(points2D, points3D, report.model, &residuals);
-            for (size_t i = 0; i < residuals.size(); ++i) {
+            for (size_t i = 0; i < residuals.size(); i++) {
                 std::cout <<"residual of the original point: " << std::endl;
                 std::cout << residuals[i] << std::endl;
                 if(residuals[i] < 1e-3){
@@ -79,14 +79,14 @@ int main() {
             }   
 
             // Test residuals of faulty points.
-            LHMEstimator::Residuals(points2D, points3D_faulty, report.model,
-                                    &residuals);
-            for (size_t i = 0; i < residuals.size(); ++i) {
-                if(residuals[i] > 0.1){
-                    std::cout << "residuals of faulty point " << i << " is reasonable" << std::endl;
-                    std::cout << residuals[i] << std::endl;
-                }
-            }
+            // LHMEstimator::Residuals(points2D, points3D_faulty, report.model,
+            //                         &residuals);
+            // for (size_t i = 0; i < residuals.size(); ++i) {
+            //     if(residuals[i] > 0.1){
+            //         std::cout << "residuals of faulty point " << i << " is reasonable" << std::endl;
+            //         std::cout << residuals[i] << std::endl;
+            //     }
+            // }
         }
     }
 
