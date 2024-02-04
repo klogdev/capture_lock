@@ -209,6 +209,7 @@ bool LHMEstimator::WeakPerspectiveQuat(const std::vector<Eigen::Vector3d>& point
     Eigen::Vector3d pc = Eigen::Vector3d::Zero();
     Eigen::Vector3d qc = Eigen::Vector3d::Zero();
 
+    // here we use (u,v,1) for the points3D1
     GetCentroid(points3D0, points3D1, pc, qc);
 
     // Compute M from centered points and dq, dp's squares
@@ -279,14 +280,15 @@ bool LHMEstimator::WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>&
     Eigen::Vector3d qc = Eigen::Vector3d::Zero();
 
     GetCentroid(points3D0, points3D1, pc, qc);
-    trans_init = qc - pc; // relative trans between homogeneaous coord and scene points
+    trans_init = qc - pc; // dummy trans between homogeneaous coord and scene points
     trans_init.z() = 0; // as DRaM not rely on depth, we only translate x, y component
 
     std::vector<Eigen::Vector3d> shifted_pts;
     std::vector<Eigen::Vector2d> projected_pts;
     for(size_t i = 0; i < points3D0.size(); i++){
-        shifted_pts.push_back(points3D0[i] + trans_init);
-        projected_pts.emplace_back(points3D1[i][0]/points3D1[i][2], points3D1[i][1]/points3D1[i][2]);
+        shifted_pts.push_back(points3D0[i] - pc);
+        Eigen::Vector3d q = points3D1[i] - qc;
+        projected_pts.emplace_back(q[0]/q[2], q[1]/q[2]);
     }
 
     bool bi_correct = BarItzhackOptRot(shifted_pts, projected_pts, rot_opt);

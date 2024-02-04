@@ -17,7 +17,7 @@ struct LHMOptions
     double lhm_epsilon = 1e-8;
 
     // max iteration for lhm's optimization
-    int lhm_iter = 100;
+    int lhm_iter = 35;
 
     // option to use DRaM & Bar-Itzhack as initial guess for rotation
     // or standard SVD et.al.
@@ -59,7 +59,6 @@ class LHMEstimator {
                               const std::vector<Y_t>& points3D,
                               const M_t& proj_matrix, std::vector<double>* residuals);
 
-    private:
         /**
          * @brief estimate the absolute pose via LHM from corresponded 
          * 2D, 3D points
@@ -68,13 +67,7 @@ class LHMEstimator {
                             const std::vector<Eigen::Vector3d>& points3D,
                             Eigen::Matrix3x4d* proj_matrix);
 
-        /**
-         * @brief estimate the absolute pose via LHM with initialization
-         * by DRaM
-        */
-        bool ComputeAdjQuatPose(const std::vector<Eigen::Vector2d>& points2D,
-                                const std::vector<Eigen::Vector3d>& points3D,
-                                Eigen::Matrix3x4d* proj_matrix);
+    private:
 
         /**
          * @brief calculate relative rotation & translation with the scale of depth

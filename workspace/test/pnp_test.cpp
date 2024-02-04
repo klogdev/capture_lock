@@ -27,23 +27,33 @@ int main() {
         points3D_faulty[i](0) = 20;
     }
 
-    for (double qx = 0; qx < 0.3; qx += 0.2) {
-        for (double tx = 0; tx < 0.2; tx += 0.1) {
+    for (double qx = 0; qx < 0.2; qx += 0.2) {
+        for (double tx = 0; tx < 0.5; tx += 0.1) {
             const colmap::SimilarityTransform3 orig_tform(1, Eigen::Vector4d(1, qx, 0, 0),
                                                           Eigen::Vector3d(tx, 0, 0));
 
             // Project points to camera coordinate system
             // here we project the original 3D points
             std::vector<Eigen::Vector2d> points2D;
-            for (size_t i = 0; i < points3D.size(); ++i) {
+            for (size_t i = 0; i < points3D.size(); i++) {
                 Eigen::Vector3d point3D_camera = points3D[i];
                 orig_tform.TransformPoint(&point3D_camera);
                 points2D.push_back(point3D_camera.hnormalized());
             }
 
+            std::cout << "current rotation simulation is: " << qx << std::endl;
+            std::cout << "current translation simulation is: " << tx << std::endl;
+
+            Eigen::Matrix3x4d manual_proj; // debug without ransac
+            LHMEstimator lhm;
+            bool curr_est = lhm.ComputeLHMPose(points2D, points3D, &manual_proj);
+            std::cout << "manually estimated lhm" << std::endl;
+            std::cout << manual_proj << std::endl;
+
             colmap::RANSACOptions options;
             options.max_error = 1e-5;
             colmap::RANSAC<LHMEstimator> ransac(options);
+            // colmap::RANSAC<colmap::EPNPEstimator> ransac(options);
             const auto report = ransac.Estimate(points2D, points3D);
 
             if(report.success == true){
@@ -70,6 +80,7 @@ int main() {
             // Test residuals of exact points.
             std::vector<double> residuals;
             LHMEstimator::Residuals(points2D, points3D, report.model, &residuals);
+            // colmap::EPNPEstimator::Residuals(points2D, points3D, report.model, &residuals);
             for (size_t i = 0; i < residuals.size(); i++) {
                 std::cout <<"residual of the original point: " << std::endl;
                 std::cout << residuals[i] << std::endl;
