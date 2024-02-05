@@ -118,6 +118,7 @@ bool LHMEstimator::IterationLHM(const std::vector<Eigen::Vector3d>& points3D,
                                            init_rot, init_trans);
         iter++;
     }
+
     return true;
 }
 
@@ -155,7 +156,7 @@ bool LHMEstimator::CalcLHMRotTrans(const std::vector<Eigen::Vector3d>& points3D0
         Eigen::Vector3d p = points3D0[i] - pc;
         Eigen::Vector3d q = points3D1[i] - qc;
 
-        M += p * q.transpose(); // Outer product
+        M += q * p.transpose(); // Outer product
     }
 
     // Perform SVD
@@ -225,7 +226,7 @@ bool LHMEstimator::WeakPerspectiveQuat(const std::vector<Eigen::Vector3d>& point
         dpsum += p.squaredNorm();
         dqsum += q.squaredNorm();
 
-        S += p * q.transpose(); // Outer product
+        S += p * q.transpose(); // transform p to q -> p*q.T
     }
 
     // Diagonal elements
@@ -262,9 +263,15 @@ bool LHMEstimator::WeakPerspectiveQuat(const std::vector<Eigen::Vector3d>& point
 
     // Create a Quaternion from the eigenvector
     Eigen::Quaterniond quaternion(eigenvec(0), eigenvec(1), eigenvec(2), eigenvec(3));
+    
+    // std::cout << "first estimated quaternion is: " << std::endl;
+    // std::cout << eigenvec << std::endl;
 
     // Convert the quaternion to a rotation matrix
     R = quaternion.toRotationMatrix();
+
+    // std::cout << "first estimated matrix is: " << std::endl;
+    // std::cout << R << std::endl;
 
     // Assuming pc and qc are centroids of pts0 and pts1, and scale is computed
     t = qc - scale * (R * pc); // t = qc - R * scale * pc;
@@ -287,8 +294,8 @@ bool LHMEstimator::WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>&
     std::vector<Eigen::Vector2d> projected_pts;
     for(size_t i = 0; i < points3D0.size(); i++){
         shifted_pts.push_back(points3D0[i] - pc);
-        Eigen::Vector3d q = points3D1[i] - qc;
-        projected_pts.emplace_back(q[0]/q[2], q[1]/q[2]);
+        Eigen::Vector3d curr_q = points3D1[i] - qc;
+        projected_pts.emplace_back(curr_q.x(), curr_q.y());
     }
 
     bool bi_correct = BarItzhackOptRot(shifted_pts, projected_pts, rot_opt);

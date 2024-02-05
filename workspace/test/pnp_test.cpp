@@ -27,8 +27,8 @@ int main() {
         points3D_faulty[i](0) = 20;
     }
 
-    for (double qx = 0; qx < 0.2; qx += 0.2) {
-        for (double tx = 0; tx < 0.5; tx += 0.1) {
+    for (double qx = 0; qx < 0.6; qx += 0.2) {
+        for (double tx = 0; tx < 0.6; tx += 0.1) {
             const colmap::SimilarityTransform3 orig_tform(1, Eigen::Vector4d(1, qx, 0, 0),
                                                           Eigen::Vector3d(tx, 0, 0));
 
@@ -43,6 +43,8 @@ int main() {
 
             std::cout << "current rotation simulation is: " << qx << std::endl;
             std::cout << "current translation simulation is: " << tx << std::endl;
+            std::cout << "current transform is: " << std::endl;
+            std::cout << orig_tform.Matrix() << std::endl;
 
             Eigen::Matrix3x4d manual_proj; // debug without ransac
             LHMEstimator lhm;
