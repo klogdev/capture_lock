@@ -17,7 +17,7 @@ struct LHMOptions
     double lhm_epsilon = 1e-8;
 
     // max iteration for lhm's optimization
-    int lhm_iter = 5;
+    int lhm_iter = 35;
 
     // option to use DRaM & Bar-Itzhack as initial guess for rotation
     // or standard SVD et.al.
@@ -39,7 +39,7 @@ class LHMEstimator {
         typedef Eigen::Matrix3x4d M_t;
 
         // The minimum number of samples needed to estimate a model.
-        static const int kMinNumSamples = 3;
+        static const int kMinNumSamples = 4;
 
         // Estimate the most probable solution of the P3P problem from a set of
         // three 2D-3D point correspondences.
