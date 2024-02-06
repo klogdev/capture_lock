@@ -1,4 +1,6 @@
 #include <ceres/ceres.h>
+#include <ceres/rotation.h>
+
 #include <Eigen/Core>
 
 struct ReprojectionError {
@@ -12,10 +14,8 @@ struct ReprojectionError {
                     T* residuals) const {
         
         T p_transformed[3];
+        T point_3d[3] = {T(point3D_x), T(point3D_y), T(point3D_z)};
         ceres::UnitQuaternionRotatePoint(camera_rotation, point_3d, p_transformed);
-        projection[0] += tvec[0];
-        projection[1] += tvec[1];
-        projection[2] += tvec[2];
 
         // Apply translation
         p_transformed[0] += camera_translation[0];
@@ -40,8 +40,9 @@ struct ReprojectionError {
 
 /**
  * @brief ceres solver for the least square optimization of PnP
- * can be a polish step after LHM/DRaM
+ * can be a sccesive polish step after LHM/DRaM
 */
 void LeastSquareSolver(std::vector<Eigen::Vector2d>& points_2d, 
                        std::vector<Eigen::Vector3d>& points_3d,
-                       Eigen::Vector4d& quat_init, Eigen::Vector3d& trans_init);
+                       Eigen::Vector4d& quat_init, Eigen::Vector3d& trans_init,
+                       int max_iters);

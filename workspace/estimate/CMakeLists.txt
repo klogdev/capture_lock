@@ -31,6 +31,15 @@ target_include_directories(
 target_link_libraries(
   adj_quat PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
 
+add_library(lsq STATIC
+least_sqr_pnp.h
+least_sqr_pnp.cpp
+)
+target_include_directories(
+  lsq PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  lsq PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
+
 # add_library(epipole_estimate STATIC
 # epipole_estimator.h
 # epipole_estimator.cpp
