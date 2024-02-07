@@ -67,6 +67,13 @@ class LHMEstimator {
                             const std::vector<Eigen::Vector3d>& points3D,
                             Eigen::Matrix3x4d* proj_matrix);
 
+        /**
+         * @brief set the g.t. pose to compare with the first estimation
+         * by DRaM
+        */
+        static void setGroundTruthPose(const Eigen::Matrix3x4d& gt_pose);
+
+
     private:
 
         /**
@@ -156,6 +163,8 @@ class LHMEstimator {
         // init options for LHM manually; 
         // should implement a helper function to save the option we are using
         LHMOptions options_ = LHMOptions();
+
+        static Eigen::Matrix3x4d gt_pose_;
 
 };
 

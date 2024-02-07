@@ -320,3 +320,7 @@ void LHMEstimator::GetCentroid(const std::vector<Eigen::Vector3d>& points3D0,
     pc /= points3D0.size();
     qc /= points3D1.size();
 }
+
+static void LHMEstimator::setGroundTruthPose(const Eigen::Matrix3x4d& gt_pose) {
+    gt_pose_ = gt_pose;
+}
