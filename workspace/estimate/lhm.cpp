@@ -7,10 +7,16 @@
 
 #include "estimate/lhm.h"
 #include "estimate/adj_quat.h"
+#include "util_/math_helper.h"
 
 #include "base/projection.h"
 #include "base/camera.h"
 #include "estimators/utils.h"
+
+// init the static members for the instance
+LHMOptions LHMEstimator::options_ = LHMOptions();
+Eigen::Matrix3x4d* LHMEstimator::gt_pose_ = nullptr;
+
 
 std::vector<LHMEstimator::M_t> LHMEstimator::Estimate(
     const std::vector<X_t>& points2D, const std::vector<Y_t>& points3D) {
@@ -299,6 +305,11 @@ bool LHMEstimator::WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>&
     }
 
     bool bi_correct = BarItzhackOptRot(shifted_pts, projected_pts, rot_opt);
+    if (gt_pose_ != nullptr) {
+        double matrix_norm = frobeniusNorm(rot_opt, gt_pose_->block<3, 3>(0, 0));
+        std::cout << "first estimated rotation difference: " << std::endl;
+        std::cout << matrix_norm << std::endl;
+    }
 
     if(bi_correct)
         return true;
@@ -321,6 +332,12 @@ void LHMEstimator::GetCentroid(const std::vector<Eigen::Vector3d>& points3D0,
     qc /= points3D1.size();
 }
 
-static void LHMEstimator::setGroundTruthPose(const Eigen::Matrix3x4d& gt_pose) {
-    gt_pose_ = gt_pose;
+void LHMEstimator::setGroundTruthPose(Eigen::Matrix3x4d* gt_pose) {
+    if(gt_pose != nullptr)
+        LHMEstimator::gt_pose_ = gt_pose;
 }
+
+void setGlobalOptions(const LHMOptions& options) {
+    LHMEstimator::options_ = options;
+}
+

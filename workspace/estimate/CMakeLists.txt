@@ -1,5 +1,6 @@
 link_directories("../feature")
 link_directories("../calib_loader")
+link_directories("../util_")
 link_directories("/usr/local/lib/colmap/")
 link_directories("../")
 include_directories(${WORKSPACE_DIR})
@@ -20,7 +21,7 @@ lhm.cpp
 target_include_directories(
   lhm PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  lhm PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} adj_quat)
+  lhm PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} adj_quat math_help)
 
 add_library(adj_quat STATIC
 adj_quat.h

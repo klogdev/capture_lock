@@ -66,3 +66,12 @@ target_include_directories(
   gt_map PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
   gt_map PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} kitti_pose)
+
+add_library(math_help STATIC
+math_helper.h
+math_helper.cpp
+)
+target_include_directories(
+  math_help PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  math_help PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})

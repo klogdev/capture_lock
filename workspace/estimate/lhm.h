@@ -60,21 +60,34 @@ class LHMEstimator {
                               const M_t& proj_matrix, std::vector<double>* residuals);
 
         /**
+         * @brief set the g.t. pose to compare with the first estimation
+         * by DRaM; we use static memeber due to RANSAC template does
+         * not allowed a direct constructor arg
+        */
+        static void setGroundTruthPose(Eigen::Matrix3x4d* gt_pose);
+
+        /**
+         * @brief set the options for LHM
+         * @note need to pay attention to thread safety if run
+         * with multithreading
+        */
+        static void setGlobalOptions(const LHMOptions& options);
+
+        static Eigen::Matrix3x4d* gt_pose_;
+
+        // init options for LHM manually; 
+        // should implement a helper function to save the option we are using
+        static LHMOptions options_;
+
+
+    private:
+        /**
          * @brief estimate the absolute pose via LHM from corresponded 
          * 2D, 3D points
         */
         bool ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
                             const std::vector<Eigen::Vector3d>& points3D,
                             Eigen::Matrix3x4d* proj_matrix);
-
-        /**
-         * @brief set the g.t. pose to compare with the first estimation
-         * by DRaM
-        */
-        static void setGroundTruthPose(const Eigen::Matrix3x4d& gt_pose);
-
-
-    private:
 
         /**
          * @brief calculate relative rotation & translation with the scale of depth
@@ -159,13 +172,6 @@ class LHMEstimator {
         void GetCentroid(const std::vector<Eigen::Vector3d>& points3D0,
                          const std::vector<Eigen::Vector3d>& points3D1,
                          Eigen::Vector3d& pc, Eigen::Vector3d& qc);
-
-        // init options for LHM manually; 
-        // should implement a helper function to save the option we are using
-        LHMOptions options_ = LHMOptions();
-
-        static Eigen::Matrix3x4d gt_pose_;
-
 };
 
 #endif  // ESTIMATE_LHM_H_
