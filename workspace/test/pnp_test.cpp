@@ -28,9 +28,11 @@ int main(int argc, char** argv) {
     GeneratorType gen_type = getGeneratorFromName(generator_opt);
     EstimatorType est_type = getEstimatorFromName(estimator_opt);
 
+    EstimatorOptions options = EstimatorOptions();
+
     // Create the data generator and estimator instances
     std::unique_ptr<DataGenerator> generator = DataGenerator::createDataGenerator(gen_type);
-    EstimatorWrapper estimator(est_type); // Assuming EstimatorWrapper can be directly instantiated like this
+    EstimatorWrapper estimator(est_type, options); // Assuming EstimatorWrapper can be directly instantiated like this
 
     // Pass these instances to a TestRunner or another part of your application
     PnPTestRunner test_runner(std::move(generator), estimator);

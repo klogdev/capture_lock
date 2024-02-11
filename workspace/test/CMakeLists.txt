@@ -23,7 +23,7 @@ pnp_test_template.cpp
 target_include_directories(
   pnp_template PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  pnp_template PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
+  pnp_template PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} lhm)
 
 add_library(pnp_data STATIC
 pnp_test_data.h
@@ -32,7 +32,7 @@ pnp_test_data.cpp
 target_include_directories(
   pnp_data PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  pnp_data PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
+  pnp_data PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} lhm)
 
 add_library(pnp_runner STATIC
 pnp_runner.h
@@ -41,7 +41,7 @@ pnp_runner.cpp
 target_include_directories(
   pnp_runner PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  pnp_runner PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} pnp_data pnp_template)
+  pnp_runner PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} pnp_data pnp_template lhm)
 
 add_executable(ceres_gpt ceres_test.cpp)
 target_include_directories(
@@ -111,11 +111,3 @@ target_include_directories(
   residual PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
   residual PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES})
-
-# add_executable(calib_test calib_factory_test.cpp)
-# target_include_directories(
-#   calib_test PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}" 
-#   "${OpenCV_INCLUDE_DIRS}")
-# target_link_libraries(
-#   calib_test PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${OpenCV_LIBRARIES}
-#   ${absl_LIBRARIES} kitti kitti_calib colmap_calib)

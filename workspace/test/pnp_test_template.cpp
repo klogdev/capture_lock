@@ -13,10 +13,10 @@
 #include "test/pnp_test_template.h"
 
 // Function to perform estimation
-bool LHMEstimatorWrapper::estimate(const std::vector<X_t>& points2D,
-                const std::vector<Y_t>& points3D,
-                M_t& estimated_extrinsic,
-                std::vector<double>* residuals = nullptr) {
+bool EstimatorWrapper::estimate(const std::vector<Eigen::Vector2d>& points2D,
+                const std::vector<Eigen::Vector3d>& points3D,
+                std::vector<Eigen::Matrix3x4d>& estimated_extrinsic,
+                std::vector<double>* residuals) {
     if (options_.use_ransac) {
         return runWithRansac(points2D, points3D, estimated_extrinsic, residuals);
     } else {
@@ -25,27 +25,32 @@ bool LHMEstimatorWrapper::estimate(const std::vector<X_t>& points2D,
 }
 
 // Runs the lhm-estimator standalone
-bool LHMEstimatorWrapper::runStandalone(const std::vector<X_t>& points2D,
-                                     const std::vector<Y_t>& points3D,
-                                     M_t& estimated_extrinsic,
+bool EstimatorWrapper::runStandalone(const std::vector<Eigen::Vector2d>& points2D,
+                                     const std::vector<Eigen::Vector3d>& points3D,
+                                     std::vector<Eigen::Matrix3x4d>& estimated_extrinsic,
                                      std::vector<double>* residuals) {
-    Estimator::setGlobalOptions(options_.lhm_opt); // Set global LHM options
-    if (options_.gt_pose != nullptr) {
-        Estimator::setGroundTruthPose(options_.gt_pose);
-    }
-
-    Estimator estimator;
-    estimated_extrinsic = estimator.Estimate(points2D, points3D);
-    if (residuals) {
-        estimator.Residuals(points2D, points3D, estimated_extrinsic, residuals);
-    }
 
     switch (type_) {
         case EstimatorType::EPnP: {
             colmap::EPNPEstimator estimator;
             estimated_extrinsic = estimator.Estimate(points2D, points3D);
             if (residuals) {
-                estimator.Residuals(points2D, points3D, estimated_extrinsic, residuals);
+                estimator.Residuals(points2D, points3D, estimated_extrinsic[0], residuals);
+            }
+            break;
+        }
+        case EstimatorType::LHM: {
+            options_.lhm_opt.rot_init_est = "horn";
+            options_.lhm_opt.optim_option = "lhm";
+            LHMEstimator::setGlobalOptions(options_.lhm_opt); // Set global LHM options
+            if (options_.gt_pose != nullptr) {
+                LHMEstimator::setGroundTruthPose(options_.gt_pose);
+            }
+
+            LHMEstimator estimator;
+            estimated_extrinsic = estimator.Estimate(points2D, points3D);
+            if (residuals) {
+                estimator.Residuals(points2D, points3D, estimated_extrinsic[0], residuals);
             }
             break;
         }
@@ -60,7 +65,22 @@ bool LHMEstimatorWrapper::runStandalone(const std::vector<X_t>& points2D,
             LHMEstimator estimator;
             estimated_extrinsic = estimator.Estimate(points2D, points3D);
             if (residuals) {
-                estimator.Residuals(points2D, points3D, estimated_extrinsic, residuals);
+                estimator.Residuals(points2D, points3D, estimated_extrinsic[0], residuals);
+            }
+            break;
+        }
+        case EstimatorType::DRaM_LHM: {
+            options_.lhm_opt.rot_init_est = "dram";
+            options_.lhm_opt.optim_option = "lhm";
+            LHMEstimator::setGlobalOptions(options_.lhm_opt); // Set global LHM options
+            if (options_.gt_pose != nullptr) {
+                LHMEstimator::setGroundTruthPose(options_.gt_pose);
+            }
+
+            LHMEstimator estimator;
+            estimated_extrinsic = estimator.Estimate(points2D, points3D);
+            if (residuals) {
+                estimator.Residuals(points2D, points3D, estimated_extrinsic[0], residuals);
             }
             break;
         }
@@ -72,32 +92,11 @@ bool LHMEstimatorWrapper::runStandalone(const std::vector<X_t>& points2D,
     return true;
 }
 
-// Runs the estimator within RANSAC
-bool LHMEstimatorWrapper::runWithRansac(const std::vector<X_t>& points2D,
-                                     const std::vector<Y_t>& points3D,
-                                     M_t& estimated_extrinsic,
+// Runs the lhm-estimator within RANSAC
+bool EstimatorWrapper::runWithRansac(const std::vector<Eigen::Vector2d>& points2D,
+                                     const std::vector<Eigen::Vector3d>& points3D,
+                                     std::vector<Eigen::Matrix3x4d>& estimated_extrinsic,
                                      std::vector<double>* residuals) {
-    Estimator::setGlobalOptions(options_.lhm_opt); // Set global LHM options
-    if (options_.gt_pose != nullptr) {
-        Estimator::setGroundTruthPose(options_.gt_pose);
-    }
-
-    colmap::RANSACOptions options;
-    options.max_error = 1e-5;
-    colmap::RANSAC<Estimator> ransac(options);
-    const auto report = ransac.Estimate(points2D, points3D);
-
-    if(report.success == true) {
-        std::cout << "current ransac passed" << std::endl; 
-    }
-    else {
-        std::cout << "current ransac failed" << std::endl; 
-    }
-
-    estimated_extrinsic = report.model;
-    if (residuals) {
-        Estimator::Residuals(points2D, points3D, report.model, residuals);
-    }
     switch (type_)
     {
         case EstimatorType::EPnP: {
@@ -113,7 +112,7 @@ bool LHMEstimatorWrapper::runWithRansac(const std::vector<X_t>& points2D,
                 std::cout << "current ransac failed" << std::endl; 
             }
 
-            estimated_extrinsic = report.model;
+            estimated_extrinsic = {report.model};
             if (residuals) {
                 colmap::EPNPEstimator::Residuals(points2D, points3D, report.model, residuals);
             }
@@ -132,7 +131,59 @@ bool LHMEstimatorWrapper::runWithRansac(const std::vector<X_t>& points2D,
                 std::cout << "current ransac failed" << std::endl; 
             }
 
-            estimated_extrinsic = report.model;
+            estimated_extrinsic = {report.model};
+            if (residuals) {
+                LHMEstimator::Residuals(points2D, points3D, report.model, residuals);
+            }
+            break;
+        }
+        case EstimatorType::DRaM_LHM: {
+            options_.lhm_opt.rot_init_est = "dram";
+            options_.lhm_opt.optim_option = "lhm";
+            LHMEstimator::setGlobalOptions(options_.lhm_opt); // Set global LHM options
+            if (options_.gt_pose != nullptr) {
+                LHMEstimator::setGroundTruthPose(options_.gt_pose);
+            }
+
+            colmap::RANSACOptions options;
+            options.max_error = 1e-5;
+            colmap::RANSAC<LHMEstimator> ransac(options);
+            const auto report = ransac.Estimate(points2D, points3D);
+
+            if(report.success == true) {
+                std::cout << "current ransac passed" << std::endl; 
+            }
+            else {
+                std::cout << "current ransac failed" << std::endl; 
+            }
+
+            estimated_extrinsic = {report.model};
+            if (residuals) {
+                LHMEstimator::Residuals(points2D, points3D, report.model, residuals);
+            }
+            break;
+        }
+         case EstimatorType::DRaM_GN: {
+            options_.lhm_opt.rot_init_est = "dram";
+            options_.lhm_opt.optim_option = "gn";
+            LHMEstimator::setGlobalOptions(options_.lhm_opt); // Set global LHM options
+            if (options_.gt_pose != nullptr) {
+                LHMEstimator::setGroundTruthPose(options_.gt_pose);
+            }
+            
+            colmap::RANSACOptions options;
+            options.max_error = 1e-5;
+            colmap::RANSAC<LHMEstimator> ransac(options);
+            const auto report = ransac.Estimate(points2D, points3D);
+
+            if(report.success == true) {
+                std::cout << "current ransac passed" << std::endl; 
+            }
+            else {
+                std::cout << "current ransac failed" << std::endl; 
+            }
+
+            estimated_extrinsic = {report.model};
             if (residuals) {
                 LHMEstimator::Residuals(points2D, points3D, report.model, residuals);
             }
@@ -145,28 +196,4 @@ bool LHMEstimatorWrapper::runWithRansac(const std::vector<X_t>& points2D,
     return false; 
 }
 
-// Function to perform estimation
-bool EstimatorWrapper::estimate(const std::vector<X_t>& points2D,
-                const std::vector<Y_t>& points3D,
-                M_t& estimated_extrinsic,
-                std::vector<double>* residuals = nullptr) {
-    if (options_.use_ransac) {
-        return runWithRansac(points2D, points3D, estimated_extrinsic, residuals);
-    } else {
-        return runStandalone(points2D, points3D, estimated_extrinsic, residuals);
-    }
-}
 
-// Runs the estimator standalone
-bool EstimatorWrapper::runStandalone(const std::vector<X_t>& points2D,
-                                     const std::vector<Y_t>& points3D,
-                                     M_t& estimated_extrinsic,
-                                     std::vector<double>* residuals) {
-    
-    Estimator estimator;
-    estimated_extrinsic = estimator.Estimate(points2D, points3D);
-    if (residuals) {
-        estimator.Residuals(points2D, points3D, estimated_extrinsic, residuals);
-    }
-    return true;
-}

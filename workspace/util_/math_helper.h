@@ -2,6 +2,12 @@
 #include "util/types.h"
 
 /**
- * @brief estimation norm between matrices
+ * @brief estimation norm between two rotational matrices
 */
-double frobeniusNorm(const Eigen::Matrix3x4d& estimated, const Eigen::Matrix3x4d& gt);
+double frobeniusNormRot(const Eigen::Matrix3d& estimated, const Eigen::Matrix3d& gt);
+
+/**
+ * @brief estimation norm between two extrinsic matrices
+*/
+double frobeniusNormExt(const Eigen::Matrix3x4d& estimated, const Eigen::Matrix3x4d& gt);
+
