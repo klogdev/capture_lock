@@ -31,7 +31,7 @@ inline GeneratorType getGeneratorFromName(const std::string& name) {
     }
 }
 
-// virtual bastract class for the simulation data generator
+// virtual abstract class for the simulation data generator
 // here we assume a single array of (3D) scene points 
 // has multiview 2D observation, i.e. a 2D vector of Eigen::Vector2d
 class DataGenerator {

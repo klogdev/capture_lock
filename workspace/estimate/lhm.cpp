@@ -337,7 +337,7 @@ void LHMEstimator::setGroundTruthPose(Eigen::Matrix3x4d* gt_pose) {
         LHMEstimator::gt_pose_ = gt_pose;
 }
 
-void setGlobalOptions(const LHMOptions& options) {
+void LHMEstimator::setGlobalOptions(const LHMOptions& options) {
     LHMEstimator::options_ = options;
 }
 
