@@ -29,7 +29,7 @@ inline EstimatorType getEstimatorFromName(const std::string& name) {
     if (it != estimatorMap.end()) {
         return it->second;
     } else {
-        throw std::invalid_argument("Unknown dataset");
+        throw std::invalid_argument("Unknown estimator");
     }
 }
 
@@ -37,11 +37,6 @@ struct EstimatorOptions {
     bool use_ransac = false; // Default to standalone estimation
     Eigen::Matrix3x4d* gt_pose = nullptr; 
     LHMOptions lhm_opt = LHMOptions();
-
-    // Constructor for when you want to set the ground truth pose
-    EstimatorOptions(bool use_ransac_ = false, Eigen::Matrix3x4d* gt_pose_ = nullptr,
-                    LHMOptions lhm_option = LHMOptions())
-        : use_ransac(use_ransac), gt_pose(gt_pose), lhm_opt(lhm_option) {}
 };
 
 class EstimatorWrapper {

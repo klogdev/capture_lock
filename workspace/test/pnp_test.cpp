@@ -17,6 +17,7 @@
 int main(int argc, char** argv) {
     std::string generator_opt = argv[1];
     std::string estimator_opt = argv[2];
+    std::string use_ransac_ = argv[3];
 
     colmap::SetPRNGSeed(0);
 
@@ -29,6 +30,9 @@ int main(int argc, char** argv) {
     EstimatorType est_type = getEstimatorFromName(estimator_opt);
 
     EstimatorOptions options = EstimatorOptions();
+    if(use_ransac_ == "1")
+        options.use_ransac = true;
+    std::cout << "current ransac option is: " << options.use_ransac << std::endl;
 
     // Create the data generator and estimator instances
     std::unique_ptr<DataGenerator> generator = DataGenerator::createDataGenerator(gen_type);

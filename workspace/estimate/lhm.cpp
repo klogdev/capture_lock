@@ -270,9 +270,6 @@ bool LHMEstimator::WeakPerspectiveQuat(const std::vector<Eigen::Vector3d>& point
     // Create a Quaternion from the eigenvector
     Eigen::Quaterniond quaternion(eigenvec(0), eigenvec(1), eigenvec(2), eigenvec(3));
     
-    // std::cout << "first estimated quaternion is: " << std::endl;
-    // std::cout << eigenvec << std::endl;
-
     // Convert the quaternion to a rotation matrix
     R = quaternion.toRotationMatrix();
 
@@ -311,6 +308,8 @@ bool LHMEstimator::WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>&
         std::cout << matrix_norm << std::endl;
     }
 
+    std::cout << "first estimated matrix by DRaM is: " << std::endl;
+    std::cout << rot_opt << std::endl;
     if(bi_correct)
         return true;
     else    

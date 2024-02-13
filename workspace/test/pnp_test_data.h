@@ -64,10 +64,10 @@ public:
         points3D.emplace_back(3, 1.4, 4);
         points3D.emplace_back(2, 1, 7);
 
-        for (double qx = 0; qx < 0.2; qx += 0.2) {
+        for (double qx = 0; qx < 0.4; qx += 0.2) {
             
-            std::vector<Eigen::Vector2d> curr_points2D;
-            for (double tx = 0; tx < 0.2; tx += 0.1) {
+            for (double tx = 0; tx < 0.5; tx += 0.1) {
+                std::vector<Eigen::Vector2d> curr_points2D;
                 const colmap::SimilarityTransform3 orig_tform(1, Eigen::Vector4d(1, qx, 0, 0),
                                                             Eigen::Vector3d(tx, 0, 0));
 
@@ -79,13 +79,9 @@ public:
                     curr_points2D.push_back(point3D_camera.hnormalized());
                 }
 
-                std::cout << "current rotation simulation is: " << qx << std::endl;
-                std::cout << "current translation simulation is: " << tx << std::endl;
-                std::cout << "current transform is: " << std::endl;
-                std::cout << orig_tform.Matrix() << std::endl;
+                points2D.push_back(curr_points2D);
                 composed_extrinsic.push_back(orig_tform.Matrix().topLeftCorner<3, 4>());
             }
-            points2D.push_back(curr_points2D);
         }
     }
 };

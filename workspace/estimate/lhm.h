@@ -21,7 +21,7 @@ struct LHMOptions
 
     // option to use DRaM & Bar-Itzhack as initial guess for rotation
     // or standard SVD et.al.
-    std::string rot_init_est = "dram";
+    std::string rot_init_est = "horn";
 
     // optimization method for the iteration
     std::string optim_option = "lhm";
@@ -79,8 +79,6 @@ class LHMEstimator {
         // should implement a helper function to save the option we are using
         static LHMOptions options_;
 
-
-    private:
         /**
          * @brief estimate the absolute pose via LHM from corresponded 
          * 2D, 3D points
@@ -89,6 +87,7 @@ class LHMEstimator {
                             const std::vector<Eigen::Vector3d>& points3D,
                             Eigen::Matrix3x4d* proj_matrix);
 
+    private:
         /**
          * @brief calculate relative rotation & translation with the scale of depth
          * from two sets of point clouds
