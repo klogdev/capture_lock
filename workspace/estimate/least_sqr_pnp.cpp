@@ -3,8 +3,8 @@
 
 #include "estimate/least_sqr_pnp.h"
 
-void LeastSquareSolver(std::vector<Eigen::Vector2d>& points_2d, 
-                       std::vector<Eigen::Vector3d>& points_3d,
+void LeastSquareSolver(const std::vector<Eigen::Vector2d>& points_2d, 
+                       const std::vector<Eigen::Vector3d>& points_3d,
                        Eigen::Vector4d& quat_init, Eigen::Vector3d& trans_init,
                        int max_iters) {
     // Set up the problem

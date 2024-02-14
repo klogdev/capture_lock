@@ -32,7 +32,7 @@ pnp_test_template.cpp
 target_include_directories(
   pnp_template PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  pnp_template PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} lhm)
+  pnp_template PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} lhm least_sqr_pnp)
 
 add_library(pnp_data STATIC
 pnp_test_data.h
@@ -78,7 +78,7 @@ target_include_directories(
 plain_pnp PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
 plain_pnp PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES}
-test_util lhm)
+test_util lhm least_sqr_pnp)
 
 add_executable(reproj reproj_test.cpp)
 target_include_directories(

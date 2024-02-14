@@ -6,11 +6,13 @@
 #include <iostream>
 
 #include "estimate/lhm.h"
+#include "estimate/least_sqr_pnp.h"
 #include "estimate/adj_quat.h"
 #include "util_/math_helper.h"
 
 #include "base/projection.h"
 #include "base/camera.h"
+#include "base/pose.h"
 #include "estimators/utils.h"
 
 // init the static members for the instance
@@ -75,7 +77,7 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
         bool weak_persp = WeakPerspectiveQuat(points3D, homogeneous_pts,
                                               init_rot, init_trans); 
     }
-    else{
+    else {
         bool weak_persp = WeakPerspectiveDRaMInit2D(points3D, homogeneous_pts,
                                                     init_rot, init_trans);
     }
@@ -85,6 +87,14 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
 
     if(options_.optim_option == "lhm"){
         bool opt_result = IterationLHM(points3D, V, Tfact, init_rot, init_trans);
+    }
+    else {
+        std::cout << "DEBUGGING: now use GN" << std::endl;
+        const Eigen::Matrix3d rot_copy = init_rot;
+        Eigen::Vector4d quat_ = colmap::RotationMatrixToQuaternion(rot_copy);
+        LeastSquareSolver(points2D, points3D, quat_, init_trans, options_.lhm_iter);
+        const Eigen::Vector4d quat_copy = quat_;
+        init_rot = colmap::QuaternionToRotationMatrix(quat_copy);
     }
 
     // Compose the extrinsic matrix

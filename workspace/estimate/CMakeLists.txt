@@ -21,7 +21,7 @@ lhm.cpp
 target_include_directories(
   lhm PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  lhm PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} adj_quat math_help)
+  lhm PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} adj_quat math_help least_sqr_pnp)
 
 add_library(adj_quat STATIC
 adj_quat.h

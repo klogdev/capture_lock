@@ -77,48 +77,5 @@ private:
                        std::vector<double>* residuals);
 };
 
-// we implement two separate template for PnP
-// the second is the plain PnP, such as EPnP, DLS et.al
-// template<typename Estimator>
-// class EstimatorWrapper {
-// public:
-//     typedef typename Estimator::X_t X_t;
-//     typedef typename Estimator::Y_t Y_t;
-//     typedef typename Estimator::M_t M_t;
-
-
-//     EstimatorWrapper(EstimatorType type, const EstimatorOptions& options)
-//         : type_(type), options_(options) {}
-
-//     /**
-//      * @brief main method as an interface to do PnP estimation
-//      * @arg residuals by COLMAP's RANSAC template's default, is a pointer
-//     */
-//     bool estimate(const std::vector<X_t>& points2D,
-//                   const std::vector<Y_t>& points3D,
-//                   M_t& estimated_extrinsic,
-//                   std::vector<double>* residuals = nullptr);
-
-// private:
-//     EstimatorType type_;
-//     EstimatorOptions options_;
-
-//     /**
-//      * @brief runs standalone estimator
-//     */
-//     bool runStandalone(const std::vector<X_t>& points2D,
-//                        const std::vector<Y_t>& points3D,
-//                        M_t& estimated_extrinsic,
-//                        std::vector<double>* residuals);
-
-//     /**
-//      * @brief runs the estimator w/ RANSAC
-//     */
-//     bool runWithRansac(const std::vector<X_t>& points2D,
-//                        const std::vector<Y_t>& points3D,
-//                        M_t& estimatedExtrinsic,
-//                        std::vector<double>* residuals);
-// };
-
 
 #endif // TEST_PNP_TEST_TEMPLATE_H_

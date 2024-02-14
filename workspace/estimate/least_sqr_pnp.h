@@ -4,7 +4,7 @@
 #include <Eigen/Core>
 
 struct ReprojectionError {
-    ReprojectionError(Eigen::Vector2d& point_2d, Eigen::Vector3d& point_3d)
+    ReprojectionError(const Eigen::Vector2d& point_2d, const Eigen::Vector3d& point_3d)
         : observed_x(point_2d.x()), observed_y(point_2d.y()),
           point3D_x(point_3d.x()), point3D_y(point_3d.y()), point3D_z(point_3d.z()) {}
 
@@ -42,7 +42,7 @@ struct ReprojectionError {
  * @brief ceres solver for the least square optimization of PnP
  * can be a sccesive polish step after LHM/DRaM
 */
-void LeastSquareSolver(std::vector<Eigen::Vector2d>& points_2d, 
-                       std::vector<Eigen::Vector3d>& points_3d,
+void LeastSquareSolver(const std::vector<Eigen::Vector2d>& points_2d, 
+                       const std::vector<Eigen::Vector3d>& points_3d,
                        Eigen::Vector4d& quat_init, Eigen::Vector3d& trans_init,
                        int max_iters);
