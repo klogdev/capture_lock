@@ -22,9 +22,9 @@ Eigen::Matrix3x4d* LHMEstimator::gt_pose_ = nullptr;
 
 std::vector<LHMEstimator::M_t> LHMEstimator::Estimate(
     const std::vector<X_t>& points2D, const std::vector<Y_t>& points3D) {
-    
     LHMEstimator lhm;
     M_t proj_matrix;
+
     if (!lhm.ComputeLHMPose(points2D, points3D, &proj_matrix)) {
         return std::vector<LHMEstimator::M_t>({});
     }
@@ -66,7 +66,7 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
     Eigen::Matrix3d I = Eigen::Matrix3d::Identity();  // Identity matrix
     double n_inv = 1.0 / n_points;  // Inverse of the number of points
 
-    // Compute Tfact directly from the eqn. 20
+    // Compute Tfact directly from the eqn. 20, the 1/n lead term already be accounted here
     Eigen::Matrix3d Tfact = (I - n_inv * sum_Vk).inverse() * n_inv;
 
     // Calculate the initial guess of rotation and translation
@@ -82,14 +82,13 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
                                                     init_rot, init_trans);
     }
     
-    // init trans after obatain the init rotation
+    // refine the init trans after obtained the init rotation
     TransFromRotLHM(points3D, V, Tfact, init_rot, init_trans);
 
     if(options_.optim_option == "lhm"){
         bool opt_result = IterationLHM(points3D, V, Tfact, init_rot, init_trans);
     }
     else {
-        std::cout << "DEBUGGING: now use GN" << std::endl;
         const Eigen::Matrix3d rot_copy = init_rot;
         Eigen::Vector4d quat_ = colmap::RotationMatrixToQuaternion(rot_copy);
         LeastSquareSolver(points2D, points3D, quat_, init_trans, options_.lhm_iter);
@@ -114,7 +113,7 @@ bool LHMEstimator::IterationLHM(const std::vector<Eigen::Vector3d>& points3D,
     double curr_err = std::numeric_limits<double>::max();
     double old_err = -1.0; // dummy old error to start the while loop
 
-    std::vector<Eigen::Vector3d> temp_rotated; // can be overwrite during iteration
+    std::vector<Eigen::Vector3d> temp_rotated; // update 3D points iteratively
     temp_rotated.resize(n_points);
 
     while(abs((old_err - curr_err)/old_err) > options_.lhm_tolerance && 
@@ -146,10 +145,8 @@ bool LHMEstimator::CalcLHMRotTrans(const std::vector<Eigen::Vector3d>& points3D0
                                    Eigen::Vector3d& t) {
     if (points3D0.size() < 3) {
         std::cerr << "At least 3 points are necessary for estimating R, t in: " << points3D0.size() << std::endl;
-        
         R.setZero();
         t.setZero();
-
         return false; // Indicating an error or insufficient data
     }
 
@@ -206,7 +203,7 @@ void LHMEstimator::TransFromRotLHM(const std::vector<Eigen::Vector3d>& points3D,
 }
 
 double LHMEstimator::ObjSpaceLHMErr(const std::vector<Eigen::Vector3d>& points3D,
-                      const std::vector<Eigen::Matrix3d>& V) {
+                                    const std::vector<Eigen::Matrix3d>& V) {
     double obj_err = 0.0;
     Eigen::Vector3d temp_val;
 

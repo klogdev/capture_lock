@@ -34,6 +34,7 @@ void PnPTestRunner::run_test() {
 
         std::cout << "manually estimated lhm is: " << std::endl;
         std::cout << manual_extrinsic << std::endl;
+        
         // Check for estimation success
         if (!success) {
             std::cerr << "Estimation failed." << std::endl;
@@ -42,6 +43,7 @@ void PnPTestRunner::run_test() {
         std::cout << "current estimated pose is: " << std::endl;
         std::cout << estimated_extrinsic[0] << std::endl;
         std::cout << "size of models is: " << estimated_extrinsic.size() << std::endl;
+
         // Step 3: Evaluate and log the results
         // For demonstration, let's assume we're just printing the Frobenius norm
         // of the difference between the estimated and ground truth extrinsic matrices.
