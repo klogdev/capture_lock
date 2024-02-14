@@ -21,6 +21,7 @@ enum class EstimatorType {EPnP, DLS, LHM, DRaM_LHM, DRaM_GN};
 inline EstimatorType getEstimatorFromName(const std::string& name) {
     static const std::unordered_map<std::string, EstimatorType> estimatorMap = {
         {"dram_lhm", EstimatorType::DRaM_LHM},
+        {"dram_gn", EstimatorType::DRaM_GN},
         {"epnp", EstimatorType::EPnP},
         {"lhm", EstimatorType::LHM}
     };

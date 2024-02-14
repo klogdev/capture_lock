@@ -8,6 +8,7 @@
 #include "util/random.h"
 
 #include "estimate/lhm.h"
+#include "estimate/least_sqr_pnp.h"
 
 int main() {
         colmap::SetPRNGSeed(0);

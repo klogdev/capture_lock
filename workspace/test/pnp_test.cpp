@@ -8,6 +8,7 @@
 #include "util/random.h"
 
 #include "estimate/lhm.h"
+#include "estimate/least_sqr_pnp.h"
 
 #include "test/pnp_runner.h"
 #include "test/pnp_test_data.h"
