@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/projection.h"
+#include "file_reader/kitti_odo_helper.h"
 
 void IntrinsicFromKittiCali(const std::string base_path, const std::string seq_num,
                             std::vector<std::vector<double>>& cali_infos){
@@ -48,7 +49,7 @@ void ExtrinsicFromKitti(const std::string base_path, const std::string seq_num,
         for(auto s: curr_line){
             curr_cali.push_back(std::stod(s));
         }
-        // Eigen::Map<Eigen::Matrix<double, 3, 4, Eigen::RowMajor>> extrinsic(curr_cali.data());
+
         pose_list.push_back(curr_cali);
     }
 }

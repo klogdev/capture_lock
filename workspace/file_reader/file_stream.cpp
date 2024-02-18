@@ -32,7 +32,6 @@ void COLMAPStream(std::vector<std::string>& file_list, const std::string folder_
 
 }
 
-
 void KITTIStream(std::vector<std::string>& file_list, const std::string folder_dir, 
                   int start, int end) {
     // Define ranges for the files you are looking for

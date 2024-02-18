@@ -6,13 +6,13 @@
 #include <string>
 #include <unordered_map>
 
-enum Dataset {Kitti, Colmap};
-
+enum Dataset {Kitti, Colmap, KittiToColmap};
 
 inline Dataset getDatasetFromName(const std::string& name) {
     static const std::unordered_map<std::string, Dataset> datasetMap = {
         {"kitti", Dataset::Kitti},
-        {"colmap", Dataset::Colmap}
+        {"colmap", Dataset::Colmap},
+        {"kitti_colmap", Dataset::KittiToColmap}
     };
 
     auto it = datasetMap.find(name);

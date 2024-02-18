@@ -19,6 +19,9 @@ CalibFileReader::CalibFileCreate(const Dataset file_type) {
             // return reader; 
             return std::make_unique<ColmapCalibReader>(ColmapCalibReader());
         }
+        // we use colmap to read kitti's images, the data format is still in colmap
+        case(KittiToColmap):
+            return std::make_unique<ColmapCalibReader>(ColmapCalibReader());
         default:
             throw std::runtime_error("Unknown dataset");
     }

@@ -86,6 +86,8 @@ void BoxCornerCameraDistTestData::generate(std::vector<std::vector<Eigen::Vector
             for (size_t i = 0; i < points3D.size(); i++) {
                 Eigen::Vector3d point3D_camera = points3D[i];
                 orig_tform.TransformPoint(&point3D_camera);
+                std::cout << "check camera space point: " << std::endl;
+                std::cout << point3D_camera << std::endl;
                 curr_points2D.push_back(point3D_camera.hnormalized());
             }
 

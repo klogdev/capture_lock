@@ -46,3 +46,12 @@ target_include_directories(
   kitti_odo PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
   kitti_odo PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
+
+add_library(colmap_intr STATIC
+colmap_pose.h
+colmap_pose.cpp
+)
+target_include_directories(
+  colmap_intr PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  colmap_intr PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
