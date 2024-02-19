@@ -12,8 +12,8 @@
 #include "file_reader/kitti_odo_helper.h"
 
 void ExtrinsicFromColmap(const std::string base_path, 
-                        std::vector<std::vector<double>>& cali_info,
-                        int img_begin, int img_end) {
+                         std::vector<std::vector<double>>& cali_info,
+                         int img_begin, int img_end) {
     const int head = 4; // Fixed number of header lines to skip
     std::vector<std::vector<double>> trajectory; // raw "traj" to process all lines
     std::ifstream file(base_path);
@@ -43,6 +43,10 @@ void ExtrinsicFromColmap(const std::string base_path,
 
         trajectory.push_back(row);
 
+        // std::cout << "current processed line is: " << std::endl;
+        // for(const double entry: row){
+        //     std::cout << entry << std::endl;
+        // }
         // Skip the next line containing 2D pixel info
         std::getline(file, line);
     }

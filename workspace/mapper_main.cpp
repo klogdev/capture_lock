@@ -92,12 +92,6 @@ int main(int argc, char** argv){
     ba_options.refine_focal_length = false;
     ba_options.refine_extra_params = false;
 
-    // specify the g.t. poses for the first pair
-    Eigen::Vector4d qvec_141 = Eigen::Vector4d(0.868254, 0.0224726, 0.474455, -0.143257);
-    Eigen::Vector3d tvec_141 = Eigen::Vector3d(-0.679221, 1.00351, 3.65061);
-    // override the pose of second frame with colmap's g.t.
-    Eigen::Vector4d qvec_142 = Eigen::Vector4d(0.864347, 0.0331977, 0.477339, -0.154756);
-    Eigen::Vector3d tvec_142 = Eigen::Vector3d(-0.756852, 0.980926, 3.58659);
     // read g.t. poses, this request the user specifies the sequence num.
     // for colmap or colmap mapped kitti, we use "fake" seq num
     std::vector<std::vector<double>> extrinsic_gts;
@@ -121,6 +115,10 @@ int main(int argc, char** argv){
         CreateColmapGTMap(gt_map, gt_poses_num, extrinsic_gts);
     }
 
+    std::cout << "check g.t. poses: " << std::endl;
+    std::cout << gt_map[0].first << std::endl;
+    std::cout << gt_map[0].second << std::endl;
+    
     // triangulate the first pair
     InitFirstPair(image_stream[0], image_stream[1], camera,
                   global_image_map, global_keypts_map, global_3d_map, 

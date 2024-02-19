@@ -16,7 +16,7 @@ bundle_adjuster.cpp
 target_include_directories(
   ba PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  ba PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift)
+  ba PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift data_type)
 
 add_library(ba_run STATIC
 global_bundle.h

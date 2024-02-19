@@ -68,6 +68,16 @@ int main(int argc, char** argv){
                             files_to_run.colmap_opt.image_name_end);
 
     std::cout << "first frame's extrinsic matrix element: " << std::endl;
-    std::cout << extrinsic_gts[0][0] << std::endl;
+    for(const double entry: extrinsic_gts[0]) {
+        std::cout << entry << std::endl;
+    }
 
+    std::cout << "got numer of gt poses: " << extrinsic_gts.size() << std::endl;
+
+    // init the g.t. poses by directly slice the loaded vector
+    Eigen::Map<Eigen::Vector4d> qvec_kitti_curr(extrinsic_gts[0].data());
+    Eigen::Map<Eigen::Vector3d> tvec_kitti_curr(extrinsic_gts[0].data() + 4);
+    std::cout << "gt pose 0 in Eigen is: " << std::endl;
+    std::cout << qvec_kitti_curr << std::endl;
+    std::cout << tvec_kitti_curr << std::endl;
 }

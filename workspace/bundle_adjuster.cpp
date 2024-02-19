@@ -92,12 +92,17 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
         ceres::CostFunction* cost_function = nullptr;
         // constant pose init by both 2d point and extrinsic, only intrinsic/3d point as parametes
         if (constant_pose) {  
-            if (dataset_ == Dataset::Colmap){
+            if (dataset_ == Dataset::Colmap) {
                 cost_function =                                                    
                     BAConstPoseCostFxn<colmap::SimpleRadialCameraModel>::Create( 
                         image.Qvec(), image.Tvec(), point_2d.XY()); 
             }  
-            else if (dataset_ == Dataset::Kitti){
+            else if (dataset_ == Dataset::Kitti) {
+                cost_function =                                                    
+                    BAConstPoseCostFxn<colmap::SimplePinholeCameraModel>::Create( 
+                        image.Qvec(), image.Tvec(), point_2d.XY()); 
+            }     
+            else if (dataset_ == Dataset::KittiToColmap) {
                 cost_function =                                                    
                     BAConstPoseCostFxn<colmap::SimplePinholeCameraModel>::Create( 
                         image.Qvec(), image.Tvec(), point_2d.XY()); 
@@ -108,10 +113,13 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
         } 
 
         else{ 
-            if (dataset_ == Dataset::Colmap){                                     
+            if (dataset_ == Dataset::Colmap) {                                     
                 cost_function = BACostFxn<colmap::SimpleRadialCameraModel>::Create(point_2d.XY()); 
             }
-            else if (dataset_ == Dataset::Kitti){
+            else if (dataset_ == Dataset::Kitti) {
+                cost_function = BACostFxn<colmap::SimplePinholeCameraModel>::Create(point_2d.XY()); 
+            }
+            else if (dataset_ == Dataset::KittiToColmap) {
                 cost_function = BACostFxn<colmap::SimplePinholeCameraModel>::Create(point_2d.XY()); 
             }
            
@@ -152,10 +160,13 @@ void BundleAdjust_::AddPointToProblem(const colmap::point3D_t point3D_id,
 
         ceres::CostFunction* cost_function = nullptr;
 
-        if (dataset_ == Dataset::Colmap){
+        if (dataset_ == Dataset::Colmap) {
             cost_function = BAConstPoseCostFxn<colmap::SimpleRadialCameraModel>::Create(track_image.Qvec(), track_image.Tvec(), track_point_2d.XY());                 
         }   
-        else if (dataset_ == Dataset::Kitti){
+        else if (dataset_ == Dataset::Kitti) {
+            cost_function = BAConstPoseCostFxn<colmap::SimplePinholeCameraModel>::Create(track_image.Qvec(), track_image.Tvec(), track_point_2d.XY()); 
+        }
+        else if (dataset_ == Dataset::KittiToColmap) {
             cost_function = BAConstPoseCostFxn<colmap::SimplePinholeCameraModel>::Create(track_image.Qvec(), track_image.Tvec(), track_point_2d.XY()); 
         }
         problem_->AddResidualBlock(cost_function, loss_function,

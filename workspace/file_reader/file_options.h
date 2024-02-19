@@ -43,7 +43,7 @@ void InstantiateFiles(FileOptions& files, Dataset dataset) {
         files.width = 3072;
         files.height = 2304;
         files.image_start = 141;
-        files.image_end = 200;
+        files.image_end = 146;
         files.output = "/tmp2/optim_poses.txt";
         files.colmap_opt.image_name_start = 5;
         files.colmap_opt.image_name_end = 8;
