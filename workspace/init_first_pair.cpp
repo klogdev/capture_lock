@@ -163,11 +163,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
             inlier_img0++;
 
         Eigen::Vector2d curr_2d_from1 = key_vec2[orig_idx2];
-        if(orig_idx2 == 150){
-            std::cout << "check point 2d with id 150's on image 1: " << std::endl;
-            std::cout <<curr_2d_from1 << std::endl; 
-            std::cout << triangulate_3d[i] << std::endl;
-        }
+        
         double repro_2 = colmap::CalculateSquaredReprojectionError(curr_2d_from1,
                                                                    triangulate_3d[i],
                                                                    cmp_image2.Qvec(),

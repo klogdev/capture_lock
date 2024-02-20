@@ -108,13 +108,6 @@ void IncrementOneImage(std::string image_path, int new_id,
 
         Eigen::Vector2d last_2d_pt = last_2d.XY();
         
-        // DEBUGGING: check the reprojection error
-        if(last_2d_id == 150){
-            std::cout << "reprojecting the 3d points w/ coord: " << std::endl;
-            std::cout << from2d_to3d << std::endl;
-            std::cout << "reprojecting on the 2d points w/ coord: " << std::endl;
-            std::cout << last_2d_pt << std::endl;
-        }
         double repro_err = colmap::CalculateSquaredReprojectionError(last_2d_pt,
                                                                      from2d_to3d,
                                                                      last_image.Qvec(),
