@@ -71,4 +71,20 @@ public:
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
 };
 
+/**
+ * @brief the calibration file reader for the simulated data from EPFL CV-Lab
+ * @arg calib_mat: the intrinsic matrix to be loaded
+*/
+void ReadCVLabCalib(std::string calib_path, Eigen::Matrix3d& calib_mat);
+
+/**
+ * @brief the 3d points reader for the simulated data from EPFL CV-Lab
+*/
+void ReadCVLab3D(std::string point3d_path, std::vector<Eigen::Vector3d>& points3D);
+
+/**
+ * @brief the 2d points reader for the simulated data from EPFL CV-Lab
+*/
+void ReadCVLab2D(std::string point2d_path, std::vector<Eigen::Vector2d>& points2D);
+
 #endif // TEST_PNP_TEST_DATA_H_

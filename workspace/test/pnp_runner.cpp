@@ -21,6 +21,10 @@ void PnPTestRunner::run_test() {
         // colmap's default implementation requires return a vector of models
         std::vector<Eigen::Matrix3x4d> estimated_extrinsic; 
         std::vector<double> residuals; // current residuals
+        std::cout << "DEBUGGING: points' size" << std::endl;
+        std::cout << "curr 2d: " << points2D[i].size() << std::endl;
+        std::cout << "3d: " << points3D.size() << std::endl;
+
         bool success = estimator_.estimate(points2D[i], points3D, 
                                            estimated_extrinsic, &residuals);
         

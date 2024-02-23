@@ -73,7 +73,15 @@ class LHMEstimator {
         */
         static void setGlobalOptions(const LHMOptions& options);
 
+        /**
+         * @brief set intrinsic matrix if the data to be estimated not using 
+         * z = 1 film plane as the camera model
+        */
+        static void setIntrinsicMat(Eigen::Matrix3d* calib);
+
         static Eigen::Matrix3x4d* gt_pose_;
+
+        static Eigen::Matrix3d* calib_;
 
         // init options for LHM manually; 
         // should implement a helper function to save the option we are using

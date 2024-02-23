@@ -18,7 +18,7 @@
 // init the static members for the instance
 LHMOptions LHMEstimator::options_ = LHMOptions();
 Eigen::Matrix3x4d* LHMEstimator::gt_pose_ = nullptr;
-
+Eigen::Matrix3d* LHMEstimator::calib_ = nullptr;
 
 std::vector<LHMEstimator::M_t> LHMEstimator::Estimate(
     const std::vector<X_t>& points2D, const std::vector<Y_t>& points3D) {
@@ -347,3 +347,7 @@ void LHMEstimator::setGlobalOptions(const LHMOptions& options) {
     LHMEstimator::options_ = options;
 }
 
+void LHMEstimator::setIntrinsicMat(Eigen::Matrix3d* calib) {
+    if(calib != nullptr)
+        LHMEstimator::calib_ = calib;
+}

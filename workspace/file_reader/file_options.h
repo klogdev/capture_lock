@@ -71,8 +71,8 @@ void InstantiateFiles(FileOptions& files, Dataset dataset) {
         files.width = 1241;
         files.height = 376;
         files.image_start = 0;
-        files.image_end = 15;
-        files.output = "/tmp3/KITTI_Odometry/" + files.seq_num + "_txt/kitti_poses_15_.txt";
+        files.image_end = 16;
+        files.output = "/tmp3/KITTI_Odometry/" + files.seq_num + "_txt/kitti_poses_16_.txt";
         files.colmap_opt.image_name_start = 0;
         files.colmap_opt.image_name_end = 6;
     }
