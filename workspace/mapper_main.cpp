@@ -107,7 +107,7 @@ int main(int argc, char** argv) {
     // specify the g.t. poses needed for initial and incremental processes
     // and init the g.t. poses map
     std::vector<int> gt_poses_num = {0, 1, 2};
-    std::map<int, std::pair<Eigen::Vector4d,Eigen::Vector3d>> gt_map;
+    std::map<int, std::pair<Eigen::Vector4d, Eigen::Vector3d>> gt_map;
     if(dataset == Kitti) {
         CreateKittiGTMap(gt_map, gt_poses_num, extrinsic_gts);
     }
@@ -115,9 +115,12 @@ int main(int argc, char** argv) {
         CreateColmapGTMap(gt_map, gt_poses_num, extrinsic_gts);
     }
 
-    std::cout << "check g.t. poses: " << std::endl;
+    std::cout << "check g.t. poses 0: " << std::endl;
     std::cout << gt_map[0].first << std::endl;
     std::cout << gt_map[0].second << std::endl;
+    std::cout << "check g.t. poses 1: " << std::endl;
+    std::cout << gt_map[1].first << std::endl;
+    std::cout << gt_map[1].second << std::endl;
     
     // triangulate the first pair
     InitFirstPair(image_stream[0], image_stream[1], camera,

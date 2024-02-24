@@ -1,4 +1,5 @@
 #include <Eigen/Core>
+#include <iostream>
 
 #include "base/pose.h"
 
@@ -24,10 +25,13 @@ void InverseExtrinsic(const Eigen::Matrix3x4d& kitti_pose,
     0.38620118, 0.15341951, 0.90956644;
 
     // Compute inverse rotation R-transpose and inverse translation (-R^T * t)
+    // add dummy conversion for a guessing of possible misaligment
     Eigen::Matrix3d R_inv = R.transpose();
-    Eigen::Vector3d t_inv = -R_inv * convert * t;
+    Eigen::Vector3d t_inv = -R_inv * t;//* convert * t;
+    std::cout << "converted trans: " << std::endl;
+    std::cout << t_inv << std::endl;
 
     // Construct the extrinsic matrix
-    extrinsic.block<3, 3>(0, 0) = R_inv * convert;
+    extrinsic.block<3, 3>(0, 0) = R_inv; //* convert;
     extrinsic.col(3) = t_inv;
 }

@@ -4,7 +4,7 @@
 
 #include "util_/kitti_pose.h"
 
-void CreateKittiGTMap(std::map<int, std::pair<Eigen::Vector4d,Eigen::Vector3d>>& ground_truth,
+void CreateKittiGTMap(std::map<int, std::pair<Eigen::Vector4d, Eigen::Vector3d>>& ground_truth,
                       std::vector<int>& gt_nums, 
                       std::vector<std::vector<double>>& processed_extrinsic){
     

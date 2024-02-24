@@ -9,7 +9,7 @@
 #include "file_reader/kitti_odo_helper.h"
 
 void IntrinsicFromKittiCali(const std::string base_path, const std::string seq_num,
-                            std::vector<std::vector<double>>& cali_infos){
+                            std::vector<std::vector<double>>& cali_infos) {
     std::string seq_path = base_path + seq_num + "/calib.txt";
     std::ifstream calis(seq_path);
     std::string line;
@@ -33,7 +33,7 @@ void IntrinsicFromKittiCali(const std::string base_path, const std::string seq_n
 }
 
 void ExtrinsicFromKitti(const std::string base_path, const std::string seq_num,
-                        std::vector<std::vector<double>>& pose_list){
+                        std::vector<std::vector<double>>& pose_list) {
     std::string pose_path = base_path + seq_num + ".txt";
     std::ifstream calis(pose_path);
     std::string line;
@@ -55,7 +55,7 @@ void ExtrinsicFromKitti(const std::string base_path, const std::string seq_num,
 }
 
 void GetCameraModelParams(std::vector<double>& row_major_cali, 
-                          std::vector<double>& simple_params){
+                          std::vector<double>& simple_params) {
     // we assume the simple pinhole model's params has the order: f, cx, cy
     simple_params.push_back(row_major_cali[0]);
     simple_params.push_back(row_major_cali[2]);

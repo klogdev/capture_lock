@@ -136,3 +136,11 @@ target_include_directories(
   residual PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
   residual PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES})
+
+add_executable(eigen_quat eigen_quat_test.cpp)
+target_include_directories(
+  eigen_quat PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}" 
+  "${OpenCV_INCLUDE_DIRS}")
+target_link_libraries(
+  eigen_quat PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${OpenCV_LIBRARIES}
+  ${absl_LIBRARIES})

@@ -50,16 +50,16 @@ void InstantiateFiles(FileOptions& files, Dataset dataset) {
     }
     else if(dataset == Dataset::Kitti) {
         files.calib_path = "/tmp3/KITTI_Odometry/gray/";
-        files.seq_num = "00";
+        files.seq_num = "03";
         files.image_path = files.calib_path + files.seq_num + "/image_0";
-        files.pose_path = "/tmp3/KITTI_Odometry/poses/";
+        files.pose_path = "/tmp3/KITTI_Odometry/poses/"; // extrinsic reader will add seq num inside
         files.camera_model = colmap::SimplePinholeCameraModel::model_id;
         files.downsample = 1.0;
-        files.width = 1241;
-        files.height = 376;
+        files.width = 1242;
+        files.height = 375;
         files.image_start = 0;
-        files.image_end = 120;
-        files.output = "/tmp3/KITTI_Odometry/kitti_poses_120_gt3_conv.txt";
+        files.image_end = 10;
+        files.output = "/tmp3/KITTI_Odometry/kitti_poses_10_seq3.txt";
     }
     else if(dataset == Dataset::KittiToColmap) {
         files.seq_num = "00";
