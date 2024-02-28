@@ -27,8 +27,14 @@ void InverseExtrinsic(const Eigen::Matrix3x4d& kitti_pose,
     // Compute inverse rotation R-transpose and inverse translation (-R^T * t)
     // add dummy conversion for a guessing of possible misaligment
     Eigen::Matrix3d R_inv = R.transpose();
-    Eigen::Vector3d t_inv = -R_inv * t;//* convert * t;
+    Eigen::Vector3d t_inv = R_inv * t;//* convert * t;
     std::cout << "converted trans: " << std::endl;
+    std::cout << t_inv << std::endl;
+
+    // negate part of the components
+    //t_inv(1) = -t_inv(1);
+    t_inv(2) = -t_inv(2);
+    std::cout << "negated trans: " << std::endl;
     std::cout << t_inv << std::endl;
 
     // Construct the extrinsic matrix

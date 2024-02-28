@@ -58,8 +58,8 @@ void InstantiateFiles(FileOptions& files, Dataset dataset) {
         files.width = 1242;
         files.height = 375;
         files.image_start = 0;
-        files.image_end = 10;
-        files.output = "/tmp3/KITTI_Odometry/kitti_poses_10_seq3.txt";
+        files.image_end = 15;
+        files.output = "/tmp3/KITTI_Odometry/kitti_poses_15_seq3_z_gt6.txt";
     }
     else if(dataset == Dataset::KittiToColmap) {
         files.seq_num = "00";
@@ -71,8 +71,8 @@ void InstantiateFiles(FileOptions& files, Dataset dataset) {
         files.width = 1241;
         files.height = 376;
         files.image_start = 0;
-        files.image_end = 16;
-        files.output = "/tmp3/KITTI_Odometry/" + files.seq_num + "_txt/kitti_poses_16_.txt";
+        files.image_end = 20;
+        files.output = "/tmp3/KITTI_Odometry/" + files.seq_num + "_txt/kitti_poses_20_gt6.txt";
         files.colmap_opt.image_name_start = 0;
         files.colmap_opt.image_name_end = 6;
     }

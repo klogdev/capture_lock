@@ -15,13 +15,14 @@
 #include "estimate/lhm.h"
 
 enum class GeneratorType {
-    COLMAP, BoxDz
+    COLMAP, BoxDz, CVLab
 };
 
 inline GeneratorType getGeneratorFromName(const std::string& name) {
     static const std::unordered_map<std::string, GeneratorType> generatorMap = {
         {"colmap", GeneratorType::COLMAP},
-        {"box_dz", GeneratorType::BoxDz}
+        {"box_dz", GeneratorType::BoxDz},
+        {"cv_lab", GeneratorType::CVLab}
     };
 
     auto it = generatorMap.find(name);
@@ -69,6 +70,21 @@ public:
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<Eigen::Vector3d>& points3D,
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
+};
+
+/**
+ * @brief derived data generator from
+ * EPFL CV lab's testing data
+*/
+class CVLabTestData: public DataGenerator {
+public:
+    CVLabTestData(){};
+
+    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                  std::vector<Eigen::Vector3d>& points3D,
+                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
+private:
+    std::string file_path = "/tmp3/Pose_PnP/LHM/";
 };
 
 /**

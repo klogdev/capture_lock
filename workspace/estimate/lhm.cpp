@@ -48,8 +48,18 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
 
     std::vector<Eigen::Vector3d> homogeneous_pts; // for later use in the weak perspective model
 
+    Eigen::Matrix3d k_inv;
+    if (LHMEstimator::calib_ != nullptr) {
+        k_inv = LHMEstimator::calib_->inverse();
+    }
+
     for(const auto& p : points2D) {
         Eigen::Vector3d homogeneousPoint(p[0], p[1], 1.0);
+
+        if(LHMEstimator::calib_ != nullptr) {
+            homogeneousPoint = k_inv*homogeneousPoint;
+        }
+
         homogeneous_pts.push_back(homogeneousPoint);
         double mag = 1.0 / homogeneousPoint.squaredNorm();
 

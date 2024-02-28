@@ -118,6 +118,27 @@ void BoxCornerCameraDistTestData::generate(std::vector<std::vector<Eigen::Vector
     }
 }
 
+void CVLabTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                             std::vector<Eigen::Vector3d>& points3D,
+                             std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
+    std::string path_2d = file_path + "2d.txt";
+    std::string path_3d = file_path + "3d.txt";
+    std::string path_k = file_path + "k.txt";
+
+    Eigen::Matrix3d K;
+    ReadCVLabCalib(path_k, K);
+    LHMEstimator::calib_ = &K;
+
+    std::vector<Eigen::Vector2d> one_set_2d;
+    ReadCVLab2D(path_2d, one_set_2d);
+    points2D.push_back(one_set_2d);
+
+    ReadCVLab3D(path_3d, points3D);
+
+    Eigen::Matrix3x4d dummy_gt = Eigen::Matrix3x4d::Zero();
+    composed_extrinsic.push_back(dummy_gt);
+}
+
 void ReadCVLabCalib(std::string calib_path, Eigen::Matrix3d& calib_mat) {
     std::vector<std::vector<double>> cali_infos;
     std::ifstream calis(calib_path);
