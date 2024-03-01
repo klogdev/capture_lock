@@ -25,6 +25,8 @@ DataGenerator::createDataGenerator(const GeneratorType type) {
             return std::make_unique<COLMAPTestData>(COLMAPTestData());
         case GeneratorType::BoxDz:
             return std::make_unique<BoxCornerCameraDistTestData>(BoxCornerCameraDistTestData());
+        case GeneratorType::CVLab:
+            return std::make_unique<CVLabTestData>(CVLabTestData());
         // Handle unsupported types
         default:
             return nullptr;
