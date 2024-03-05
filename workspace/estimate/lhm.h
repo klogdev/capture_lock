@@ -73,15 +73,7 @@ class LHMEstimator {
         */
         static void setGlobalOptions(const LHMOptions& options);
 
-        /**
-         * @brief set intrinsic matrix if the data to be estimated not using 
-         * z = 1 film plane as the camera model
-        */
-        static void setIntrinsicMat(Eigen::Matrix3d* calib);
-
         static Eigen::Matrix3x4d* gt_pose_;
-
-        static Eigen::Matrix3d* calib_;
 
         // init options for LHM manually; 
         // should implement a helper function to save the option we are using
@@ -89,7 +81,8 @@ class LHMEstimator {
 
         /**
          * @brief estimate the absolute pose via LHM from corresponded 
-         * 2D, 3D points
+         * 2D, 3D points, here we adopt COLMAP's convention that the 
+         * 2D points are normalized points in camera space
         */
         bool ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
                             const std::vector<Eigen::Vector3d>& points3D,

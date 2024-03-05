@@ -36,6 +36,9 @@ DataGenerator::createDataGenerator(const GeneratorType type) {
 void COLMAPTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<Eigen::Vector3d>& points3D,
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
+    Eigen::Matrix3d K;
+    SetIntrinsic(file_path, K);
+
     points3D.emplace_back(1, 1, 1);
     points3D.emplace_back(0, 1, 1);
     points3D.emplace_back(3, 1.0, 4);
@@ -70,6 +73,9 @@ void COLMAPTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2
 void BoxCornerCameraDistTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                                            std::vector<Eigen::Vector3d>& points3D,
                                            std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
+
+    Eigen::Matrix3d K;
+    SetIntrinsic(file_path, K);
         
     points3D = {
     Eigen::Vector3d(-5, -5, -5),
@@ -128,17 +134,32 @@ void CVLabTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D
     std::string path_k = file_path + "k.txt";
 
     Eigen::Matrix3d K;
-    ReadCVLabCalib(path_k, K);
-    LHMEstimator::calib_ = &K;
+    SetIntrinsic(path_k, K); // load intrinsic to normalize 2d points
+    Eigen::Matrix3d k_inv = K.inverse();
 
-    std::vector<Eigen::Vector2d> one_set_2d;
+    std::vector<Eigen::Vector2d> one_set_2d; // 2d pixel points vector
     ReadCVLab2D(path_2d, one_set_2d);
-    points2D.push_back(one_set_2d);
+    std::vector<Eigen::Vector2d> normalized_2d; // one set of normalized 2d points
+
+    for(const auto& p : one_set_2d) {
+        Eigen::Vector3d homogeneousPoint(p[0], p[1], 1.0);
+        Eigen::Vector3d homo_point = k_inv*homogeneousPoint;
+        Eigen::Vector2d normalized(homo_point[0], homo_point[1]);
+        normalized_2d.push_back(normalized);
+    }
+    points2D.push_back(normalized_2d);
 
     ReadCVLab3D(path_3d, points3D);
 
     Eigen::Matrix3x4d dummy_gt = Eigen::Matrix3x4d::Zero();
     composed_extrinsic.push_back(dummy_gt);
+}
+
+void SetIntrinsic(std::string calib_path, Eigen::Matrix3d& calib_mat) {
+    if(calib_path.empty())
+        calib_mat = Eigen::Matrix3d::Identity();
+    else
+        ReadCVLabCalib(calib_path, calib_mat);
 }
 
 void ReadCVLabCalib(std::string calib_path, Eigen::Matrix3d& calib_mat) {

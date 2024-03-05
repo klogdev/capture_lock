@@ -57,6 +57,8 @@ public:
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<Eigen::Vector3d>& points3D,
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
+private:
+    std::string file_path = "";
 };
 
 /**
@@ -70,6 +72,8 @@ public:
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<Eigen::Vector3d>& points3D,
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
+private:
+    std::string file_path = ""; // dummy file path, for which the intrinsic will be set as identity
 };
 
 /**
@@ -86,6 +90,12 @@ public:
 private:
     std::string file_path = "/tmp3/Pose_PnP/LHM/";
 };
+
+/**
+ * @brief set the intrinsic matrix to convert the pixel to camera space
+ * if use film plane data, set the intrinsic as an identity by default
+*/
+void SetIntrinsic(std::string calib_path, Eigen::Matrix3d& calib_mat);
 
 /**
  * @brief the calibration file reader for the simulated data from EPFL CV-Lab

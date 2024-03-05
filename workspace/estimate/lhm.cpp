@@ -18,7 +18,6 @@
 // init the static members for the instance
 LHMOptions LHMEstimator::options_ = LHMOptions();
 Eigen::Matrix3x4d* LHMEstimator::gt_pose_ = nullptr;
-Eigen::Matrix3d* LHMEstimator::calib_ = nullptr;
 
 std::vector<LHMEstimator::M_t> LHMEstimator::Estimate(
     const std::vector<X_t>& points2D, const std::vector<Y_t>& points3D) {
@@ -48,18 +47,8 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
 
     std::vector<Eigen::Vector3d> homogeneous_pts; // for later use in the weak perspective model
 
-    Eigen::Matrix3d k_inv;
-    if (LHMEstimator::calib_ != nullptr) {
-        k_inv = LHMEstimator::calib_->inverse();
-    }
-
     for(const auto& p : points2D) {
         Eigen::Vector3d homogeneousPoint(p[0], p[1], 1.0);
-
-        if(LHMEstimator::calib_ != nullptr) {
-            homogeneousPoint = k_inv*homogeneousPoint;
-        }
-
         homogeneous_pts.push_back(homogeneousPoint);
         double mag = 1.0 / homogeneousPoint.squaredNorm();
 
@@ -355,9 +344,4 @@ void LHMEstimator::setGroundTruthPose(Eigen::Matrix3x4d* gt_pose) {
 
 void LHMEstimator::setGlobalOptions(const LHMOptions& options) {
     LHMEstimator::options_ = options;
-}
-
-void LHMEstimator::setIntrinsicMat(Eigen::Matrix3d* calib) {
-    if(calib != nullptr)
-        LHMEstimator::calib_ = calib;
 }
