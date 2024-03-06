@@ -18,6 +18,7 @@
 #include "util_/reprojection.h"
 #include "util_/triangulate.h"
 #include "util_/sift_colmap.h"
+#include "util_/pnp_lone.h"
 
 #include "incremental_construct.h"
 #include "estimate/relative_pose.h"
@@ -128,13 +129,13 @@ void IncrementOneImage(std::string image_path, int new_id,
     std::cout << "rate of reprojection inlier " << last_id << " is: " << 
     (float)inlier_repro/matched3d_from2d.size() << std::endl;
 
-    //start absolute pose estimation
+    // start absolute pose estimation
     colmap::AbsolutePoseEstimationOptions absolute_options = colmap::AbsolutePoseEstimationOptions();
     absolute_options.ransac_options.max_error = 1.0;
     Eigen::Vector4d qvec_abs = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec_abs = Eigen::Vector3d::Zero();
     std::vector<char> inlier_mask;
-    size_t inliers = matched3d_from2d.size(); //need check def
+    size_t inliers = matched3d_from2d.size(); 
     bool abs_pose = colmap::EstimateAbsolutePose(absolute_options, matched2d_curr,
                                                 matched3d_from2d, &qvec_abs, &tvec_abs,
                                                 &camera, &inliers, &inlier_mask);
@@ -155,7 +156,22 @@ void IncrementOneImage(std::string image_path, int new_id,
     std::cout << qvec_abs << std::endl;
     std::cout << tvec_abs << std::endl;
 
+    // start absolute pose estimation via lone EPnP
+    colmap::RANSACOptions options_epnp = colmap::RANSACOptions();
+    options_epnp.max_error = 0.1;
+    Eigen::Vector4d qvec_epnp = Eigen::Vector4d(0, 0, 0, 1);
+    Eigen::Vector3d tvec_epnp = Eigen::Vector3d::Zero();
+    std::vector<char> inlier_mask_epnp;
 
+    bool epnp_pose = PnPEstimation(options_epnp, matched2d_curr,
+                                   matched3d_from2d, &qvec_epnp, &tvec_epnp,
+                                   &camera, &inliers, &inlier_mask_epnp);
+    std::cout << "number of inliers 2d-3d pairs by customized EPnP in " << new_id << " is: " 
+                << inliers << std::endl;
+    std::cout << "result of " << new_id << " 's EPnP estimation" 
+                << " is: " << std::endl;
+    std::cout << qvec_epnp << std::endl;
+    std::cout << tvec_epnp << std::endl;
     // start triangulation
 
     // idx of triangulated pts are consistent with matched_vec,

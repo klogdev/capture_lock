@@ -19,6 +19,7 @@
 #include "util_/triangulate.h"
 #include "util_/sift_colmap.h"
 #include "util_/kitti_pose.h"
+#include "util_/pnp_lone.h"
 
 void InitFirstPair(const std::string first_path, const std::string second_path,
                    colmap::Camera& camera,

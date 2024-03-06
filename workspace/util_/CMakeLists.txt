@@ -23,6 +23,16 @@ target_include_directories(
 target_link_libraries(
   triangulate PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
 
+add_library(pnp_lone STATIC
+pnp_lone.h
+pnp_lone.cpp
+)
+target_include_directories(
+  pnp_lone PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  pnp_lone PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
+  
+
 add_library(save_pose STATIC
 pose_save.h
 pose_save.cpp

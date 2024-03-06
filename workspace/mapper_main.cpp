@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
 
     // specify the g.t. poses needed for initial and incremental processes
     // and init the g.t. poses map
-    std::vector<int> gt_poses_num = {0, 1, 2, 3, 4, 5, 6};
+    std::vector<int> gt_poses_num = {0, 1, 2};
     std::map<int, std::pair<Eigen::Vector4d, Eigen::Vector3d>> gt_map;
     if(dataset == Kitti) {
         CreateKittiGTMap(gt_map, gt_poses_num, extrinsic_gts);
