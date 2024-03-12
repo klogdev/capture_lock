@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <random>
 
 #include "estimators/absolute_pose.h"
 #include "estimators/pose.h"
@@ -36,9 +37,6 @@ DataGenerator::createDataGenerator(const GeneratorType type) {
 void COLMAPTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<Eigen::Vector3d>& points3D,
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
-    Eigen::Matrix3d K;
-    SetIntrinsic(file_path, K);
-
     points3D.emplace_back(1, 1, 1);
     points3D.emplace_back(0, 1, 1);
     points3D.emplace_back(3, 1.0, 4);
@@ -70,12 +68,43 @@ void COLMAPTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2
     }
 }
 
+void BoxCornerEPnPTestData::IntrinsicSetter() {
+    intrinsic << 800, 0, 320,
+                 0, 800, 240,
+                 0, 0, 1;
+}
+
+void BoxCornerEPnPTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                                     std::vector<Eigen::Vector3d>& points3D,
+                                     std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
+    IntrinsicSetter(); // set the intrinsic by default values
+    // Define the ranges for x, y, and z
+    double x_values[2] = {-2, 2};
+    double y_values[2] = {-2, 2};
+    double z_values[2] = {4, 8};
+
+    // Generate the corners
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {
+            for (int k = 0; k < 2; k++) {
+                points3D.push_back(Eigen::Vector3d(x_values[i], y_values[j], z_values[k]));
+            }
+        }
+    }
+
+    // project corners as 2d points
+    std::vector<Eigen::Vector2d> one_set_2d;
+    for(int i = 0; i < points3D.size(); i++) {
+        Eigen::Vector3d curr_homo = intrinsic*points3D[i];
+        one_set_2d.push_back(Eigen::Vector2d(curr_homo.x()/curr_homo.z(), curr_homo.y()/curr_homo.z()));
+    }
+
+
+}
+
 void BoxCornerCameraDistTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                                            std::vector<Eigen::Vector3d>& points3D,
                                            std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
-
-    Eigen::Matrix3d K;
-    SetIntrinsic(file_path, K);
         
     points3D = {
     Eigen::Vector3d(-5, -5, -5),
@@ -155,6 +184,23 @@ void CVLabTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D
     composed_extrinsic.push_back(dummy_gt);
 }
 
+///////////////////////
+// Helper function for EPnP synthetic data
+//////////////////////
+
+double EPnPRandom(double x_ini, double x_end) {
+    std::random_device rd; // Obtain a random number from hardware
+    std::mt19937 gen(rd()); // Seed the generator
+    std::uniform_real_distribution<> distr(xini, xend); // Define the range
+
+    double x = distr(gen); // Generate a random number
+
+    return x;
+}
+
+///////////////////////
+// Helper functions for CVLab Data
+//////////////////////
 void SetIntrinsic(std::string calib_path, Eigen::Matrix3d& calib_mat) {
     if(calib_path.empty())
         calib_mat = Eigen::Matrix3d::Identity();

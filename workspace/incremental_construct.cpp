@@ -140,15 +140,6 @@ void IncrementOneImage(std::string image_path, int new_id,
                                                 matched3d_from2d, &qvec_abs, &tvec_abs,
                                                 &camera, &inliers, &inlier_mask);
     
-    // use g.t. poses if we specified in the map
-    if(gt_map.find(new_id) != gt_map.end()){
-        new_cmp_image.SetQvec(gt_map[new_id].first);
-        new_cmp_image.SetTvec(gt_map[new_id].second);
-    }
-    else{
-        new_cmp_image.SetQvec(qvec_abs);
-        new_cmp_image.SetTvec(tvec_abs);
-    }
     std::cout << "number of inliers 2d-3d pairs by PnP in " << new_id << " is: " 
                 << inliers << std::endl;
     std::cout << "result of " << new_id << " 's pose estimation" 
@@ -172,6 +163,17 @@ void IncrementOneImage(std::string image_path, int new_id,
                 << " is: " << std::endl;
     std::cout << qvec_epnp << std::endl;
     std::cout << tvec_epnp << std::endl;
+
+    // use g.t. poses if we specified in the map, now we register pose
+    // that estimated by epnp
+    if(gt_map.find(new_id) != gt_map.end()){
+        new_cmp_image.SetQvec(gt_map[new_id].first);
+        new_cmp_image.SetTvec(gt_map[new_id].second);
+    }
+    else{
+        new_cmp_image.SetQvec(qvec_abs);
+        new_cmp_image.SetTvec(tvec_abs);
+    }
     // start triangulation
 
     // idx of triangulated pts are consistent with matched_vec,

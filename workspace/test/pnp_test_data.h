@@ -57,8 +57,6 @@ public:
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<Eigen::Vector3d>& points3D,
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
-private:
-    std::string file_path = "";
 };
 
 /**
@@ -72,9 +70,28 @@ public:
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<Eigen::Vector3d>& points3D,
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
-private:
-    std::string file_path = ""; // dummy file path, for which the intrinsic will be set as identity
 };
+
+/**
+ * @brief derived data generator that 
+ * we utilize EPnP's simulation data; the box corner [-2,2]x[-2,2]x[4,8]
+ * originally definedin camera space; the intrinsic matrix is fixed as
+ * f = 800, u, v = 320, 240 as specified in the article section 5.1
+*/
+class BoxCornerEPnPTestData: public DataGenerator {
+public:
+    BoxCornerEPnPTestData(){};
+
+    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                  std::vector<Eigen::Vector3d>& points3D,
+                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
+    
+    void IntrinsicSetter();
+
+private:
+    Eigen::Matrix3d intrinsic;
+};
+
 
 /**
  * @brief derived data generator from
@@ -90,6 +107,12 @@ public:
 private:
     std::string file_path = "/tmp3/Pose_PnP/LHM/";
 };
+
+/**
+ * @brief generate random data from a uniform distribution
+ * with bound
+*/
+double EPnPRandom(double x_ini, double x_end);
 
 /**
  * @brief set the intrinsic matrix to convert the pixel to camera space
