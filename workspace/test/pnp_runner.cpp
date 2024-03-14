@@ -12,7 +12,7 @@
 void PnPTestRunner::run_test() {
     // Step 1: Generate data
     std::vector<std::vector<Eigen::Vector2d>> points2D;
-    std::vector<Eigen::Vector3d> points3D;
+    std::vector<std::vector<Eigen::Vector3d>> points3D;
     std::vector<Eigen::Matrix3x4d> gt_extrinsic;
     data_generator_->generate(points2D, points3D, gt_extrinsic);
 
@@ -23,14 +23,14 @@ void PnPTestRunner::run_test() {
         std::vector<double> residuals; // current residuals
         std::cout << "DEBUGGING: points' size" << std::endl;
         std::cout << "curr 2d: " << points2D[i].size() << std::endl;
-        std::cout << "3d: " << points3D.size() << std::endl;
+        std::cout << "3d: " << points3D[i].size() << std::endl;
 
-        bool success = estimator_.estimate(points2D[i], points3D, 
+        bool success = estimator_.estimate(points2D[i], points3D[i], 
                                            estimated_extrinsic, &residuals);
         
         Eigen::Matrix3x4d manual_extrinsic; 
         LHMEstimator lhm;
-        bool manual_lhm = lhm.ComputeLHMPose(points2D[i], points3D, 
+        bool manual_lhm = lhm.ComputeLHMPose(points2D[i], points3D[i], 
                                          &manual_extrinsic);
         
         std::cout << "current g.t. pose is: " << std::endl;

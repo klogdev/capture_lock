@@ -15,14 +15,15 @@
 #include "estimate/lhm.h"
 
 enum class GeneratorType {
-    COLMAP, BoxDz, CVLab
+    COLMAP, BoxDz, CVLab, EPnPdZ
 };
 
 inline GeneratorType getGeneratorFromName(const std::string& name) {
     static const std::unordered_map<std::string, GeneratorType> generatorMap = {
         {"colmap", GeneratorType::COLMAP},
         {"box_dz", GeneratorType::BoxDz},
-        {"cv_lab", GeneratorType::CVLab}
+        {"cv_lab", GeneratorType::CVLab},
+        {"epnp_dz", GeneratorType::EPnPdZ}
     };
 
     auto it = generatorMap.find(name);
@@ -34,12 +35,12 @@ inline GeneratorType getGeneratorFromName(const std::string& name) {
 }
 
 // virtual abstract class for the simulation data generator
-// here we assume a single array of (3D) scene points 
-// has multiview 2D observation, i.e. a 2D vector of Eigen::Vector2d
+// here we assume an array of (3D) scene points 
+// has 1-to-1 corresponded 2D observation, i.e. a 2D vector of Eigen::Vector2d
 class DataGenerator {
 public:
     virtual void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
-                          std::vector<Eigen::Vector3d>& points3D,
+                          std::vector<std::vector<Eigen::Vector3d>>& points3D,
                           std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const = 0;
     static std::unique_ptr<DataGenerator> createDataGenerator(const GeneratorType type);
     virtual ~DataGenerator() = default;
@@ -55,7 +56,7 @@ public:
     COLMAPTestData(){};
 
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
-                  std::vector<Eigen::Vector3d>& points3D,
+                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
 };
 
@@ -68,7 +69,7 @@ public:
     BoxCornerCameraDistTestData(){};
 
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
-                  std::vector<Eigen::Vector3d>& points3D,
+                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
 };
 
@@ -83,13 +84,13 @@ public:
     BoxCornerEPnPTestData(){};
 
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
-                  std::vector<Eigen::Vector3d>& points3D,
+                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
     
     void IntrinsicSetter();
 
-private:
-    Eigen::Matrix3d intrinsic;
+// private:
+//     mutable Eigen::Matrix3d intrinsic;
 };
 
 
@@ -102,7 +103,7 @@ public:
     CVLabTestData(){};
 
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
-                  std::vector<Eigen::Vector3d>& points3D,
+                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
 private:
     std::string file_path = "/tmp3/Pose_PnP/LHM/";
@@ -113,6 +114,11 @@ private:
  * with bound
 */
 double EPnPRandom(double x_ini, double x_end);
+
+/**
+ * @brief generate a random rotation matrix and pass by reference
+*/
+void EPnPRandomRot(Eigen::Matrix3d& rot);
 
 /**
  * @brief set the intrinsic matrix to convert the pixel to camera space
