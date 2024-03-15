@@ -61,8 +61,6 @@ void COLMAPTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2
             // here we project the original 3D points
             for (size_t i = 0; i < one_points3D.size(); i++) {
                 Eigen::Vector3d point3D_camera = one_points3D[i];
-                std::cout << "check camera space point: " << std::endl;
-                std::cout << point3D_camera << std::endl;
                 orig_tform.TransformPoint(&point3D_camera);
                 curr_points2D.push_back(point3D_camera.hnormalized());
             }
@@ -101,7 +99,7 @@ void BoxCornerEPnPTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& 
 
     // project corners as 2d points
     std::vector<Eigen::Vector2d> one_set_2d;
-    for(int i = 0; i < points3D.size(); i++) {
+    for(int i = 0; i < camera_space_points.size(); i++) {
         Eigen::Vector3d curr_homo = camera_space_points[i];
         one_set_2d.push_back(Eigen::Vector2d(curr_homo.x()/curr_homo.z(), curr_homo.y()/curr_homo.z()));
     }
