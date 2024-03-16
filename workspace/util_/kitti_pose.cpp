@@ -38,6 +38,12 @@ void InverseExtrinsic(const Eigen::Matrix3x4d& kitti_pose,
     // std::cout << t_inv << std::endl;
 
     // Construct the extrinsic matrix
-    extrinsic.block<3, 3>(0, 0) = R_inv; //* convert;
+    extrinsic.block<3, 3>(0, 0) = R_inv; 
     extrinsic.col(3) = t_inv;
+}
+
+void RelativeTransFromGT(const Eigen::Vector4d& quat1, const Eigen::Vector3d& trans1,
+                         const Eigen::Vector3d& trans2, Eigen::Vector3d& rel_t) {
+    Eigen::Matrix3d rot1 = colmap::QuaternionToRotationMatrix(quat1);
+    rel_t = trans2 - rot1*trans1;
 }

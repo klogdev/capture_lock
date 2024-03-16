@@ -81,23 +81,28 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
 
     // Rotate the g.t. 1's pose by the relative rotation
     // first: convert to Eigen::Quaterniond
-    Eigen::Quaterniond q1(gt_quat1.w(), gt_quat1.x(), gt_quat1.y(), gt_quat1.z());
-    Eigen::Quaterniond q2(qvec_init.w(), qvec_init.x(), qvec_init.y(), qvec_init.z());
+    Eigen::Quaterniond q_gt1(gt_quat1.w(), gt_quat1.x(), gt_quat1.y(), gt_quat1.z());
+    Eigen::Quaterniond q_rel(qvec_init.w(), qvec_init.x(), qvec_init.y(), qvec_init.z());
     // Perform the rotation (quaternion multiplication)
-    Eigen::Quaterniond q_rotated = q1 * q2;
+    Eigen::Quaterniond q_rotated = q_rel * q_gt1;
     // Convert back to Eigen::Vector4d
     Eigen::Vector4d q_rotated_vec(q_rotated.w(), q_rotated.vec().x(), q_rotated.vec().y(), q_rotated.vec().z());
 
-    // rescale the estimated trans vector
-    double ratio = gt_trans2.norm()/tvec_init.norm();
-    // tvec_init *= ratio;
+    // get g.t. relative trans for scaling
+    Eigen::Vector3d gt_rel;
+    RelativeTransFromGT(gt_quat1, gt_trans1, gt_trans2, gt_rel);
+    // get relative rotation
+    Eigen::Matrix3d rot_rel = colmap::QuaternionToRotationMatrix(qvec_init);
 
-    // hard coded 2nd pose
-    Eigen::Vector4d qvec_2_made = Eigen::Vector4d(0.999998, 0.00173027, -4.405e-05, -0.000124149);
+    // rescale the estimated trans vector
+    double scale = gt_rel.norm()/tvec_init.norm();
+
+    // get estimated trans2
+    Eigen::Vector3d trans2_est = rot_rel*gt_trans1 + gt_rel;
 
     // set the 2nd frame's pose as g.t.
-    cmp_image2.SetQvec(gt_quat2);
-    cmp_image2.SetTvec(gt_trans2);
+    cmp_image2.SetQvec(q_rotated_vec);
+    cmp_image2.SetTvec(trans2_est);
 
     // check the relative motion via essential mat
     std::cout << "relative rotation of the first pair is: " << std::endl;

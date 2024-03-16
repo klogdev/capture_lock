@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
     ba_options.refine_extra_params = false;
 
     // read g.t. poses, this request the user specifies the sequence num.
-    // for colmap or colmap mapped kitti, we use "fake" seq num
+    // for colmap or colmap mapped kitti, we use a dummy seq num
     std::vector<std::vector<double>> extrinsic_gts;
 
     if(dataset == Kitti)
@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
 
     // specify the g.t. poses needed for initial and incremental processes
     // and init the g.t. poses map
-    std::vector<int> gt_poses_num = {0, 1, 2};
+    std::vector<int> gt_poses_num = {0, 1};
     std::map<int, std::pair<Eigen::Vector4d, Eigen::Vector3d>> gt_map;
     if(dataset == Kitti) {
         CreateKittiGTMap(gt_map, gt_poses_num, extrinsic_gts);
@@ -128,7 +128,7 @@ int main(int argc, char** argv) {
                   (int)files_to_run.width*files_to_run.downsample,
                   (int)files_to_run.height*files_to_run.downsample,
                   gt_map[0].first, gt_map[0].second, 
-                  gt_map[1].first, gt_map[1].second); // hard coded init pair
+                  gt_map[1].first, gt_map[1].second); // pass first pair's g.t. into init
 
     std::vector<int> init_image_opt = {0, 1};
     std::vector<int> init_const_pose = {0, 1};
