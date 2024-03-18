@@ -6,7 +6,7 @@
 #include "estimators/essential_matrix.h"
 #include "optim/ransac.h"
 
-#include "relative_pose.h"
+#include "estimate/relative_pose.h"
 
 
 size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
@@ -27,9 +27,9 @@ size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
     size_t j = 0;
     for (size_t i = 0; i < points1.size(); ++i) {
         if (report.inlier_mask[i]) {
-        inliers1[j] = points1[i];
-        inliers2[j] = points2[i];
-        j += 1;
+            inliers1[j] = points1[i];
+            inliers2[j] = points2[i];
+            j += 1;
         }
     }
 

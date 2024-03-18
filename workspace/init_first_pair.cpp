@@ -55,14 +55,21 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     std::unordered_map<int,int> vec2d2_idx_map; // to the idx of original feature vector
     std::vector<Eigen::Vector2d> matched_vec1;
     std::vector<Eigen::Vector2d> matched_vec2;
+    std::vector<Eigen::Vector2d> matched_homo1; // normalize pixels into camera space for essential matrix estimation
+    std::vector<Eigen::Vector2d> matched_homo2;
 
     for (int i = 0; i < matches.size(); i++){
         int curr_idx1 = matches[i].first;
         int curr_idx2 = matches[i].second;
+
         vec2d1_idx_map[i] = curr_idx1;
         vec2d2_idx_map[i] = curr_idx2;
+
         matched_vec1.push_back(key_vec1[curr_idx1]);
         matched_vec2.push_back(key_vec2[curr_idx2]);
+
+        matched_homo1.push_back(camera.ImageToWorld(key_vec1[curr_idx1]));
+        matched_homo2.push_back(camera.ImageToWorld(key_vec2[curr_idx2]));
     }
 
     // start relative pose estimation and register pose for the frame 2
@@ -73,7 +80,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     std::vector<char> inlier_mask_rel;
     // use customized relative pose estimator w/ inlier masks
     size_t num_inliers = 
-        RelativePoseWMask(ransac_options, matched_vec1, matched_vec2, 
+        RelativePoseWMask(ransac_options, matched_homo1, matched_homo2, 
                                      &qvec_init, &tvec_init, &inlier_mask_rel);
     std::cout << "inliers from relative pose: " << num_inliers << std::endl;
     std::cout << "length of inlier masks: " << inlier_mask_rel.size() << std::endl;
@@ -121,12 +128,14 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     std::cout << "check calibration matrix for the first pair: " << std::endl;
     std::cout << calibration << std::endl;
 
+    // here we do ImageToWorld, i.e. normalize the pixel coordinates
+    // inside the TriangulateImage
     std::vector<Eigen::Vector3d> triangulate_3d;
     TriangulateImage(cmp_image1, cmp_image2, camera, matched_vec1, matched_vec2,
                     triangulate_3d);
 
     // triangulate_3d should has identical length of matched_vec and inlier_mask
-    // we skip the outlier by checking inlier_mask
+    // we skip the outlier by checking inlier_mask and chierality
     std::cout << "2D indices of the first pair: " << std::endl;
     int curr_3d_len = 0;
     int inlier_img0 = 0; // debugging inliers of reprojection
@@ -210,7 +219,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     Eigen::Vector3d tvec_abs = Eigen::Vector3d::Zero();
     std::vector<char> inlier_mask_abs;
     size_t inliers = triangulate_3d.size(); // need check def
-    bool abs_pose = colmap::EstimateAbsolutePose(absolute_options, matched_vec2,
+    bool abs_pose = colmap::EstimateAbsolutePose(absolute_options, matched_homo2,
                                                 triangulate_3d, &qvec_abs, &tvec_abs,
                                                 &camera, &inliers, &inlier_mask_abs);
                     

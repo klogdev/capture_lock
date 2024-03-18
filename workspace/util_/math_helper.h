@@ -14,7 +14,7 @@ double frobeniusNormRot(const Eigen::Matrix3d& estimated, const Eigen::Matrix3d&
 double frobeniusNormExt(const Eigen::Matrix3x4d& estimated, const Eigen::Matrix3x4d& gt);
 
 /**
- * @brief generate random rotation for SO3 manifold
+ * @brief generate random rotation for SO3 manifold as an unit quaternion
 */
 Eigen::Vector4d GenRandomRot();
 

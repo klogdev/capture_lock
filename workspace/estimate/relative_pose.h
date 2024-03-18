@@ -6,7 +6,10 @@
 #include "optim/ransac.h"
 #include "optim/loransac.h"
 
-// adopts COLMAP's relative pose but with inlier masks
+/**
+ * @brief COLMAP's relative pose, i.e. 5-points essential matrix
+ *  but with inlier mask
+*/
 size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
                         const std::vector<Eigen::Vector2d>& points1,
                         const std::vector<Eigen::Vector2d>& points2,
