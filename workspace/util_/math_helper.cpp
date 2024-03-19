@@ -31,3 +31,28 @@ Eigen::Vector4d GenRandomRot() {
 
     return quat;
 }
+
+double RandomUniform(double x_ini, double x_end) {
+    std::random_device rd; // Obtain a random number from hardware
+    std::mt19937 gen(rd()); // Seed the generator
+    std::uniform_real_distribution<> distr(x_ini, x_end); // Define the range
+
+    double x = distr(gen); // Generate a random number
+
+    return x;
+}
+
+#include <iostream>
+#include <random>
+
+double RandomGaussian(double mean, double std) {
+    std::random_device rd; // Seed with a real random value, if available
+    std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+    
+    std::normal_distribution<> distr(mean, std); // Create a normal distribution
+
+    double random_number = distr(gen); // Generate a random number
+
+    return random_number;
+}
+

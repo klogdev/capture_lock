@@ -18,3 +18,14 @@ double frobeniusNormExt(const Eigen::Matrix3x4d& estimated, const Eigen::Matrix3
 */
 Eigen::Vector4d GenRandomRot();
 
+/**
+ * @brief generate random data from an uniform distribution
+ * with bound
+*/
+double RandomUniform(double x_ini, double x_end);
+
+/**
+ * @brief generate random data from a gaussian distribution
+ * with mean and std
+*/
+double RandomGaussian(double mean, double std);

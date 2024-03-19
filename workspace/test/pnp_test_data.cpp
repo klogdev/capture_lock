@@ -72,16 +72,20 @@ void COLMAPTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2
     }
 }
 
-// void BoxCornerEPnPTestData::IntrinsicSetter() {
-//     intrinsic << 800, 0, 320,
-//                  0, 800, 240,
-//                  0, 0, 1;
-// }
+// set default values for static members 
+std::string BoxCornerEPnPTestData::trans_dir = "dz";
 
 void BoxCornerEPnPTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                                      std::vector<std::vector<Eigen::Vector3d>>& points3D,
                                      std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
-    // IntrinsicSetter(); // set the intrinsic by default values
+    // set the default intrinsic matrix
+    Eigen::Matrix3d k;
+    k << 800, 0, 320,
+                 0, 800, 240,
+                 0, 0, 1;
+    Eigen::Matrix3d k_inv = k.inverse();
+    // set the default noise level
+    double sigma = 0.03;
     // Define the ranges for x, y, and z
     double x_values[2] = {-2, 2};
     double y_values[2] = {-2, 2};
@@ -100,8 +104,22 @@ void BoxCornerEPnPTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& 
     // project corners as 2d points
     std::vector<Eigen::Vector2d> one_set_2d;
     for(int i = 0; i < camera_space_points.size(); i++) {
-        Eigen::Vector3d curr_homo = camera_space_points[i];
-        one_set_2d.push_back(Eigen::Vector2d(curr_homo.x()/curr_homo.z(), curr_homo.y()/curr_homo.z()));
+        Eigen::Vector3d curr_camera_pt = camera_space_points[i];
+        Eigen::Vector3d curr_projected = k*curr_camera_pt;
+        double curr_pix_x = curr_projected.x()/curr_projected.z();
+        double curr_pix_y = curr_projected.y()/curr_projected.z();
+        Eigen::Vector3d noised_image_pt = 
+                        Eigen::Vector3d(RandomGaussian(curr_pix_x, sigma),
+                                        RandomGaussian(curr_pix_y, sigma),
+                                        1);
+        Eigen::Vector3d noised_camera_pt = k_inv*noised_image_pt;
+        one_set_2d.push_back(Eigen::Vector2d(noised_camera_pt.x()/noised_camera_pt.z(),
+                                    noised_camera_pt.y()/noised_camera_pt.z()));
+    }
+
+    std::cout << "check backprojected camera points: " << std::endl;
+    for(auto& p: one_set_2d) {
+        std::cout << p << std::endl;
     }
 
     int num_rot = 3;
@@ -221,20 +239,10 @@ void CVLabTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D
 ///////////////////////
 // Helper function for EPnP synthetic data
 //////////////////////
-double EPnPRandom(double x_ini, double x_end) {
-    std::random_device rd; // Obtain a random number from hardware
-    std::mt19937 gen(rd()); // Seed the generator
-    std::uniform_real_distribution<> distr(x_ini, x_end); // Define the range
-
-    double x = distr(gen); // Generate a random number
-
-    return x;
-}
-
 void EPnPRandomRot(Eigen::Matrix3d& rot) {
-    double alpha = EPnPRandom(0, 45);
-    double beta = EPnPRandom(0, 45);
-    double gamma = EPnPRandom(0, 45);
+    double alpha = RandomUniform(0, 45);
+    double beta = RandomUniform(0, 45);
+    double gamma = RandomUniform(0, 45);
 
     alpha = alpha * M_PI / 180.0;
     beta = beta * M_PI / 180.0;

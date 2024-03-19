@@ -86,11 +86,7 @@ public:
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<std::vector<Eigen::Vector3d>>& points3D,
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
-    
-    void IntrinsicSetter();
-
-// private:
-//     mutable Eigen::Matrix3d intrinsic;
+    static std::string trans_dir; // can be dz or dx
 };
 
 
@@ -108,12 +104,6 @@ public:
 private:
     std::string file_path = "/tmp3/Pose_PnP/LHM/";
 };
-
-/**
- * @brief generate random data from a uniform distribution
- * with bound
-*/
-double EPnPRandom(double x_ini, double x_end);
 
 /**
  * @brief generate a random rotation matrix and pass by reference
