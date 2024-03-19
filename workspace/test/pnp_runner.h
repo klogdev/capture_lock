@@ -12,15 +12,16 @@
 class PnPTestRunner {
 public:
     PnPTestRunner(std::unique_ptr<DataGenerator> data_generator,
-               EstimatorWrapper estimator)
+               EstimatorWrapper estimator, std::string output_path)
         : data_generator_(std::move(data_generator)),
-          estimator_(estimator) {}
+          estimator_(estimator), output_path_(output_path) {}
 
     void run_test();
 
 private:
     std::unique_ptr<DataGenerator> data_generator_;
     EstimatorWrapper estimator_;
+    std::string output_path_;
 };
 
 

@@ -22,17 +22,6 @@ int main(int argc, char** argv) {
 
         std::vector<Eigen::Vector3d> points3D;
         
-        // std::vector<Eigen::Vector3d> boxCorners = {
-        // Eigen::Vector3d(-5, -5, -5),
-        // Eigen::Vector3d(-5, -5,  5),
-        // Eigen::Vector3d(-5,  5, -5),
-        // Eigen::Vector3d(-5,  5,  5),
-        // Eigen::Vector3d( 5, -5, -5),
-        // Eigen::Vector3d( 5, -5,  5),
-        // Eigen::Vector3d( 5,  5, -5),
-        // Eigen::Vector3d( 5,  5,  5)
-        // };
-        // points3D = boxCorners;
 
         points3D.emplace_back(1, 1, 1);
         points3D.emplace_back(0, 1, 1);

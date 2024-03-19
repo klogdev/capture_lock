@@ -39,8 +39,10 @@ int main(int argc, char** argv) {
     std::unique_ptr<DataGenerator> generator = DataGenerator::createDataGenerator(gen_type);
     EstimatorWrapper estimator(est_type, options); // Assuming EstimatorWrapper can be directly instantiated like this
 
+    // specify the output path for saving metrics
+    std::string output = "/tmp3/Pose_PnP/PnP_result/" + generator_opt + "_" + estimator_opt;
     // Pass these instances to a TestRunner or another part of your application
-    PnPTestRunner test_runner(std::move(generator), estimator);
+    PnPTestRunner test_runner(std::move(generator), estimator, output);
     test_runner.run_test();
     
     return 0;

@@ -73,16 +73,32 @@ class LHMEstimator {
         */
         static void setGlobalOptions(const LHMOptions& options);
 
+        /**
+         * @brief set the first estimated frobenius norm between DRaM and g.t.
+        */
+        static void setFirstFrob(const double frob);
+
+        /**
+         * @brief the g.t. pose as a 3x4 extrinsic matrix
+        */
         static Eigen::Matrix3x4d* gt_pose_;
 
-        // init options for LHM manually; 
-        // should implement a helper function to save the option we are using
+        /**
+         * @brief init options for LHM manually; 
+         * should implement a helper function to save the option that currently using
+        */
         static LHMOptions options_;
+
+        /**
+         * @brief Frobenius norm respect to the g.t.
+         * will be overwrote after DRaM estimation
+        */
+        static double first_estimated_frob;
 
         /**
          * @brief estimate the absolute pose via LHM from corresponded 
          * 2D, 3D points, here we adopt COLMAP's convention that the 
-         * 2D points are normalized points in camera space
+         * 2D points are normalized points in the camera space
         */
         bool ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
                             const std::vector<Eigen::Vector3d>& points3D,

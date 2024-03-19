@@ -49,7 +49,7 @@ pnp_runner.cpp
 target_include_directories(
   pnp_runner PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  pnp_runner PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} pnp_data pnp_template lhm)
+  pnp_runner PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} pnp_data pnp_template lhm file_save)
 
 add_executable(pnp pnp_test.cpp)
 target_include_directories(

@@ -18,6 +18,8 @@
 // init the static members for the instance
 LHMOptions LHMEstimator::options_ = LHMOptions();
 Eigen::Matrix3x4d* LHMEstimator::gt_pose_ = nullptr;
+double LHMEstimator::first_estimated_frob = 0;
+
 
 std::vector<LHMEstimator::M_t> LHMEstimator::Estimate(
     const std::vector<X_t>& points2D, const std::vector<Y_t>& points3D) {
@@ -312,6 +314,7 @@ bool LHMEstimator::WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>&
         double matrix_norm = frobeniusNormRot(rot_opt, gt_pose_->block<3, 3>(0, 0));
         std::cout << "first estimated rotation difference: " << std::endl;
         std::cout << matrix_norm << std::endl;
+        LHMEstimator::setFirstFrob(matrix_norm);
     }
 
     std::cout << "first estimated matrix by DRaM is: " << std::endl;
@@ -344,4 +347,8 @@ void LHMEstimator::setGroundTruthPose(Eigen::Matrix3x4d* gt_pose) {
 
 void LHMEstimator::setGlobalOptions(const LHMOptions& options) {
     LHMEstimator::options_ = options;
+}
+
+void LHMEstimator::setFirstFrob(const double frob) {
+    LHMEstimator::first_estimated_frob = frob;
 }

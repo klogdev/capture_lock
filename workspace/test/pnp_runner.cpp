@@ -1,5 +1,6 @@
 #include <Eigen/Core>
 #include <memory>
+#include <chrono>
 
 #include "test/pnp_test_template.h"
 #include "test/pnp_test_data.h"
@@ -8,6 +9,7 @@
 #include "estimate/lhm.h"
 
 #include "util_/math_helper.h"
+#include "util_/file_save.h"
 
 void PnPTestRunner::run_test() {
     // Step 1: Generate data
@@ -16,23 +18,36 @@ void PnPTestRunner::run_test() {
     std::vector<Eigen::Matrix3x4d> gt_extrinsic;
     data_generator_->generate(points2D, points3D, gt_extrinsic);
 
+    // initialize vectors to save metrics
+    std::vector<double> residual_data;
+    std::vector<double> frobenius_data;
+    std::vector<double> dram_frob_data;
+    std::vector<double> time_data;
     // Step 2: Estimate parameters using the generated data
     for(int i = 0; i < gt_extrinsic.size(); i++) {
         // colmap's default implementation requires return a vector of models
         std::vector<Eigen::Matrix3x4d> estimated_extrinsic; 
         std::vector<double> residuals; // current residuals
-        std::cout << "DEBUGGING: points' size" << std::endl;
-        std::cout << "curr 2d: " << points2D[i].size() << std::endl;
-        std::cout << "3d: " << points3D[i].size() << std::endl;
+        // std::cout << "DEBUGGING: points' size" << std::endl;
+        // std::cout << "curr 2d: " << points2D[i].size() << std::endl;
+        // std::cout << "3d: " << points3D[i].size() << std::endl;
 
+        auto before_pnp = std::chrono::system_clock::now();
         bool success = estimator_.estimate(points2D[i], points3D[i], 
                                            estimated_extrinsic, &residuals);
+        auto after_pnp = std::chrono::system_clock::now();
+
+        auto duration_pnp = after_pnp - before_pnp;
+        // Convert the duration to seconds as a double
+        double seconds_pnp = std::chrono::duration<double>(duration_pnp).count();
         
         Eigen::Matrix3x4d manual_extrinsic; 
         LHMEstimator lhm;
         bool manual_lhm = lhm.ComputeLHMPose(points2D[i], points3D[i], 
                                          &manual_extrinsic);
         
+        double first_frob = lhm.first_estimated_frob;
+
         std::cout << "current g.t. pose is: " << std::endl;
         std::cout << gt_extrinsic[i] << std::endl;
 
@@ -52,10 +67,21 @@ void PnPTestRunner::run_test() {
         // For demonstration, let's assume we're just printing the Frobenius norm
         // of the difference between the estimated and ground truth extrinsic matrices.
         double error = frobeniusNormExt(estimated_extrinsic[0], gt_extrinsic[i]);
-        std::cout << "Estimation error (Frobenius norm): " << error << std::endl;
+        // std::cout << "Estimation error (Frobenius norm): " << error << std::endl;
 
         // analyze and log residuals or other metrics
         double avg_residual = std::accumulate(residuals.begin(), residuals.end(), 0.0) / residuals.size();
-        std::cout << "Average residual: " << avg_residual << std::endl;
+        // std::cout << "Average residual: " << avg_residual << std::endl;
+
+        // append all metrics
+        residual_data.push_back(avg_residual);
+        frobenius_data.push_back(error);
+        dram_frob_data.push_back(first_frob);
+        time_data.push_back(seconds_pnp);
     }
+    // save data
+    save1DdoubleVec(residual_data, output_path_ + "_residuals.txt");
+    save1DdoubleVec(frobenius_data, output_path_ + "_frobenius.txt");
+    save1DdoubleVec(dram_frob_data, output_path_ + "_first_frob.txt");
+    save1DdoubleVec(time_data, output_path_ + "_durations.txt");
 }

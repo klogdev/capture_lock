@@ -85,3 +85,12 @@ target_include_directories(
   math_help PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
   math_help PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
+
+add_library(file_save STATIC
+file_save.h
+file_save.cpp
+)
+target_include_directories(
+  file_save PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  file_save PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})

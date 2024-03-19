@@ -10,10 +10,10 @@
 
 
 size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
-                        const std::vector<Eigen::Vector2d>& points1,
-                        const std::vector<Eigen::Vector2d>& points2,
-                        Eigen::Vector4d* qvec, Eigen::Vector3d* tvec,
-                        std::vector<char>* inlier_mask) {
+                         const std::vector<Eigen::Vector2d>& points1,
+                         const std::vector<Eigen::Vector2d>& points2,
+                         Eigen::Vector4d* qvec, Eigen::Vector3d* tvec,
+                         std::vector<char>* inlier_mask) {
     colmap::RANSAC<colmap::EssentialMatrixFivePointEstimator> ransac(ransac_options);
     const auto report = ransac.Estimate(points1, points2);
 
