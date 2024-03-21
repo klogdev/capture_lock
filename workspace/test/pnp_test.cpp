@@ -20,6 +20,14 @@ int main(int argc, char** argv) {
     std::string estimator_opt = argv[2];
     std::string use_ransac_ = argv[3];
 
+    if(argc > 4) {
+        double sigma_ = std::stod(argv[4]);
+        if(generator_opt == "epnp_dz")
+            BoxCornerEPnPTestDataDz::sigma = sigma_;
+        else if(generator_opt == "epnp_dy")
+            BoxCornerEPnPTestDataDy::sigma = sigma_;
+    }
+
     colmap::SetPRNGSeed(0);
 
     std::vector<Eigen::Vector3d> points3D;

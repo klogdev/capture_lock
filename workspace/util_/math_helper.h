@@ -29,3 +29,15 @@ double RandomUniform(double x_ini, double x_end);
  * with mean and std
 */
 double RandomGaussian(double mean, double std);
+
+/**
+ * @brief calculate relative quaternion difference
+ * from the g.t. and estimated extrinsic matrix
+*/
+double RelativeQuatErr(const Eigen::Matrix3x4d& gt, const Eigen::Matrix3x4d& estimate);
+
+/**
+ * @brief calculate relative translation difference 
+ * from the g.t. and estimated extrinsic matrix
+*/
+double RelativeTransErr(const Eigen::Matrix3x4d& gt, const Eigen::Matrix3x4d& estimate);

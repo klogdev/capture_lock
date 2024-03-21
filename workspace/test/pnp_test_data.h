@@ -66,9 +66,19 @@ public:
  * originally definedin camera space; the intrinsic matrix is fixed as
  * f = 800, u, v = 320, 240 as specified in the article section 5.1
 */
-class BoxCornerEPnPTestData: public DataGenerator {
+class BoxCornerEPnPTestDataDz: public DataGenerator {
 public:
-    BoxCornerEPnPTestData(){};
+    BoxCornerEPnPTestDataDz(){};
+
+    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
+    static double sigma;
+};
+
+class BoxCornerEPnPTestDataDy: public DataGenerator {
+public:
+    BoxCornerEPnPTestDataDy(){};
 
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<std::vector<Eigen::Vector3d>>& points3D,

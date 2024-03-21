@@ -23,12 +23,14 @@ void PnPTestRunner::run_test() {
     std::vector<double> frobenius_data;
     std::vector<double> dram_frob_data;
     std::vector<double> time_data;
+    std::vector<double> rot_data;
+    std::vector<double> trans_data;
     // Step 2: Estimate parameters using the generated data
     for(int i = 0; i < gt_extrinsic.size(); i++) {
         // colmap's default implementation requires return a vector of models
         std::vector<Eigen::Matrix3x4d> estimated_extrinsic; 
         std::vector<double> residuals; // current residuals
-        
+
         LHMEstimator::setGroundTruthPose(&gt_extrinsic[i]);
         auto before_pnp = std::chrono::system_clock::now();
         bool success = estimator_.estimate(points2D[i], points3D[i], 
@@ -69,17 +71,23 @@ void PnPTestRunner::run_test() {
 
         // analyze and log residuals or other metrics
         double avg_residual = std::accumulate(residuals.begin(), residuals.end(), 0.0) / residuals.size();
-        // std::cout << "Average residual: " << avg_residual << std::endl;
-
+                
+        // calculate relative error
+        double quat_err = RelativeQuatErr(gt_extrinsic[i], estimated_extrinsic[0]);
+        double trans_err = RelativeTransErr(gt_extrinsic[i], estimated_extrinsic[0]);
         // append all metrics
         residual_data.push_back(avg_residual);
         frobenius_data.push_back(error);
         dram_frob_data.push_back(first_frob);
         time_data.push_back(seconds_pnp);
+        rot_data.push_back(quat_err);
+        trans_data.push_back(trans_err);
     }
     // save data
     save1DdoubleVec(residual_data, output_path_ + "_residuals.txt");
     save1DdoubleVec(frobenius_data, output_path_ + "_frobenius.txt");
     save1DdoubleVec(dram_frob_data, output_path_ + "_first_frob.txt");
     save1DdoubleVec(time_data, output_path_ + "_durations.txt");
+    save1DdoubleVec(rot_data, output_path_ + "_rot.txt");
+    save1DdoubleVec(trans_data, output_path_ + "_trans.txt");
 }
