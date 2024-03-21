@@ -36,13 +36,11 @@ inline EstimatorType getEstimatorFromName(const std::string& name) {
 
 struct EstimatorOptions {
     bool use_ransac = false; // Default to standalone estimation
-    Eigen::Matrix3x4d* gt_pose = nullptr; 
     LHMOptions lhm_opt = LHMOptions();
 };
 
 class EstimatorWrapper {
 public:
-
     EstimatorWrapper(EstimatorType type, const EstimatorOptions& options)
         : type_(type), options_(options) {}
 

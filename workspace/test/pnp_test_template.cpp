@@ -43,10 +43,6 @@ bool EstimatorWrapper::runStandalone(const std::vector<Eigen::Vector2d>& points2
             LHMEstimator::setGlobalOptions(options_.lhm_opt); // Set global LHM options
             std::cout << "current ransac option inside estimator is: " << options_.use_ransac << std::endl;
 
-            if (options_.gt_pose != nullptr) {
-                LHMEstimator::setGroundTruthPose(options_.gt_pose);
-            }
-
             LHMEstimator estimator;
             estimated_extrinsic = estimator.Estimate(points2D, points3D);
             if (residuals) {
@@ -58,9 +54,6 @@ bool EstimatorWrapper::runStandalone(const std::vector<Eigen::Vector2d>& points2
             options_.lhm_opt.rot_init_est = "dram";
             options_.lhm_opt.optim_option = "gn";
             LHMEstimator::setGlobalOptions(options_.lhm_opt); // Set global LHM options
-            if (options_.gt_pose != nullptr) {
-                LHMEstimator::setGroundTruthPose(options_.gt_pose);
-            }
 
             LHMEstimator estimator;
             estimated_extrinsic = estimator.Estimate(points2D, points3D);
@@ -73,9 +66,6 @@ bool EstimatorWrapper::runStandalone(const std::vector<Eigen::Vector2d>& points2
             options_.lhm_opt.rot_init_est = "dram";
             options_.lhm_opt.optim_option = "lhm";
             LHMEstimator::setGlobalOptions(options_.lhm_opt); // Set global LHM options
-            if (options_.gt_pose != nullptr) {
-                LHMEstimator::setGroundTruthPose(options_.gt_pose);
-            }
 
             LHMEstimator estimator;
             estimated_extrinsic = estimator.Estimate(points2D, points3D);
@@ -147,10 +137,7 @@ bool EstimatorWrapper::runWithRansac(const std::vector<Eigen::Vector2d>& points2
             options_.lhm_opt.rot_init_est = "dram";
             options_.lhm_opt.optim_option = "lhm";
             LHMEstimator::setGlobalOptions(options_.lhm_opt); // Set global LHM options
-            if (options_.gt_pose != nullptr) {
-                LHMEstimator::setGroundTruthPose(options_.gt_pose);
-            }
-
+            
             colmap::RANSACOptions options;
             options.max_error = 1e-5;
             colmap::RANSAC<LHMEstimator> ransac(options);
@@ -173,9 +160,6 @@ bool EstimatorWrapper::runWithRansac(const std::vector<Eigen::Vector2d>& points2
             options_.lhm_opt.rot_init_est = "dram";
             options_.lhm_opt.optim_option = "gn";
             LHMEstimator::setGlobalOptions(options_.lhm_opt); // Set global LHM options
-            if (options_.gt_pose != nullptr) {
-                LHMEstimator::setGroundTruthPose(options_.gt_pose);
-            }
             
             colmap::RANSACOptions options;
             options.max_error = 1e-5;

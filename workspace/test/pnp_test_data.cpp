@@ -26,8 +26,6 @@ DataGenerator::createDataGenerator(const GeneratorType type) {
     switch (type) {
         case GeneratorType::COLMAP:
             return std::make_unique<COLMAPTestData>(COLMAPTestData());
-        case GeneratorType::BoxDz:
-            return std::make_unique<BoxCornerCameraDistTestData>(BoxCornerCameraDistTestData());
         case GeneratorType::CVLab:
             return std::make_unique<CVLabTestData>(CVLabTestData());
         case GeneratorType::EPnPdZ:
@@ -72,8 +70,8 @@ void COLMAPTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2
     }
 }
 
-// set default values for static members 
-std::string BoxCornerEPnPTestData::trans_dir = "dz";
+// set default values for static members
+double BoxCornerEPnPTestData::sigma = 0.0003;
 
 void BoxCornerEPnPTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                                      std::vector<std::vector<Eigen::Vector3d>>& points3D,
@@ -84,8 +82,7 @@ void BoxCornerEPnPTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& 
                  0, 800, 240,
                  0, 0, 1;
     Eigen::Matrix3d k_inv = k.inverse();
-    // set the default noise level
-    double sigma = 0.03;
+
     // Define the ranges for x, y, and z
     double x_values[2] = {-2, 2};
     double y_values[2] = {-2, 2};
@@ -123,15 +120,15 @@ void BoxCornerEPnPTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& 
     }
 
     int num_rot = 3;
-    double tz_min = 1.5;
-    double tz_max = 50;
+    double d_min = 1.5;
+    double d_max = 50;
 
     for(int i = 0; i < num_rot; i++) {
         Eigen::Matrix3d curr_rot;
         EPnPRandomRot(curr_rot);
-        for(double tz = tz_min; tz <= tz_max; tz += 1) {
+        for(double d = d_min; d <= d_max; d += 1) {
             std::vector<Eigen::Vector3d> curr_points3d;
-            Eigen::Vector3d curr_trans = Eigen::Vector3d(5, 5, tz/10);
+            Eigen::Vector3d curr_trans = Eigen::Vector3d(5, 5, d/10);
             const colmap::SimilarityTransform3 orig_tform(1, colmap::RotationMatrixToQuaternion(curr_rot),
                                                 curr_trans);
             // generate scene points
@@ -147,60 +144,6 @@ void BoxCornerEPnPTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& 
             curr_gt.block<3, 3>(0, 0) = curr_rot.transpose(); 
             curr_gt.col(3) = -curr_rot.transpose()*curr_trans; 
             composed_extrinsic.push_back(curr_gt);
-        }
-    }
-}
-
-void BoxCornerCameraDistTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
-                                           std::vector<std::vector<Eigen::Vector3d>>& points3D,
-                                           std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
-    
-    std::vector<Eigen::Vector3d> one_points3D = {
-    Eigen::Vector3d(-5, -5, -5),
-    Eigen::Vector3d(-5, -5, 5),
-    Eigen::Vector3d(-5,  5, -5),
-    Eigen::Vector3d(-5,  5, 5),
-    Eigen::Vector3d( 5, -5, -5),
-    Eigen::Vector3d( 5, -5, 5),
-    Eigen::Vector3d( 5,  5, -5),
-    Eigen::Vector3d( 5,  5, 5) 
-    };
-
-    int num_rot = 3;
-    double tz_min = 2.5;
-    double tz_max = 5.5;
-
-    for(int i = 0; i < num_rot; i++) {
-        Eigen::Vector4d curr_rot = GenRandomRot();
-        for(double tz = tz_min; tz <= tz_max; tz += 1) {
-            std::vector<Eigen::Vector2d> curr_points2D;
-            const colmap::SimilarityTransform3 orig_tform(1, curr_rot,
-                                                Eigen::Vector3d(5, 5, tz/10));
-
-            // Project points to camera coordinate system
-            // here we project the original 3D points
-            // we use flag to skip the point w/ negative depth
-            bool valid_proj = true;
-
-            for (size_t i = 0; i < one_points3D.size(); i++) {
-                Eigen::Vector3d point3D_camera = one_points3D[i];
-                orig_tform.TransformPoint(&point3D_camera);
-                if(point3D_camera.z() <= 0) {
-                    valid_proj = false;
-                    break;
-                }
-                std::cout << "check camera space point: " << std::endl;
-                std::cout << point3D_camera << std::endl;
-                curr_points2D.push_back(point3D_camera.hnormalized());
-            }
-
-            std::cout << "flag after iter is: " << valid_proj << std::endl;
-            if (valid_proj == true) {
-                std::cout << "enter this if statment" << std::endl;
-                points2D.push_back(curr_points2D);
-                points3D.push_back(one_points3D);
-                composed_extrinsic.push_back(orig_tform.Matrix().topLeftCorner<3, 4>());
-            }
         }
     }
 }

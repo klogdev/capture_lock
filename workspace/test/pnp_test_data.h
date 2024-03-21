@@ -15,15 +15,15 @@
 #include "estimate/lhm.h"
 
 enum class GeneratorType {
-    COLMAP, BoxDz, CVLab, EPnPdZ
+    COLMAP, BoxDz, CVLab, EPnPdZ, EPnPdY
 };
 
 inline GeneratorType getGeneratorFromName(const std::string& name) {
     static const std::unordered_map<std::string, GeneratorType> generatorMap = {
         {"colmap", GeneratorType::COLMAP},
-        {"box_dz", GeneratorType::BoxDz},
         {"cv_lab", GeneratorType::CVLab},
-        {"epnp_dz", GeneratorType::EPnPdZ}
+        {"epnp_dz", GeneratorType::EPnPdZ},
+        {"epnp_dy", GeneratorType::EPnPdY}
     };
 
     auto it = generatorMap.find(name);
@@ -46,7 +46,6 @@ public:
     virtual ~DataGenerator() = default;
 };
 
-
 /**
  * @brief derived data generator that 
  * simply copy the COLMAP's test data for EPnP and P3P
@@ -60,21 +59,9 @@ public:
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
 };
 
-/**
- * @brief derived data generator that 
- * simply copy the LHM's test data of a box corner and varying z depth
-*/
-class BoxCornerCameraDistTestData: public DataGenerator {
-public:
-    BoxCornerCameraDistTestData(){};
-
-    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
-                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
-                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
-};
 
 /**
- * @brief derived data generator that 
+ * @brief data generator that 
  * we utilize EPnP's simulation data; the box corner [-2,2]x[-2,2]x[4,8]
  * originally definedin camera space; the intrinsic matrix is fixed as
  * f = 800, u, v = 320, 240 as specified in the article section 5.1
@@ -86,7 +73,7 @@ public:
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<std::vector<Eigen::Vector3d>>& points3D,
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
-    static std::string trans_dir; // can be dz or dx
+    static double sigma;
 };
 
 

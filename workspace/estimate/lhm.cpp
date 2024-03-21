@@ -312,6 +312,8 @@ bool LHMEstimator::WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>&
     bool bi_correct = BarItzhackOptRot(shifted_pts, projected_pts, rot_opt);
     if (gt_pose_ != nullptr) {
         double matrix_norm = frobeniusNormRot(rot_opt, gt_pose_->block<3, 3>(0, 0));
+        std::cout << "current g.t. pose inside LHM: " << std::endl;
+        std::cout << *gt_pose_ << std::endl; 
         std::cout << "first estimated rotation difference: " << std::endl;
         std::cout << matrix_norm << std::endl;
         LHMEstimator::setFirstFrob(matrix_norm);
