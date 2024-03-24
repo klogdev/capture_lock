@@ -58,8 +58,8 @@ void InstantiateFiles(FileOptions& files, Dataset dataset) {
         files.width = 1242;
         files.height = 375;
         files.image_start = 0;
-        files.image_end = 15;
-        files.output = "/tmp3/KITTI_Odometry/kitti_poses_15_seq3_rel_epnp.txt";
+        files.image_end = 6;
+        files.output = "/tmp3/KITTI_Odometry/kitti_poses_6_seq3_rel_epnp.txt";
     }
     else if(dataset == Dataset::KittiToColmap) {
         files.seq_num = "00";

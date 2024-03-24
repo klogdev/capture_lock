@@ -74,7 +74,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
 
     // start relative pose estimation and register pose for the frame 2
     colmap::RANSACOptions ransac_options = colmap::RANSACOptions();
-    ransac_options.max_error = 1.0;
+    ransac_options.max_error = 0.8;
     Eigen::Vector4d qvec_init = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec_init = Eigen::Vector3d::Zero();
     std::vector<char> inlier_mask_rel;
@@ -85,15 +85,14 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     std::cout << "inliers from relative pose: " << num_inliers << std::endl;
     std::cout << "length of inlier masks: " << inlier_mask_rel.size() << std::endl;
 
-
     // Rotate the g.t. 1's pose by the relative rotation
     // first: convert to Eigen::Quaterniond
-    Eigen::Quaterniond q_gt1(gt_quat1.w(), gt_quat1.x(), gt_quat1.y(), gt_quat1.z());
-    Eigen::Quaterniond q_rel(qvec_init.w(), qvec_init.x(), qvec_init.y(), qvec_init.z());
+    Eigen::Quaterniond q_gt1(gt_quat1[0], gt_quat1[1], gt_quat1[2], gt_quat1[3]);
+    Eigen::Quaterniond q_rel(qvec_init[0], qvec_init[1], qvec_init[2], qvec_init[3]);
     // Perform the rotation (quaternion multiplication)
-    Eigen::Quaterniond q_rotated = q_rel * q_gt1;
+    Eigen::Quaterniond q_rotated = q_gt1*q_rel;
     // Convert back to Eigen::Vector4d
-    Eigen::Vector4d q_rotated_vec(q_rotated.w(), q_rotated.vec().x(), q_rotated.vec().y(), q_rotated.vec().z());
+    Eigen::Vector4d q_rotated_vec(q_rotated.w(), q_rotated.x(), q_rotated.y(), q_rotated.z());
 
     // get g.t. relative trans for scaling
     Eigen::Vector3d gt_rel;
@@ -103,9 +102,10 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
 
     // rescale the estimated trans vector
     double scale = gt_rel.norm()/tvec_init.norm();
+    std::cout << "scale of relative trans is: " << scale << std::endl;
 
     // get estimated trans2
-    Eigen::Vector3d trans2_est = rot_rel*gt_trans1 + gt_rel;
+    Eigen::Vector3d trans2_est = rot_rel*gt_trans1 + scale*tvec_init;
 
     // set the 2nd frame's pose as g.t.
     cmp_image2.SetQvec(q_rotated_vec);
@@ -116,6 +116,8 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     std::cout << qvec_init << std::endl;
     std::cout << "relative translation of the first pair is: " << std::endl;
     std::cout << tvec_init << std::endl;
+    std::cout << "relative translation after scaling is: " << std::endl;
+    std::cout << trans2_est << std::endl;
 
     // check the g.t. 2's pose
     std::cout << "rotation of the 2nd g.t. is: " << std::endl;
@@ -128,8 +130,8 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     std::cout << "check calibration matrix for the first pair: " << std::endl;
     std::cout << calibration << std::endl;
 
-    // here we do ImageToWorld, i.e. normalize the pixel coordinates
-    // inside the TriangulateImage
+    // here we do ImageToCamera (in COLMAP it named as ImageToWorld)
+    // i.e. normalize the pixel coordinates inside the TriangulateImage
     std::vector<Eigen::Vector3d> triangulate_3d;
     TriangulateImage(cmp_image1, cmp_image2, camera, matched_vec1, matched_vec2,
                     triangulate_3d);
@@ -169,6 +171,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
 
         // DEBUGGING: reprojection errors
         Eigen::Vector2d curr_2d_from0 = key_vec1[orig_idx1];
+        // here 2d point is the image pixel
         double repro_1 = colmap::CalculateSquaredReprojectionError(curr_2d_from0,
                                                                    triangulate_3d[i],
                                                                    cmp_image1.Qvec(),
@@ -223,9 +226,9 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
                                                 triangulate_3d, &qvec_abs, &tvec_abs,
                                                 &camera, &inliers, &inlier_mask_abs);
                     
-    std::cout << "abs rotation of first pair is: " << std::endl;
+    std::cout << "abs rotation of first pair's 2nd frame is: " << std::endl;
     std::cout << qvec_abs << std::endl;
-    std::cout << "abs translation of first pair is: " << std::endl;
+    std::cout << "abs translation of first pair's 2nd frame is: " << std::endl;
     std::cout << tvec_abs << std::endl;
 
     std::cout << "number of 2d-3d pairs in first pair is: " 
