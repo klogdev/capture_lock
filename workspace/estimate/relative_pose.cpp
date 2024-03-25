@@ -2,6 +2,7 @@
 
 #include "base/essential_matrix.h"
 #include "base/pose.h"
+#include "base/camera.h"
 
 #include "estimators/essential_matrix.h"
 #include "optim/ransac.h"
@@ -10,12 +11,21 @@
 
 
 size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
+                         colmap::Camera& camera,
                          const std::vector<Eigen::Vector2d>& points1,
                          const std::vector<Eigen::Vector2d>& points2,
                          Eigen::Vector4d* qvec, Eigen::Vector3d* tvec,
                          std::vector<char>* inlier_mask) {
+    // first convert the feature/pixel points to homogeneaous points
+    std::vector<Eigen::Vector2d> homo1;
+    std::vector<Eigen::Vector2d> homo2;
+
+    for(int i = 0; i < points1.size(); i++) {
+        homo1.push_back(camera.ImageToWorld(points1[i]));
+        homo2.push_back(camera.ImageToWorld(points2[i]));
+    }
     colmap::RANSAC<colmap::EssentialMatrixFivePointEstimator> ransac(ransac_options);
-    const auto report = ransac.Estimate(points1, points2);
+    const auto report = ransac.Estimate(homo1, homo2);
 
     if (!report.success) {
         return 0;
@@ -27,8 +37,8 @@ size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
     size_t j = 0;
     for (size_t i = 0; i < points1.size(); ++i) {
         if (report.inlier_mask[i]) {
-            inliers1[j] = points1[i];
-            inliers2[j] = points2[i];
+            inliers1[j] = homo1[i];
+            inliers2[j] = homo2[i];
             j += 1;
         }
     }

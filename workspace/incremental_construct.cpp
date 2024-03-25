@@ -72,7 +72,7 @@ void IncrementOneImage(std::string image_path, int new_id,
     std::vector<char> inlier_mask_rel;
     // use customized relative pose estimator w/ inlier masks
     size_t num_inliers = 
-        RelativePoseWMask(ransac_options, matched_vec1, matched_vec2, 
+        RelativePoseWMask(ransac_options, camera, matched_vec1, matched_vec2, 
                                     &qvec_rel, &tvec_rel, &inlier_mask_rel);
 
     int test_inliers = 0; // for Debugging
@@ -98,7 +98,7 @@ void IncrementOneImage(std::string image_path, int new_id,
         // assume sift::key_points' id of last image are consistent with the id
         // that registered in points2d
         colmap::point2D_t last_2d_id = matches[i].first; // automatic type conversion
-        colmap::Point2D last_2d = last_image.Point2D(last_2d_id);
+        colmap::Point2D last_2d = last_image.Point2D(last_2d_id); // here 2D is the pixel coordinate
         if (!last_2d.HasPoint3D()){
             continue;
         }
@@ -120,6 +120,8 @@ void IncrementOneImage(std::string image_path, int new_id,
         << "'s point " << last_2d_id << " is " << repro_err << std::endl; 
         
         colmap::point2D_t curr_2d_id = matches[i].second;
+        // a normalized point for the PnP estimation will be converted 
+        // inside the lone PnP function
         matched2d_curr.push_back(curr_keypts_vec[curr_2d_id]);
     }
 
@@ -130,22 +132,16 @@ void IncrementOneImage(std::string image_path, int new_id,
     (float)inlier_repro/matched3d_from2d.size() << std::endl;
 
     // start absolute pose estimation
-    colmap::AbsolutePoseEstimationOptions absolute_options = colmap::AbsolutePoseEstimationOptions();
-    absolute_options.ransac_options.max_error = 1.0;
-    Eigen::Vector4d qvec_abs = Eigen::Vector4d(0, 0, 0, 1);
-    Eigen::Vector3d tvec_abs = Eigen::Vector3d::Zero();
-    std::vector<char> inlier_mask;
-    size_t inliers = matched3d_from2d.size(); 
-    bool abs_pose = colmap::EstimateAbsolutePose(absolute_options, matched2d_curr,
-                                                matched3d_from2d, &qvec_abs, &tvec_abs,
-                                                &camera, &inliers, &inlier_mask);
-    
-    std::cout << "number of inliers 2d-3d pairs by PnP in " << new_id << " is: " 
-                << inliers << std::endl;
-    std::cout << "result of " << new_id << " 's pose estimation" 
-                << " is: " << std::endl;
-    std::cout << qvec_abs << std::endl;
-    std::cout << tvec_abs << std::endl;
+    // colmap::AbsolutePoseEstimationOptions absolute_options = colmap::AbsolutePoseEstimationOptions();
+    // absolute_options.ransac_options.max_error = 1.0;
+    // Eigen::Vector4d qvec_abs = Eigen::Vector4d(0, 0, 0, 1);
+    // Eigen::Vector3d tvec_abs = Eigen::Vector3d::Zero();
+    // std::vector<char> inlier_mask;
+    // size_t inliers = matched3d_from2d.size(); 
+    // bool abs_pose = colmap::EstimateAbsolutePose(absolute_options, matched2d_curr,
+    //                                             matched3d_from2d, &qvec_abs, &tvec_abs,
+    //                                             &camera, &inliers, &inlier_mask);
+
 
     // start absolute pose estimation via lone EPnP
     colmap::RANSACOptions options_epnp = colmap::RANSACOptions();
@@ -153,6 +149,7 @@ void IncrementOneImage(std::string image_path, int new_id,
     Eigen::Vector4d qvec_epnp = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec_epnp = Eigen::Vector3d::Zero();
     std::vector<char> inlier_mask_epnp;
+    size_t inliers = matched3d_from2d.size(); 
 
     bool epnp_pose = PnPEstimation(options_epnp, matched2d_curr,
                                    matched3d_from2d, &qvec_epnp, &tvec_epnp,
@@ -171,18 +168,18 @@ void IncrementOneImage(std::string image_path, int new_id,
         new_cmp_image.SetTvec(gt_map[new_id].second);
     }
     else{
-        new_cmp_image.SetQvec(qvec_abs);
-        new_cmp_image.SetTvec(tvec_abs);
+        new_cmp_image.SetQvec(qvec_epnp);
+        new_cmp_image.SetTvec(tvec_epnp);
     }
     // start triangulation
 
     // idx of triangulated pts are consistent with matched_vec,
     // they should be matched back to their original idx of feature vec
     // here we use all matched point (without RANSAC) for triangulation
-    // but filter out outliers when we register to the global map
+    // but filter out outliers when we register to the 3d global map
     std::vector<Eigen::Vector3d> triangulate_3d;
     TriangulateImage(last_image, new_cmp_image, camera, matched_vec1, matched_vec2,
-                    triangulate_3d);
+                     triangulate_3d);
     
     double min_ang = 0.0;                                      
     int curr_3d_len = global_3d_map.size();
@@ -208,7 +205,7 @@ void IncrementOneImage(std::string image_path, int new_id,
             new_cmp_image.SetPoint3DForPoint2D(orig_idx2,curr3d_id);
         }
         else {
-            int new_3d_id = curr_3d_len; //the id is 0-indexed
+            int new_3d_id = curr_3d_len; // the id is 0-indexed
             curr_3d_len++;
             colmap::Point3D new_3d;
             new_3d.SetXYZ(triangulate_3d[i]);

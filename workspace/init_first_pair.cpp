@@ -55,8 +55,6 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     std::unordered_map<int,int> vec2d2_idx_map; // to the idx of original feature vector
     std::vector<Eigen::Vector2d> matched_vec1;
     std::vector<Eigen::Vector2d> matched_vec2;
-    std::vector<Eigen::Vector2d> matched_homo1; // normalize pixels into camera space for essential matrix estimation
-    std::vector<Eigen::Vector2d> matched_homo2;
 
     for (int i = 0; i < matches.size(); i++){
         int curr_idx1 = matches[i].first;
@@ -67,9 +65,6 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
 
         matched_vec1.push_back(key_vec1[curr_idx1]);
         matched_vec2.push_back(key_vec2[curr_idx2]);
-
-        matched_homo1.push_back(camera.ImageToWorld(key_vec1[curr_idx1]));
-        matched_homo2.push_back(camera.ImageToWorld(key_vec2[curr_idx2]));
     }
 
     // start relative pose estimation and register pose for the frame 2
@@ -79,8 +74,9 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     Eigen::Vector3d tvec_init = Eigen::Vector3d::Zero();
     std::vector<char> inlier_mask_rel;
     // use customized relative pose estimator w/ inlier masks
+    // we convert pixel points to normalized space inside the function
     size_t num_inliers = 
-        RelativePoseWMask(ransac_options, matched_homo1, matched_homo2, 
+        RelativePoseWMask(ransac_options, camera, matched_vec1, matched_vec2, 
                                      &qvec_init, &tvec_init, &inlier_mask_rel);
     std::cout << "inliers from relative pose: " << num_inliers << std::endl;
     std::cout << "length of inlier masks: " << inlier_mask_rel.size() << std::endl;
@@ -171,7 +167,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
 
         // DEBUGGING: reprojection errors
         Eigen::Vector2d curr_2d_from0 = key_vec1[orig_idx1];
-        // here 2d point is the image pixel
+        // here 2d point is the image pixel/feature point
         double repro_1 = colmap::CalculateSquaredReprojectionError(curr_2d_from0,
                                                                    triangulate_3d[i],
                                                                    cmp_image1.Qvec(),
@@ -213,25 +209,4 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
            global_3d_map.size() << std::endl;
     std::cout << "num of 3d points from first pair inlier mask is: " << 
            inlier_cnt << std::endl;
-
-    // sanity check of image 1's pose (0 indexed), 
-    // directly use features & raw triangulated 3d points w/o ransac filtering
-    colmap::AbsolutePoseEstimationOptions absolute_options = colmap::AbsolutePoseEstimationOptions();
-    absolute_options.ransac_options.max_error = 3.0;
-    Eigen::Vector4d qvec_abs = Eigen::Vector4d(0, 0, 0, 1);
-    Eigen::Vector3d tvec_abs = Eigen::Vector3d::Zero();
-    std::vector<char> inlier_mask_abs;
-    size_t inliers = triangulate_3d.size(); // need check def
-    bool abs_pose = colmap::EstimateAbsolutePose(absolute_options, matched_homo2,
-                                                triangulate_3d, &qvec_abs, &tvec_abs,
-                                                &camera, &inliers, &inlier_mask_abs);
-                    
-    std::cout << "abs rotation of first pair's 2nd frame is: " << std::endl;
-    std::cout << qvec_abs << std::endl;
-    std::cout << "abs translation of first pair's 2nd frame is: " << std::endl;
-    std::cout << tvec_abs << std::endl;
-
-    std::cout << "number of 2d-3d pairs in first pair is: " 
-                << inliers << std::endl;
-    std::cout << "result of first pair's pos estimation is: " << abs_pose << std::endl;
 }

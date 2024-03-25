@@ -8,12 +8,12 @@
 
 /**
  * @brief COLMAP's relative pose, i.e. 5-points essential matrix
- *  but with inlier mask
+ *  but with inlier mask, here the two 2D point sets are should in
+ * the camera space, i.e. after applying ImageToWorld
 */
 size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
-                        const std::vector<Eigen::Vector2d>& points1,
-                        const std::vector<Eigen::Vector2d>& points2,
-                        Eigen::Vector4d* qvec, Eigen::Vector3d* tvec,
-                        std::vector<char>* inlier_mask);
-
-void TestEigen(std::vector<Eigen::Matrix3x4d>& test);
+                         colmap::Camera& camera,
+                         const std::vector<Eigen::Vector2d>& points1,
+                         const std::vector<Eigen::Vector2d>& points2,
+                         Eigen::Vector4d* qvec, Eigen::Vector3d* tvec,
+                         std::vector<char>* inlier_mask);

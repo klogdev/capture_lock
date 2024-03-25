@@ -7,7 +7,9 @@
 
 /**
  * @brief customized PnP estimator to directly apply each estimator
- * skip using the EstimateAbsolutePose from COLMAP
+ * skip using the EstimateAbsolutePose from COLMAP, here 2D points
+ * are pixel coordinates, we convert them in normalized space inside 
+ * the function
 */
 bool PnPEstimation(const colmap::RANSACOptions& options,
                    const std::vector<Eigen::Vector2d>& points2D,
