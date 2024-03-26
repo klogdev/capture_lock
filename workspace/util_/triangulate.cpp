@@ -5,18 +5,17 @@
 #include "base/image.h"
 #include "base/camera.h"
 
-void TriangulateImage(
-    const colmap::Image& frame1, const colmap::Image& frame2,
-    const colmap::Camera& camera,
-    const std::vector<Eigen::Vector2d>& match_vec1,
-    const std::vector<Eigen::Vector2d>& match_vec2,
-    std::vector<Eigen::Vector3d>& triangulated){
+void TriangulateImage(const colmap::Image& frame1, const colmap::Image& frame2,
+                      const colmap::Camera& camera,
+                      const std::vector<Eigen::Vector2d>& match_vec1,
+                      const std::vector<Eigen::Vector2d>& match_vec2,
+                      std::vector<Eigen::Vector3d>& triangulated) {
 
-
-    for(int i = 0; i < match_vec1.size(); i++){
+    for(int i = 0; i < match_vec1.size(); i++) {
         Eigen::Vector2d normed_vec1 = camera.ImageToWorld(match_vec1[i]);
         Eigen::Vector2d normed_vec2 = camera.ImageToWorld(match_vec2[i]);
 
+        // here the ProjectionMatrix is the Extrinsic 
         Eigen::Vector3d curr_tri = colmap::TriangulatePoint(frame1.ProjectionMatrix(),
                                                             frame2.ProjectionMatrix(),
                                                             normed_vec1, normed_vec2);

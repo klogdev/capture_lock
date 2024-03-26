@@ -15,6 +15,8 @@
 
 #include "estimate/relative_pose.h"
 
+#include "util/math.h"
+
 #include "util_/reprojection.h"
 #include "util_/triangulate.h"
 #include "util_/sift_colmap.h"
@@ -103,7 +105,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     // get estimated trans2
     Eigen::Vector3d trans2_est = rot_rel*gt_trans1 + scale*tvec_init;
 
-    // set the 2nd frame's pose as g.t.
+    // set the 2nd frame's pose
     cmp_image2.SetQvec(q_rotated_vec);
     cmp_image2.SetTvec(trans2_est);
 
@@ -127,7 +129,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     std::cout << calibration << std::endl;
 
     // here we do ImageToCamera (in COLMAP it named as ImageToWorld)
-    // i.e. normalize the pixel coordinates inside the TriangulateImage
+    // i.e. normalize the pixel coordinates inside the implementation of TriangulateImage
     std::vector<Eigen::Vector3d> triangulate_3d;
     TriangulateImage(cmp_image1, cmp_image2, camera, matched_vec1, matched_vec2,
                     triangulate_3d);
@@ -139,7 +141,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     int inlier_img0 = 0; // debugging inliers of reprojection
     int inlier_img1 = 0;
 
-    double min_ang = 0.0;
+    double min_ang = colmap::DegToRad(16.0); // follow colmap's default value 
     int inlier_cnt = 0;
     for (int i = 0; i < triangulate_3d.size(); i++){
         if(inlier_mask_rel[i] == 0)

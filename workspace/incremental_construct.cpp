@@ -12,6 +12,8 @@
 
 #include "estimators/pose.h"
 
+#include "util/math.h"
+
 #include "feature/image_sift.h"
 #include "feature/sift.h"
 
@@ -82,11 +84,6 @@ void IncrementOneImage(std::string image_path, int new_id,
     // as the PnP only estimate the inliers as an intermediate step
     std::vector<Eigen::Vector3d> matched3d_from2d;
     std::vector<Eigen::Vector2d> matched2d_curr;
-
-
-    Eigen::Matrix3d calibration = camera.CalibrationMatrix();
-    std::cout << "check calibration matrix for the incremental: " << std::endl;
-    std::cout << calibration << std::endl;
 
     for (int i = 0; i < matches.size(); i++){
 
@@ -181,7 +178,7 @@ void IncrementOneImage(std::string image_path, int new_id,
     TriangulateImage(last_image, new_cmp_image, camera, matched_vec1, matched_vec2,
                      triangulate_3d);
     
-    double min_ang = 0.0;                                      
+    double min_ang = colmap::DegToRad(1.5); // follow colmap's default value                                      
     int curr_3d_len = global_3d_map.size();
     for (int i = 0; i < triangulate_3d.size(); i++){
         if(inlier_mask_rel[i] == 0)

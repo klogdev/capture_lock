@@ -6,12 +6,11 @@
 /**
  * @brief DLT triangulation by invoking colmap's functions
 */
-void TriangulateImage(
-    const colmap::Image& frame1, const colmap::Image& frame2,
-    const colmap::Camera& camera,
-    const std::vector<Eigen::Vector2d>& match_vec1,
-    const std::vector<Eigen::Vector2d>& match_vec2,
-    std::vector<Eigen::Vector3d>& triangulated);
+void TriangulateImage(const colmap::Image& frame1, const colmap::Image& frame2,
+                      const colmap::Camera& camera,
+                      const std::vector<Eigen::Vector2d>& match_vec1,
+                      const std::vector<Eigen::Vector2d>& match_vec2,
+                      std::vector<Eigen::Vector3d>& triangulated);
 
 /**
  * @brief check whether the triangulated point is valid 
