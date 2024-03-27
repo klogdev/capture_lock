@@ -24,7 +24,7 @@ int LeastSquareSolver(const std::vector<Eigen::Vector2d>& points_2d,
     options.minimizer_type = ceres::TRUST_REGION; // Trust region strategy typically uses GN or LM under the hood
     options.trust_region_strategy_type = ceres::LEVENBERG_MARQUARDT; // Explicitly choose LM, which generalizes GN
     options.minimizer_progress_to_stdout = true;
-
+    options.max_num_iterations = 5;
 
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);

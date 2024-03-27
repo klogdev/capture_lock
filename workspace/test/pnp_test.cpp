@@ -50,7 +50,12 @@ int main(int argc, char** argv) {
     // specify the output path for saving metrics
     std::string output = "/tmp3/Pose_PnP/PnP_result/" + generator_opt + "_" + estimator_opt;
     // Pass these instances to a TestRunner or another part of your application
-    PnPTestRunner test_runner(std::move(generator), estimator, output);
+
+    double sigma = 0.0003;
+    if(argc > 4) {
+        sigma = std::stod(argv[4]);
+    }
+    PnPTestRunner test_runner(std::move(generator), estimator, output, sigma);
     test_runner.run_test();
     
     return 0;

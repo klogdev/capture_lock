@@ -86,12 +86,13 @@ void PnPTestRunner::run_test() {
         rot_data.push_back(quat_err);
         trans_data.push_back(trans_err);
     }
+    std::string curr_sigma = std::to_string(sigma_);
     // save data
-    save1DVec(residual_data, output_path_ + "_residuals.txt");
-    save1DVec(frobenius_data, output_path_ + "_frobenius.txt");
-    save1DVec(dram_frob_data, output_path_ + "_first_frob.txt");
-    save1DVec(time_data, output_path_ + "_durations.txt");
-    save1DVec(rot_data, output_path_ + "_rot.txt");
-    save1DVec(trans_data, output_path_ + "_trans.txt");
-    save1DVec(iter_data, output_path_ + "_iters.txt");
+    save1DVec(residual_data, output_path_ + "_residuals_" + curr_sigma + "_.txt");
+    save1DVec(frobenius_data, output_path_ + "_frobenius_" + curr_sigma + "_.txt");
+    save1DVec(dram_frob_data, output_path_ + "_first_frob_" + curr_sigma + "_.txt");
+    save1DVec(time_data, output_path_ + "_durations_" + curr_sigma + "_.txt");
+    save1DVec(rot_data, output_path_ + "_rot_" + curr_sigma + "_.txt");
+    save1DVec(trans_data, output_path_ + "_trans_" + curr_sigma + "_.txt");
+    save1DVec(iter_data, output_path_ + "_iters_" + curr_sigma + "_.txt");
 }

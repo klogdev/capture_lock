@@ -12,9 +12,11 @@
 class PnPTestRunner {
 public:
     PnPTestRunner(std::unique_ptr<DataGenerator> data_generator,
-               EstimatorWrapper estimator, std::string output_path)
+                  EstimatorWrapper estimator, 
+                  std::string output_path, double sigma = 0.0003)
         : data_generator_(std::move(data_generator)),
-          estimator_(estimator), output_path_(output_path) {}
+          estimator_(estimator), output_path_(output_path),
+          sigma_(sigma) {}
 
     void run_test();
 
@@ -22,6 +24,7 @@ private:
     std::unique_ptr<DataGenerator> data_generator_;
     EstimatorWrapper estimator_;
     std::string output_path_;
+    double sigma_;
 };
 
 

@@ -95,8 +95,8 @@ public:
                   std::vector<std::vector<Eigen::Vector3d>>& points3D,
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
     static double sigma;
+    static int num_pts;
 };
-
 
 /**
  * @brief derived data generator from

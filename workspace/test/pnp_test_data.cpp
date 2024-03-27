@@ -32,6 +32,8 @@ DataGenerator::createDataGenerator(const GeneratorType type) {
             return std::make_unique<BoxCornerEPnPTestDataDz>(BoxCornerEPnPTestDataDz());
         case GeneratorType::EPnPdY:
             return std::make_unique<BoxCornerEPnPTestDataDy>(BoxCornerEPnPTestDataDy());
+        case GeneratorType::RandomDz:
+            return std::make_unique<BoxRandomEPnPTestDataDz>(BoxRandomEPnPTestDataDz());
         // Handle unsupported types
         default:
             return nullptr;
@@ -74,7 +76,6 @@ void COLMAPTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2
 
 // set default values for static members
 double BoxCornerEPnPTestDataDz::sigma = 0.0003;
-
 void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                                      std::vector<std::vector<Eigen::Vector3d>>& points3D,
                                      std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
@@ -106,7 +107,7 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
         std::cout << p << std::endl;
     }
 
-    int num_rot = 1000;
+    int num_rot = 500;
     double d_min = 15;
     double d_max = 500;
 
@@ -168,7 +169,70 @@ void BoxCornerEPnPTestDataDy::generate(std::vector<std::vector<Eigen::Vector2d>>
         std::cout << p << std::endl;
     }
 
-    int num_rot = 1000;
+    int num_rot = 500;
+    double d_min = 15;
+    double d_max = 500;
+
+    for(int i = 0; i < num_rot; i++) {
+        Eigen::Matrix3d curr_rot;
+        EPnPRandomRot(curr_rot);
+        for(double d = d_min; d <= d_max; d += 10) {
+            std::vector<Eigen::Vector3d> curr_points3d;
+            Eigen::Vector3d curr_trans = Eigen::Vector3d(5, d, 200);
+            const colmap::SimilarityTransform3 orig_tform(1, colmap::RotationMatrixToQuaternion(curr_rot),
+                                                curr_trans);
+            // generate scene points
+            for (size_t i = 0; i < camera_space_points.size(); i++) {
+                Eigen::Vector3d point3D_world = camera_space_points[i];
+                orig_tform.TransformPoint(&point3D_world);
+                curr_points3d.push_back(point3D_world);
+            }
+            // EPnP generate all scene points from a single camera points set
+            points2D.push_back(one_set_2d);
+            points3D.push_back(curr_points3d);
+            Eigen::Matrix3x4d curr_gt;
+            curr_gt.block<3, 3>(0, 0) = curr_rot.transpose(); 
+            curr_gt.col(3) = -curr_rot.transpose()*curr_trans; 
+            composed_extrinsic.push_back(curr_gt);
+        }
+    }
+}
+
+// set default values for static members
+double BoxRandomEPnPTestDataDz::sigma = 0.0003;
+void BoxRandomEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                                     std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                                     std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
+    // set the default intrinsic matrix and Box corners
+    Eigen::Matrix3d k;
+    std::vector<Eigen::Vector3d> camera_space_points;
+    int num_pts = 25;
+    EPnPInsideRand(k, camera_space_points, num_pts);
+
+    Eigen::Matrix3d k_inv = k.inverse();
+
+    // project corners as 2d points
+    std::vector<Eigen::Vector2d> one_set_2d;
+    for(int i = 0; i < camera_space_points.size(); i++) {
+        Eigen::Vector3d curr_camera_pt = camera_space_points[i];
+        Eigen::Vector3d curr_projected = k*curr_camera_pt;
+        double curr_pix_x = curr_projected.x()/curr_projected.z();
+        double curr_pix_y = curr_projected.y()/curr_projected.z();
+        Eigen::Vector3d noised_image_pt = 
+                        Eigen::Vector3d(RandomGaussian(curr_pix_x, sigma),
+                                        RandomGaussian(curr_pix_y, sigma),
+                                        1);
+        Eigen::Vector3d noised_camera_pt = k_inv*noised_image_pt;
+        one_set_2d.push_back(Eigen::Vector2d(noised_camera_pt.x()/noised_camera_pt.z(),
+                                    noised_camera_pt.y()/noised_camera_pt.z()));
+    }
+
+    std::cout << "check backprojected camera points: " << std::endl;
+    for(auto& p: one_set_2d) {
+        std::cout << p << std::endl;
+    }
+
+    int num_rot = 500;
     double d_min = 15;
     double d_max = 500;
 
@@ -228,9 +292,9 @@ void CVLabTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D
     composed_extrinsic.push_back(dummy_gt);
 }
 
-///////////////////////
+//////////////////////////////////////////
 // Helper function for EPnP synthetic data
-//////////////////////
+/////////////////////////////////////////
 void EPnPBoxCorner(Eigen::Matrix3d& k, std::vector<Eigen::Vector3d>& camera_space_points) {
     k << 800, 0, 320,
          0, 800, 240,
