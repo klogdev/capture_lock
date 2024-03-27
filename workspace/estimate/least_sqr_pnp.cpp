@@ -3,7 +3,7 @@
 
 #include "estimate/least_sqr_pnp.h"
 
-void LeastSquareSolver(const std::vector<Eigen::Vector2d>& points_2d, 
+int LeastSquareSolver(const std::vector<Eigen::Vector2d>& points_2d, 
                        const std::vector<Eigen::Vector3d>& points_3d,
                        Eigen::Vector4d& quat_init, Eigen::Vector3d& trans_init,
                        int max_iters) {
@@ -29,5 +29,6 @@ void LeastSquareSolver(const std::vector<Eigen::Vector2d>& points_2d,
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);
 
-    std::cout << summary.FullReport() << std::endl;
+    // std::cout << summary.FullReport() << std::endl;
+    return summary.iterations.size();
 }

@@ -78,27 +78,12 @@ double BoxCornerEPnPTestDataDz::sigma = 0.0003;
 void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                                      std::vector<std::vector<Eigen::Vector3d>>& points3D,
                                      std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
-    // set the default intrinsic matrix
+    // set the default intrinsic matrix and Box corners
     Eigen::Matrix3d k;
-    k << 800, 0, 320,
-                 0, 800, 240,
-                 0, 0, 1;
-    Eigen::Matrix3d k_inv = k.inverse();
-
-    // Define the ranges for x, y, and z
-    double x_values[2] = {-2, 2};
-    double y_values[2] = {-2, 2};
-    double z_values[2] = {4, 8};
-
     std::vector<Eigen::Vector3d> camera_space_points;
-    // Generate the corners
-    for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < 2; j++) {
-            for (int k = 0; k < 2; k++) {
-                camera_space_points.push_back(Eigen::Vector3d(x_values[i], y_values[j], z_values[k]));
-            }
-        }
-    }
+    EPnPBoxCorner(k, camera_space_points);
+
+    Eigen::Matrix3d k_inv = k.inverse();
 
     // project corners as 2d points
     std::vector<Eigen::Vector2d> one_set_2d;
@@ -152,31 +137,15 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
 
 // set default values for static members
 double BoxCornerEPnPTestDataDy::sigma = 0.0003;
-
 void BoxCornerEPnPTestDataDy::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                                      std::vector<std::vector<Eigen::Vector3d>>& points3D,
                                      std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
-    // set the default intrinsic matrix
+    // set the default intrinsic matrix and Box corners
     Eigen::Matrix3d k;
-    k << 800, 0, 320,
-                 0, 800, 240,
-                 0, 0, 1;
-    Eigen::Matrix3d k_inv = k.inverse();
-
-    // Define the ranges for x, y, and z
-    double x_values[2] = {-2, 2};
-    double y_values[2] = {-2, 2};
-    double z_values[2] = {4, 8};
-
     std::vector<Eigen::Vector3d> camera_space_points;
-    // Generate the corners
-    for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < 2; j++) {
-            for (int k = 0; k < 2; k++) {
-                camera_space_points.push_back(Eigen::Vector3d(x_values[i], y_values[j], z_values[k]));
-            }
-        }
-    }
+    EPnPBoxCorner(k, camera_space_points);
+
+    Eigen::Matrix3d k_inv = k.inverse();
 
     // project corners as 2d points
     std::vector<Eigen::Vector2d> one_set_2d;
@@ -262,6 +231,40 @@ void CVLabTestData::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D
 ///////////////////////
 // Helper function for EPnP synthetic data
 //////////////////////
+void EPnPBoxCorner(Eigen::Matrix3d& k, std::vector<Eigen::Vector3d>& camera_space_points) {
+    k << 800, 0, 320,
+         0, 800, 240,
+         0, 0, 1;
+
+    // Define the ranges for x, y, and z
+    double x_values[2] = {-2, 2};
+    double y_values[2] = {-2, 2};
+    double z_values[2] = {4, 8};
+
+    // Generate the corners
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {
+            for (int k = 0; k < 2; k++) {
+                camera_space_points.push_back(Eigen::Vector3d(x_values[i], y_values[j], z_values[k]));
+            }
+        }
+    }
+}
+
+void EPnPInsideRand(Eigen::Matrix3d& k, std::vector<Eigen::Vector3d>& camera_space_points,
+                    int num_pts) {
+    k << 800, 0, 320,
+         0, 800, 240,
+         0, 0, 1;
+
+    for(int i = 0; i < num_pts; i++) {
+        double curr_x = RandomUniform(-2, 2);
+        double curr_y = RandomUniform(-2, 2);
+        double curr_z = RandomUniform(4, 8);
+        camera_space_points.push_back(Eigen::Vector3d(curr_x, curr_y, curr_z));
+    }
+}
+
 void EPnPRandomRot(Eigen::Matrix3d& rot) {
     double alpha = RandomUniform(0, 45);
     double beta = RandomUniform(0, 45);

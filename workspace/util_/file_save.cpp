@@ -3,21 +3,6 @@
 #include <Eigen/Core>
 #include <string>
 
-void save1DdoubleVec(const std::vector<double>& data_vec, std::string out_path) {
-    std::ofstream outfile(out_path);
-    if (!outfile.is_open()) {
-        std::cerr << "Error: Unable to open file " << out_path << " for writing." << std::endl;
-        return;
-    }
-
-    // each value as a single line
-    for (const auto& element : data_vec) {
-        outfile << element << "\n";
-    }
-
-    outfile.close();
-    std::cout << "1D vector data saved to file: " << out_path << std::endl;
-}
 
 void save2DdoubleVec(const std::vector<std::vector<double>>& data_vec, std::string out_path) {
     std::ofstream outfile(out_path);

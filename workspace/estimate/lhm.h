@@ -13,11 +13,11 @@ struct LHMOptions
     // convergence tolerance of lhm
     double lhm_tolerance = 1e-5;
 
-    // lower bound of objective fxn
+    // lower bound of objective space error for the termination
     double lhm_epsilon = 1e-8;
 
     // max iteration for lhm's optimization
-    int lhm_iter = 35;
+    int lhm_iter = 5;
 
     // option to use DRaM & Bar-Itzhack as initial guess for rotation
     // or standard SVD et.al.
@@ -79,6 +79,11 @@ class LHMEstimator {
         static void setFirstFrob(const double frob);
 
         /**
+         * @brief set the number of iterations to be read as a metric
+        */
+       static void setNumIters(const int iters);
+
+        /**
          * @brief the g.t. pose as a 3x4 extrinsic matrix
         */
         static Eigen::Matrix3x4d* gt_pose_;
@@ -94,6 +99,12 @@ class LHMEstimator {
          * will be overwrote after DRaM estimation
         */
         static double first_estimated_frob;
+
+        /**
+         * @brief number of iterations of GN or LHM
+         * will be overwrote after iterations finished
+        */
+        static int num_iterations;
 
         /**
          * @brief estimate the absolute pose via LHM from corresponded 
@@ -139,8 +150,9 @@ class LHMEstimator {
 
         /**
          * @brief iterative optimization by using LHM's pipeline
+         * @return number of iterations
         */
-        bool IterationLHM(const std::vector<Eigen::Vector3d>& points3D,
+        int IterationLHM(const std::vector<Eigen::Vector3d>& points3D,
                           const std::vector<Eigen::Matrix3d>& V,
                           const Eigen::Matrix3d& Tfact,
                           Eigen::Matrix3d& init_rot,

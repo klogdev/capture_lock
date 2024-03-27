@@ -42,7 +42,7 @@ struct ReprojectionError {
  * @brief ceres solver for the least square optimization of PnP
  * can be a sccesive polish step after LHM/DRaM
 */
-void LeastSquareSolver(const std::vector<Eigen::Vector2d>& points_2d, 
+int LeastSquareSolver(const std::vector<Eigen::Vector2d>& points_2d, 
                        const std::vector<Eigen::Vector3d>& points_3d,
                        Eigen::Vector4d& quat_init, Eigen::Vector3d& trans_init,
                        int max_iters);

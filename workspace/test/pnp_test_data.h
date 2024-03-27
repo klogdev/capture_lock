@@ -15,7 +15,7 @@
 #include "estimate/lhm.h"
 
 enum class GeneratorType {
-    COLMAP, BoxDz, CVLab, EPnPdZ, EPnPdY
+    COLMAP, CVLab, EPnPdZ, EPnPdY, RandomDz
 };
 
 inline GeneratorType getGeneratorFromName(const std::string& name) {
@@ -23,7 +23,8 @@ inline GeneratorType getGeneratorFromName(const std::string& name) {
         {"colmap", GeneratorType::COLMAP},
         {"cv_lab", GeneratorType::CVLab},
         {"epnp_dz", GeneratorType::EPnPdZ},
-        {"epnp_dy", GeneratorType::EPnPdY}
+        {"epnp_dy", GeneratorType::EPnPdY},
+        {"random_dz", GeneratorType::RandomDz}
     };
 
     auto it = generatorMap.find(name);
@@ -86,6 +87,16 @@ public:
     static double sigma;
 };
 
+class BoxRandomEPnPTestDataDz: public DataGenerator {
+public:
+    BoxRandomEPnPTestDataDz(){};
+
+    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
+    static double sigma;
+};
+
 
 /**
  * @brief derived data generator from
@@ -101,6 +112,19 @@ public:
 private:
     std::string file_path = "/tmp3/Pose_PnP/LHM/";
 };
+
+/**
+ * @brief preprocessing of the EPnP box corner data generation
+ * @arg  3D points in camera space
+*/
+void EPnPBoxCorner(Eigen::Matrix3d& k, std::vector<Eigen::Vector3d>& camera_space_points);
+
+/**
+ * @brief preprocessing of the EPnP random data generation
+ * inside the box [-2,2]x[-2,2]x[4,8]
+*/
+void EPnPInsideRand(Eigen::Matrix3d& k, std::vector<Eigen::Vector3d>& camera_space_points,
+                    int num_pts);
 
 /**
  * @brief generate a random rotation matrix and pass by reference

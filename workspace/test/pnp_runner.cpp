@@ -23,6 +23,7 @@ void PnPTestRunner::run_test() {
     std::vector<double> frobenius_data;
     std::vector<double> dram_frob_data;
     std::vector<double> time_data;
+    std::vector<int> iter_data;
     std::vector<double> rot_data;
     std::vector<double> trans_data;
     // Step 2: Estimate parameters using the generated data
@@ -47,6 +48,7 @@ void PnPTestRunner::run_test() {
                                          &manual_extrinsic);
         
         double first_frob = lhm.first_estimated_frob;
+        int iters = lhm.num_iterations;
 
         std::cout << "current g.t. pose is: " << std::endl;
         std::cout << gt_extrinsic[i] << std::endl;
@@ -80,14 +82,16 @@ void PnPTestRunner::run_test() {
         frobenius_data.push_back(error);
         dram_frob_data.push_back(first_frob);
         time_data.push_back(seconds_pnp);
+        iter_data.push_back(iters);
         rot_data.push_back(quat_err);
         trans_data.push_back(trans_err);
     }
     // save data
-    save1DdoubleVec(residual_data, output_path_ + "_residuals.txt");
-    save1DdoubleVec(frobenius_data, output_path_ + "_frobenius.txt");
-    save1DdoubleVec(dram_frob_data, output_path_ + "_first_frob.txt");
-    save1DdoubleVec(time_data, output_path_ + "_durations.txt");
-    save1DdoubleVec(rot_data, output_path_ + "_rot.txt");
-    save1DdoubleVec(trans_data, output_path_ + "_trans.txt");
+    save1DVec(residual_data, output_path_ + "_residuals.txt");
+    save1DVec(frobenius_data, output_path_ + "_frobenius.txt");
+    save1DVec(dram_frob_data, output_path_ + "_first_frob.txt");
+    save1DVec(time_data, output_path_ + "_durations.txt");
+    save1DVec(rot_data, output_path_ + "_rot.txt");
+    save1DVec(trans_data, output_path_ + "_trans.txt");
+    save1DVec(iter_data, output_path_ + "_iters.txt");
 }

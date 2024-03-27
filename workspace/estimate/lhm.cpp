@@ -19,7 +19,7 @@
 LHMOptions LHMEstimator::options_ = LHMOptions();
 Eigen::Matrix3x4d* LHMEstimator::gt_pose_ = nullptr;
 double LHMEstimator::first_estimated_frob = 0;
-
+int LHMEstimator::num_iterations = 0;
 
 std::vector<LHMEstimator::M_t> LHMEstimator::Estimate(
     const std::vector<X_t>& points2D, const std::vector<Y_t>& points3D) {
@@ -86,16 +86,20 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
     // refine the init trans after obtained the init rotation
     TransFromRotLHM(points3D, V, Tfact, init_rot, init_trans);
 
+    // here opt result returns the number of iterations
+    int opt_result;
     if(options_.optim_option == "lhm"){
-        bool opt_result = IterationLHM(points3D, V, Tfact, init_rot, init_trans);
+        opt_result = IterationLHM(points3D, V, Tfact, init_rot, init_trans);
     }
     else {
         const Eigen::Matrix3d rot_copy = init_rot;
         Eigen::Vector4d quat_ = colmap::RotationMatrixToQuaternion(rot_copy);
-        LeastSquareSolver(points2D, points3D, quat_, init_trans, options_.lhm_iter);
+        opt_result = LeastSquareSolver(points2D, points3D, quat_, init_trans, options_.lhm_iter);
         const Eigen::Vector4d quat_copy = quat_;
         init_rot = colmap::QuaternionToRotationMatrix(quat_copy);
     }
+
+    LHMEstimator::setNumIters(opt_result);
 
     // Compose the extrinsic matrix
     proj_matrix->block<3, 3>(0, 0) = init_rot;
@@ -104,7 +108,7 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
     return true;
 }
 
-bool LHMEstimator::IterationLHM(const std::vector<Eigen::Vector3d>& points3D,
+int LHMEstimator::IterationLHM(const std::vector<Eigen::Vector3d>& points3D,
                                 const std::vector<Eigen::Matrix3d>& V,
                                 const Eigen::Matrix3d& Tfact,
                                 Eigen::Matrix3d& init_rot,
@@ -135,7 +139,7 @@ bool LHMEstimator::IterationLHM(const std::vector<Eigen::Vector3d>& points3D,
         iter++;
     }
 
-    return true;
+    return iter;
 }
 
 bool LHMEstimator::CalcLHMRotTrans(const std::vector<Eigen::Vector3d>& points3D0,
@@ -353,4 +357,8 @@ void LHMEstimator::setGlobalOptions(const LHMOptions& options) {
 
 void LHMEstimator::setFirstFrob(const double frob) {
     LHMEstimator::first_estimated_frob = frob;
+}
+
+void LHMEstimator::setNumIters(const int iters) {
+    LHMEstimator::num_iterations = iters;
 }
