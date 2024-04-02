@@ -142,7 +142,7 @@ void IncrementOneImage(std::string image_path, int new_id,
 
     // start absolute pose estimation via lone EPnP
     colmap::RANSACOptions options_epnp = colmap::RANSACOptions();
-    options_epnp.max_error = 0.1;
+    options_epnp.max_error = 0.8;
     Eigen::Vector4d qvec_epnp = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec_epnp = Eigen::Vector3d::Zero();
     std::vector<char> inlier_mask_epnp;

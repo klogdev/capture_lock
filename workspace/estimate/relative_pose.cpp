@@ -27,6 +27,15 @@ size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
     colmap::RANSAC<colmap::EssentialMatrixFivePointEstimator> ransac(ransac_options);
     const auto report = ransac.Estimate(homo1, homo2);
 
+    // check residuals of the model
+    std::vector<double> residuals;
+    colmap::EssentialMatrixFivePointEstimator::Residuals(homo1, homo2, report.model,
+                                               &residuals);
+    std::cout << "check 5 points estimated residuals" << std::endl;
+    for (size_t i = 0; i < residuals.size(); ++i) {
+        std::cout << residuals[i] << std::endl;
+    }
+
     if (!report.success) {
         return 0;
     }

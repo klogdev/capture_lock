@@ -27,7 +27,7 @@ struct Keypoint {
     float x;
     float y;
     float sigma;
-    float extremum_val; //value of interpolated DoG extremum
+    float extremum_val; // value of interpolated DoG extremum
     
     std::array<uint8_t, 128> descriptor;
 };

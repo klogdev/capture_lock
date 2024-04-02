@@ -408,7 +408,7 @@ void compute_keypoint_descriptor(Keypoint& kp, float theta,
     const Image& img_grad = grad_pyramid.octaves[kp.octave][kp.scale];
     float histograms[N_HIST][N_HIST][N_ORI] = {0};
 
-    //find start and end coords for loops over image patch
+    // find start and end coords for loops over image patch
     float half_size = std::sqrt(2)*lambda_desc*kp.sigma*(N_HIST+1.)/N_HIST;
     int x_start = std::round((kp.x-half_size) / pix_dist);
     int x_end = std::round((kp.x+half_size) / pix_dist);
@@ -417,7 +417,7 @@ void compute_keypoint_descriptor(Keypoint& kp, float theta,
 
     float cos_t = std::cos(theta), sin_t = std::sin(theta);
     float patch_sigma = lambda_desc * kp.sigma;
-    //accumulate samples into histograms
+    // accumulate samples into histograms
     for (int m = x_start; m <= x_end; m++) {
         for (int n = y_start; n <= y_end; n++) {
             // find normalized coords w.r.t. kp position and reference orientation

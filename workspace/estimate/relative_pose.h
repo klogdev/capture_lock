@@ -8,8 +8,9 @@
 
 /**
  * @brief COLMAP's relative pose, i.e. 5-points essential matrix
- *  but with inlier mask, here the two 2D point sets are should in
+ * but with inlier mask, here the two 2D point sets should in
  * the camera space, i.e. after applying ImageToWorld
+ * see TwoViewGeometry::EstimateCalibrated
 */
 size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
                          colmap::Camera& camera,

@@ -18,7 +18,7 @@ colmap::Image SIFTtoCOLMAPImage(int image_id, std::vector<Eigen::Vector2d> featu
 std::vector<sift::Keypoint> GetKeyPoints(Image& image);
 
 /**
- * @brief convert i,j coord from SIFT points 
- * to eigen vector for the init of colmap::Image
+ * @brief convert i, j coord from the SIFT detected points 
+ * to an eigen vector for the init of colmap::Image
 */
 std::vector<Eigen::Vector2d> SIFTPtsToVec(std::vector<sift::Keypoint> key_points);
