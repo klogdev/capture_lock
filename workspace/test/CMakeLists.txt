@@ -98,7 +98,8 @@ add_executable(essential_matrix essential_matrix_test.cpp)
 target_include_directories(
 essential_matrix PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-essential_matrix PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift test_util)
+essential_matrix PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} img sift 
+math_help file_option sift_colmap)
 
 add_executable(ransac ransac_test.cpp)
 target_include_directories(

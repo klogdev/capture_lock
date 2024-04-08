@@ -15,7 +15,7 @@
 
 const double PI = 3.1415926;
 
-//call EstimateRelativePose from estimators/pose
+// call EstimateRelativePose from estimators/pose
 size_t GetNumInliers(const colmap::RANSACOptions& ransac_options,
                     std::vector<Eigen::Vector2d>& points1,
                     std::vector<Eigen::Vector2d>& points2,
@@ -35,10 +35,10 @@ int main(int argc, char** argv){
                   << std::endl;
     }
 
-    //initialize the Image class by its path (feature/image_sift)
+    // initialize the Image class by its path (feature/image_sift)
     Image image1(argv[1],768,576);
     Image image2(argv[2],768,576);
-    //get matches from images
+    // get matches from images
     std::vector<MatchedVec> Matches;
     
     Matches = FindMatches(image1, image2);
@@ -50,18 +50,18 @@ int main(int argc, char** argv){
         key_points1.push_back(match.KeyPt1);
         key_points2.push_back(match.KeyPt2);
     }
-    //get file path for ReadText
+    // get file path for ReadText
     std::string file_path = argv[3];
-    //read files and instantiate class for each
+    // read files and instantiate class for each
     colmap::Reconstruction read_text = colmap::Reconstruction();
     read_text.ReadText(file_path);
 
-    //hard coded w/ specify camera 1
+    // hard coded w/ specify camera 1
     colmap::Camera camera1 = read_text.Cameras().at(1);
     Eigen::Matrix3d calibration = camera1.CalibrationMatrix();
 
-    //hard coded to get images P1180325/326
-    //colmap::EIGEN_STL_UMAP(colmap::image_t, colmap::Image) image_map = read_text.Images();
+    // hard coded to get images P1180325/326
+    // colmap::EIGEN_STL_UMAP(colmap::image_t, colmap::Image) image_map = read_text.Images();
     colmap::Image c_image1 = read_text.Image(34);
     colmap::Image c_image2 = read_text.Image(26);
     Eigen::Vector4d qvec1_gt = c_image1.Qvec();
@@ -69,28 +69,28 @@ int main(int argc, char** argv){
     Eigen::Vector4d qvec2_gt = c_image2.Qvec();
     Eigen::Vector3d tvec2_gt = c_image2.Tvec();
 
-    //get rotation matrix from ground truth pose
+    // get rotation matrix from ground truth pose
     Eigen::Matrix3d rot_mat_c1 = colmap::QuaternionToRotationMatrix(colmap::NormalizeQuaternion(qvec1_gt));
     Eigen::Matrix3d rot_mat_c2 = colmap::QuaternionToRotationMatrix(colmap::NormalizeQuaternion(qvec2_gt));
 
-    //inverse the first rot matrix to identity, get relative pose of pose 2
+    // inverse the first rot matrix to identity, get relative pose of pose 2
     Eigen::Matrix3d rot_mat_inv1 = rot_mat_c1.inverse();
     Eigen::Matrix3d rot_mat_rel2 = rot_mat_inv1*rot_mat_c2;
 
-    //get quaternion/trans of relative pose of image 2
+    // get quaternion/trans of relative pose of image 2
     Eigen::Vector4d qvec_rel2 = colmap::RotationMatrixToQuaternion(rot_mat_rel2);
     Eigen::Vector3d tvec_rel2 = tvec2_gt - tvec1_gt;
 
     colmap::RANSACOptions ransac_options = colmap::RANSACOptions();
     ransac_options.max_error = 0.05;
 
-    //init q&t vec for the first two frames
+    // init q&t vec for the first two frames
     Eigen::Vector4d qvec1 = Eigen::Vector4d(1, 0, 0, 0);
     Eigen::Vector3d tvec1 = Eigen::Vector3d::Zero();
     Eigen::Vector4d qvec2 = Eigen::Vector4d(0, 0, 0, 1);
     Eigen::Vector3d tvec2 = Eigen::Vector3d::Zero();
 
-    //calculate d_quat and tvec norm for COLMAP g.t.
+    // calculate d_quat and tvec norm for COLMAP g.t.
     Eigen::Quaterniond q_eigen1_gt;
     q_eigen1_gt.w() = qvec1_gt(0);
     q_eigen1_gt.x() = qvec1_gt(1);
@@ -114,7 +114,7 @@ int main(int argc, char** argv){
     size_t inliers = GetNumInliers(ransac_options,
                             key_points1, key_points2, &qvec2, &tvec2);
 
-    //calculate d_quat and tvec norm for ransac estimate
+    // calculate d_quat and tvec norm for ransac estimate
     Eigen::Quaterniond q_eigen1;
     q_eigen1.w() = qvec1(0);
     q_eigen1.x() = qvec1(1);
@@ -133,7 +133,7 @@ int main(int argc, char** argv){
     double delta_t = (tvec1 - tvec2).norm();
     std::cout << "norm of tvec estimate " << delta_t << std::endl;
 
-    //calculate error respect to g.t.
+    // calculate error respect to g.t.
     std::cout << "squared error of qvec " << QvecSquareErr(qvec_rel2,qvec2) << std::endl;
     std::cout << "squared error of tvec " << TvecSquareErr(tvec_rel2,tvec2) << std::endl;
 

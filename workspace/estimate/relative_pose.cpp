@@ -31,10 +31,10 @@ size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
     std::vector<double> residuals;
     colmap::EssentialMatrixFivePointEstimator::Residuals(homo1, homo2, report.model,
                                                &residuals);
-    std::cout << "check 5 points estimated residuals" << std::endl;
-    for (size_t i = 0; i < residuals.size(); ++i) {
-        std::cout << residuals[i] << std::endl;
-    }
+    std::cout << "check 5 points estimated averaged residuals" << std::endl;
+    
+    double avg_residual = std::accumulate(residuals.begin(), residuals.end(), 0.0) / residuals.size();
+    std::cout << avg_residual << std::endl;
 
     if (!report.success) {
         return 0;
@@ -44,19 +44,25 @@ size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
     std::vector<Eigen::Vector2d> inliers2(report.support.num_inliers);
 
     size_t j = 0;
-    for (size_t i = 0; i < points1.size(); ++i) {
+    for (size_t i = 0; i < points1.size(); i++) {
         if (report.inlier_mask[i]) {
             inliers1[j] = homo1[i];
             inliers2[j] = homo2[i];
             j += 1;
         }
     }
+    std::cout << "total num of inliers from 5 points is: " << report.support.num_inliers << std::endl;
+    std::cout << "total num of estimation is: " << homo1.size() << std::endl;
 
     Eigen::Matrix3d R;
 
     std::vector<Eigen::Vector3d> points3D;
     colmap::PoseFromEssentialMatrix(report.model, inliers1, inliers2, &R, tvec,
                             &points3D);
+    std::cout << "check the triangulated points from 5-points" << std::endl;
+    for(int i = 0; i < 10; i++) {
+        std::cout << points3D[i] << std::endl;
+    }
 
     *qvec = colmap::RotationMatrixToQuaternion(R);
 

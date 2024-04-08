@@ -92,7 +92,7 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     // Convert back to Eigen::Vector4d
     Eigen::Vector4d q_rotated_vec(q_rotated.w(), q_rotated.x(), q_rotated.y(), q_rotated.z());
 
-    // get g.t. relative trans for scaling
+    // get g.t. relative trans after scaling
     Eigen::Vector3d gt_rel;
     RelativeTransFromGT(gt_quat1, gt_trans1, gt_trans2, gt_rel);
     // get relative rotation
@@ -136,7 +136,6 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
 
     // triangulate_3d should has identical length of matched_vec and inlier_mask
     // we skip the outlier by checking inlier_mask and chierality
-    std::cout << "2D indices of the first pair: " << std::endl;
     int curr_3d_len = 0;
     int inlier_img0 = 0; // debugging inliers of reprojection
     int inlier_img1 = 0;
@@ -192,7 +191,16 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
                   << repro_1 << std::endl;
         std::cout << "reprojection of 3d point " << new_3d_id << " on image " << 1 << " is "
                   << repro_2 << std::endl;
-
+        // DEBUGGING: triangulated points
+        if(i%100 == 0){
+            std::cout << "ith results: " << std::endl;
+            std::cout << "triangulated points: " << std::endl;
+            std::cout << triangulate_3d[i] << std::endl;
+            std::cout << "image 1's pixel: " << std::endl;
+            std::cout << curr_2d_from0 << std::endl;
+            std::cout << "image 2's pixel: " << std::endl;
+            std::cout << curr_2d_from1 << std::endl;
+        }
         global_3d_map[new_3d_id] = new_3d;
         cmp_image1.SetPoint3DForPoint2D(orig_idx1,new_3d_id);
         cmp_image2.SetPoint3DForPoint2D(orig_idx2,new_3d_id);    

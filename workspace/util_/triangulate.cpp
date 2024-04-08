@@ -18,9 +18,19 @@ void TriangulateImage(const colmap::Image& frame1, const colmap::Image& frame2,
         // here the ProjectionMatrix is the Extrinsic 
         Eigen::Vector3d curr_tri = colmap::TriangulatePoint(frame1.ProjectionMatrix(),
                                                             frame2.ProjectionMatrix(),
-                                                            normed_vec1, normed_vec2);
-
+                                                            normed_vec1, normed_vec2);       
         triangulated.push_back(curr_tri);
+    }
+
+    std::cout << "CHECK residuals of selected traingulated points: " << std::endl;
+    for(int i = 0; i < 10; i++) {
+        std::cout << triangulated[i] << std::endl;
+        Eigen::Vector4d tri_homo = triangulated[i].homogeneous();
+
+        double res1 = (frame1.ProjectionMatrix()*tri_homo - camera.ImageToWorld(match_vec1[i]).homogeneous()).norm();
+        std::cout << "res 1 is: " << res1 << std::endl;
+        double res2 = (frame2.ProjectionMatrix()*tri_homo - camera.ImageToWorld(match_vec2[i]).homogeneous()).norm();
+        std::cout << "res 2 is: " << res2 << std::endl;
     }
 }
 
