@@ -46,19 +46,13 @@ int main(int argc, char** argv){
     Image image1(argv[1], 1242, 375); // we assume they are kitti data
     Image image2(argv[2], 1242, 375);
 
-    std::cout << "pass image loading" << std::endl;
-
     std::vector<sift::Keypoint> key_points1 = GetKeyPoints(image1);
     std::vector<sift::Keypoint> key_points2 = GetKeyPoints(image2);
     std::vector<std::pair<int, int>> matches = sift::find_keypoint_matches(key_points1, key_points2);
 
-    std::cout << "pass feature matching" << std::endl;
-
     // convert to feature corrdinates 
     std::vector<Eigen::Vector2d> points1 = SIFTPtsToVec(key_points1);
     std::vector<Eigen::Vector2d> points2 = SIFTPtsToVec(key_points2);
-
-    std::cout << "pass vector conversion" << std::endl;
 
     // start two view geometry estimation
     std::vector<Eigen::Vector2d> homo1;
@@ -68,21 +62,28 @@ int main(int argc, char** argv){
         homo1.push_back(camera.ImageToWorld(points1[i]));
         homo2.push_back(camera.ImageToWorld(points2[i]));
     }
+    int start = 0;
+    int end = 16;
+    std::vector<Eigen::Vector2d> sl_homo1(homo1.begin() + start, homo1.begin() + end);
+    std::vector<Eigen::Vector2d> sl_homo2(homo2.begin() + start, homo2.begin() + end);
+    std::vector<Eigen::Vector2d> sl_pots1(points1.begin() + start, points1.begin() + end);
+    std::vector<Eigen::Vector2d> sl_pots2(points2.begin() + start, points2.begin() + end);
+
     // essential matrix
     colmap::RANSACOptions E_options = colmap::RANSACOptions();
     E_options.max_error = 0.5;
     colmap::RANSAC<colmap::EssentialMatrixFivePointEstimator> e_ransac(E_options);
-    const auto e_report = e_ransac.Estimate(homo1, homo2);
+    const auto e_report = e_ransac.Estimate(sl_homo1, sl_homo2);
     Eigen::Matrix3d E = e_report.model;
     std::cout << "pass 5-points" << std::endl;
     // fundamental matrix
     colmap::RANSACOptions F_options = colmap::RANSACOptions();
     F_options.max_error = 0.5;
-    colmap::RANSAC<colmap::FundamentalMatrixEightPointEstimator> f_ransac(F_options);
-    std::cout << "before 8-points" << std::endl;
-    const auto f_report = f_ransac.Estimate(points1, points2);
+    colmap::RANSAC<colmap::FundamentalMatrixSevenPointEstimator> f_ransac(F_options);
+    std::cout << "before 7-points" << std::endl;
+    const auto f_report = f_ransac.Estimate(sl_pots1, sl_pots2);
     Eigen::Matrix3d F = f_report.model;
-    std::cout << "pass 8-points" << std::endl;
+    std::cout << "pass 7-points" << std::endl;
 
     // check results
     Eigen::Matrix3d k = camera.CalibrationMatrix();
