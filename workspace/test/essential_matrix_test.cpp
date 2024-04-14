@@ -74,8 +74,8 @@ int main(int argc, char** argv){
                                                          files_to_run.height);
 
     // initialize the Image class by its path (feature/image_sift)
-    Image image1(argv[1], 1242, 375); // we assume they are kitti data
-    Image image2(argv[2], 1242, 375);
+    Image image1(argv[1], 1241, 376); // we assume they are kitti data
+    Image image2(argv[2], 1241, 376);
 
     std::vector<sift::Keypoint> key_points1 = GetKeyPoints(image1);
     std::vector<sift::Keypoint> key_points2 = GetKeyPoints(image2);
@@ -86,7 +86,7 @@ int main(int argc, char** argv){
     std::vector<Eigen::Vector2d> points2 = SIFTPtsToVec(key_points2);
 
     std::cout << "check detected image features: " << std::endl;
-    for(int i = 0; i < 10; i++) {
+    for(int i = 0; i < 5; i++) {
         std::cout << points1[i] << std::endl;
         std::cout << points2[i] << std::endl;
     }
@@ -101,12 +101,12 @@ int main(int argc, char** argv){
     }
 
     std::cout << "check detected normalized points: " << std::endl;
-    for(int i = 0; i < 10; i++) {
+    for(int i = 0; i < 5; i++) {
         std::cout << homo1[i] << std::endl;
         std::cout << homo2[i] << std::endl;
     }
     int start = 0;
-    int end = 20;
+    int end = 100;
     std::vector<Eigen::Vector2d> sl_homo1(homo1.begin() + start, homo1.begin() + end);
     std::vector<Eigen::Vector2d> sl_homo2(homo2.begin() + start, homo2.begin() + end);
     std::vector<Eigen::Vector2d> sl_pots1(points1.begin() + start, points1.begin() + end);
@@ -114,14 +114,14 @@ int main(int argc, char** argv){
 
     // essential matrix
     colmap::RANSACOptions E_options = colmap::RANSACOptions();
-    E_options.max_error = 0.5;
+    E_options.max_error = 0.3;
     colmap::RANSAC<colmap::EssentialMatrixFivePointEstimator> e_ransac(E_options);
     const auto e_report = e_ransac.Estimate(sl_homo1, sl_homo2);
     Eigen::Matrix3d E = e_report.model;
 
     // fundamental matrix
     colmap::RANSACOptions F_options = colmap::RANSACOptions();
-    F_options.max_error = 0.5;
+    F_options.max_error = 0.3;
     colmap::RANSAC<colmap::FundamentalMatrixSevenPointEstimator> f_ransac(F_options);
     std::cout << "before 7-points" << std::endl;
     const auto f_report = f_ransac.Estimate(sl_pots1, sl_pots2);
@@ -131,6 +131,10 @@ int main(int argc, char** argv){
     // check results
     Eigen::Matrix3d k = camera.CalibrationMatrix();
     Eigen::Matrix3d k_t = k.transpose();
+
+    std::cout << "check calibration and it's transpose" << std::endl;
+    std::cout << k << std::endl;
+    std::cout << k_t << std::endl;
 
     std::cout << "estimated essential: " << std::endl;
     std::cout << E << std::endl;
@@ -150,9 +154,16 @@ int main(int argc, char** argv){
     std::vector<Eigen::Vector2d> load_norm2;
 
     LoadCOLMAPLog(log_path, load_feat1, load_feat2, load_norm1, load_norm2);
-    std::cout << "check loaded vectors' size: " << 
-    load_feat1.size() << ", " << load_feat2.size() << ", "
-    << load_norm1.size() << ", " << load_norm2.size() << std::endl;
+    std::cout << "check logged normalized points: " << std::endl;
+    for(int i = 0; i < 5; i++) {
+        std::cout << load_norm1[i] << std::endl;
+        std::cout << load_norm2[i] << std::endl;
+    }
+    std::cout << "check logged feature points: " << std::endl;
+    for(int i = 0; i < 5; i++) {
+        std::cout << load_feat1[i] << std::endl;
+        std::cout << load_feat2[i] << std::endl;
+    }
     std::vector<Eigen::Vector2d> sl_feat1(load_feat1.begin() + start, load_feat1.begin() + end);
     std::vector<Eigen::Vector2d> sl_feat2(load_feat2.begin() + start, load_feat2.begin() + end);
     std::vector<Eigen::Vector2d> sl_norm1(load_norm1.begin() + start, load_norm1.begin() + end);
