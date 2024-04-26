@@ -15,7 +15,8 @@ size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
                          const std::vector<Eigen::Vector2d>& points1,
                          const std::vector<Eigen::Vector2d>& points2,
                          Eigen::Vector4d* qvec, Eigen::Vector3d* tvec,
-                         std::vector<char>* inlier_mask) {
+                         std::vector<char>* inlier_mask,
+                         std::vector<Eigen::Vector3d>* points3D) {
     // first convert the feature/pixel points to homogeneaous points
     std::vector<Eigen::Vector2d> homo1;
     std::vector<Eigen::Vector2d> homo2;
@@ -56,12 +57,13 @@ size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
 
     Eigen::Matrix3d R;
 
-    std::vector<Eigen::Vector3d> points3D;
     colmap::PoseFromEssentialMatrix(report.model, inliers1, inliers2, &R, tvec,
-                            &points3D);
+                            points3D);
     std::cout << "check the triangulated points from 5-points" << std::endl;
+    const std::vector<Eigen::Vector3d>& vec = *points3D;  // Dereference the pointer to get the vector
+
     for(int i = 0; i < 10; i++) {
-        std::cout << points3D[i] << std::endl;
+        std::cout << vec[i] << std::endl;
     }
 
     *qvec = colmap::RotationMatrixToQuaternion(R);
@@ -75,5 +77,5 @@ size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
     *inlier_mask = report.inlier_mask;
     
     // here the num of inliers are ones passed the Cheirality test
-    return points3D.size();
+    return points3D->size();
 }

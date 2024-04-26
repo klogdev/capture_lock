@@ -17,4 +17,5 @@ size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
                          const std::vector<Eigen::Vector2d>& points1,
                          const std::vector<Eigen::Vector2d>& points2,
                          Eigen::Vector4d* qvec, Eigen::Vector3d* tvec,
-                         std::vector<char>* inlier_mask);
+                         std::vector<char>* inlier_mask,
+                         std::vector<Eigen::Vector3d>* points3D);

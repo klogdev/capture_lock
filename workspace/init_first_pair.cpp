@@ -77,11 +77,48 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     std::vector<char> inlier_mask_rel;
     // use customized relative pose estimator w/ inlier masks
     // we convert pixel points to normalized space inside the function
+    std::vector<Eigen::Vector3d> points3D_from_rel;
     size_t num_inliers = 
         RelativePoseWMask(ransac_options, camera, matched_vec1, matched_vec2, 
-                                     &qvec_init, &tvec_init, &inlier_mask_rel);
+                          &qvec_init, &tvec_init, &inlier_mask_rel, &points3D_from_rel);
     std::cout << "inliers from relative pose: " << num_inliers << std::endl;
     std::cout << "length of inlier masks: " << inlier_mask_rel.size() << std::endl;
+
+    for (int i = 0; i < points3D_from_rel.size(); i++){
+        if(inlier_mask_rel[i] == 0)
+            continue;
+
+        int orig_idx1 = vec2d1_idx_map[i]; // identical to colmap_vec and sift_vec
+        int orig_idx2 = vec2d2_idx_map[i];
+        
+
+        // DEBUGGING: reprojection errors
+        Eigen::Vector2d curr_2d_from0 = key_vec1[orig_idx1];
+        // here 2d point is the image pixel/feature point
+        double repro_1 = colmap::CalculateSquaredReprojectionError(curr_2d_from0,
+                                                                   points3D_from_rel[i],
+                                                                   cmp_image1.Qvec(),
+                                                                   cmp_image1.Tvec(),
+                                                                   camera);
+        // if(repro_1 <= 0.8)
+        //     inlier_img0++;
+
+        // Eigen::Vector2d curr_2d_from1 = key_vec2[orig_idx2];
+        
+        // double repro_2 = colmap::CalculateSquaredReprojectionError(curr_2d_from1,
+        //                                                            triangulate_3d[i],
+        //                                                            cmp_image2.Qvec(),
+        //                                                            cmp_image2.Tvec(),
+        //                                                            camera);
+        // if(repro_2 <= 0.8)
+        //     inlier_img1++;
+
+        std::cout << "reprojection of 3d point from relative pose " << i << " on image " << 0 << " is "
+                  << repro_1 << std::endl;
+        // std::cout << "reprojection of 3d point " << new_3d_id << " on image " << 1 << " is "
+        //           << repro_2 << std::endl;
+            
+    }
 
     // Rotate the g.t. 1's pose by the relative rotation
     // first: convert to Eigen::Quaterniond

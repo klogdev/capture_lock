@@ -174,6 +174,33 @@ int main(int argc, char** argv){
     const auto elog_report = elog_ransac.Estimate(sl_norm1, sl_norm2);
     Eigen::Matrix3d E_log = elog_report.model;
 
+    std::vector<Eigen::Vector2d> inliers1(elog_report.support.num_inliers);
+    std::vector<Eigen::Vector2d> inliers2(elog_report.support.num_inliers);
+
+    size_t j = 0;
+    for (size_t i = 0; i < sl_norm1.size(); i++) {
+        if (elog_report.inlier_mask[i]) {
+            inliers1[j] = sl_norm1[i];
+            inliers2[j] = sl_norm2[i];
+            j += 1;
+        }
+    }
+    std::cout << "total num of inliers from 5 points is: " << elog_report.support.num_inliers << std::endl;
+    std::cout << "total num of estimation is: " << sl_norm1.size() << std::endl;
+
+    Eigen::Matrix3d R;
+    Eigen::Vector3d tvec;
+
+    std::vector<Eigen::Vector3d> points3D;
+    colmap::PoseFromEssentialMatrix(E_log, inliers1, inliers2, &R, &tvec,
+                            &points3D);
+    std::cout << "check the triangulated points from 5-points" << std::endl;
+    for(int i = 0; i < 10; i++) {
+        std::cout << points3D[i] << std::endl;
+    }
+
+    std::cout << "inliers from log E is: " << points3D.size() << std::endl;
+
     // fundamental matrix
     colmap::RANSAC<colmap::FundamentalMatrixSevenPointEstimator> flog_ransac(F_options);
     const auto flog_report = flog_ransac.Estimate(sl_feat1, sl_feat2);

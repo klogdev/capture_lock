@@ -72,10 +72,11 @@ void IncrementOneImage(std::string image_path, int new_id,
     Eigen::Vector4d qvec_rel = Eigen::Vector4d(0, 0, 0, 1); // init relative pose
     Eigen::Vector3d tvec_rel = Eigen::Vector3d::Zero();     // w/ 0 rot and trans
     std::vector<char> inlier_mask_rel;
+    std::vector<Eigen::Vector3d> point_rel;
     // use customized relative pose estimator w/ inlier masks
     size_t num_inliers = 
         RelativePoseWMask(ransac_options, camera, matched_vec1, matched_vec2, 
-                                    &qvec_rel, &tvec_rel, &inlier_mask_rel);
+                                    &qvec_rel, &tvec_rel, &inlier_mask_rel, &point_rel);
 
     int test_inliers = 0; // for Debugging
     int inlier_repro = 0;
