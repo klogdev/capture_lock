@@ -52,7 +52,6 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
     cmp_image1.SetTvec(gt_trans1);
 
     // collect matched vector before relative estimation
-    // as the ransac estimator requires both vectors have same size
     std::unordered_map<int,int> vec2d1_idx_map; // the map of idx of matched vec used in relative pose
     std::unordered_map<int,int> vec2d2_idx_map; // to the idx of original features vector
     std::vector<Eigen::Vector2d> matched_vec1;

@@ -46,9 +46,9 @@ public:
 
     /**
      * @brief main method as an interface to do PnP estimation
-     * @arg residuals: by COLMAP's RANSAC template's default, is a pointer
+     * @arg residuals: by COLMAP's RANSAC template's default, it is a pointer
      * estimated_extrinsic: by COLMAP's default, it returns a vector
-     * of matrix, as estimator like P3P will result in ambiguity
+     * of matrix, as estimator like P3P will result in ambiguity, i.e. multiple solutions
     */
     bool estimate(const std::vector<Eigen::Vector2d>& points2D,
                   const std::vector<Eigen::Vector3d>& points3D,

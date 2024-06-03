@@ -25,6 +25,14 @@ size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
         homo1.push_back(camera.ImageToWorld(points1[i]));
         homo2.push_back(camera.ImageToWorld(points2[i]));
     }
+
+    std::cout << "check image to world points" << std::endl;
+    for(int i = 0; i < 10; i++) {
+        std::cout << i << "th homo pair is" << std::endl;
+        std::cout << homo1[i] << std::endl;
+        std::cout << homo2[i] << std::endl; 
+    }
+
     colmap::RANSAC<colmap::EssentialMatrixFivePointEstimator> ransac(ransac_options);
     const auto report = ransac.Estimate(homo1, homo2);
 
@@ -63,6 +71,7 @@ size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
     const std::vector<Eigen::Vector3d>& vec = *points3D;  // Dereference the pointer to get the vector
 
     for(int i = 0; i < 10; i++) {
+        std::cout << i << "th triangulated point" << std::endl;
         std::cout << vec[i] << std::endl;
     }
 
