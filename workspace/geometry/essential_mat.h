@@ -32,9 +32,9 @@ bool CheiralityCheck(const Eigen::Matrix3d& R, const Eigen::Vector3d& t,
 // @param t            Most probable 3x1 translation vector.
 // @param points3D     Triangulated 3D points infront of camera.
 void PoseFromEssential(const Eigen::Matrix3d& E,
-                             const std::vector<Eigen::Vector2d>& points1,
-                             const std::vector<Eigen::Vector2d>& points2,
-                             Eigen::Matrix3d* R, Eigen::Vector3d* t,
-                             std::vector<Eigen::Vector3d>* points3D);
+                       const std::vector<Eigen::Vector2d>& points1,
+                       const std::vector<Eigen::Vector2d>& points2,
+                       Eigen::Matrix3d* R, Eigen::Vector3d* t,
+                       std::vector<Eigen::Vector3d>* points3D);
 
 #endif // GEOMETRY_ESSENTIAL_MAT_H_

@@ -10,6 +10,9 @@
 #include "estimate/lhm.h"
 #include "estimate/least_sqr_pnp.h"
 
+/**
+ * @brief plain test of LHM/DRaM by using COLMAP's testing data
+*/
 int main(int argc, char** argv) {
         colmap::SetPRNGSeed(0);
 

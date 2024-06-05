@@ -86,7 +86,7 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
 
     Eigen::Matrix3d k_inv = k.inverse();
 
-    // project corners as 2d points
+    // project corners as 2d points, then add noise, and backprojected
     std::vector<Eigen::Vector2d> one_set_2d;
     for(int i = 0; i < camera_space_points.size(); i++) {
         Eigen::Vector3d curr_camera_pt = camera_space_points[i];
@@ -97,7 +97,7 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
                         Eigen::Vector3d(RandomGaussian(curr_pix_x, sigma),
                                         RandomGaussian(curr_pix_y, sigma),
                                         1);
-        Eigen::Vector3d noised_camera_pt = k_inv*noised_image_pt;
+        Eigen::Vector3d noised_camera_pt = k_inv*noised_image_pt; // do backprojection
         one_set_2d.push_back(Eigen::Vector2d(noised_camera_pt.x()/noised_camera_pt.z(),
                                     noised_camera_pt.y()/noised_camera_pt.z()));
     }
@@ -352,9 +352,9 @@ void EPnPRandomRot(Eigen::Matrix3d& rot) {
     rot = Rz * Ry * Rx;
 }
 
-///////////////////////
+//////////////////////////////////
 // Helper functions for CVLab Data
-//////////////////////
+//////////////////////////////////
 void SetIntrinsic(std::string calib_path, Eigen::Matrix3d& calib_mat) {
     if(calib_path.empty())
         calib_mat = Eigen::Matrix3d::Identity();

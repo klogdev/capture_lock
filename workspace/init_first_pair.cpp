@@ -99,24 +99,9 @@ void InitFirstPair(const std::string first_path, const std::string second_path,
                                                                    cmp_image1.Qvec(),
                                                                    cmp_image1.Tvec(),
                                                                    camera);
-        // if(repro_1 <= 0.8)
-        //     inlier_img0++;
-
-        // Eigen::Vector2d curr_2d_from1 = key_vec2[orig_idx2];
-        
-        // double repro_2 = colmap::CalculateSquaredReprojectionError(curr_2d_from1,
-        //                                                            triangulate_3d[i],
-        //                                                            cmp_image2.Qvec(),
-        //                                                            cmp_image2.Tvec(),
-        //                                                            camera);
-        // if(repro_2 <= 0.8)
-        //     inlier_img1++;
 
         std::cout << "reprojection of 3d point from relative pose " << i << " on image " << 0 << " is "
                   << repro_1 << std::endl;
-        // std::cout << "reprojection of 3d point " << new_3d_id << " on image " << 1 << " is "
-        //           << repro_2 << std::endl;
-            
     }
 
     // Rotate the g.t. 1's pose by the relative rotation
