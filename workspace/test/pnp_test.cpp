@@ -20,13 +20,18 @@ int main(int argc, char** argv) {
     std::string estimator_opt = argv[2];
     std::string use_ransac_ = argv[3];
 
-    if(argc > 4) {
-        double sigma_ = std::stod(argv[4]);
+
+    double sigma;
+
+    if(argc >= 4) {
+        sigma = std::stod(argv[4]);
         if(generator_opt == "epnp_dz")
-            BoxCornerEPnPTestDataDz::sigma = sigma_;
+            BoxCornerEPnPTestDataDz::sigma = sigma;
         else if(generator_opt == "epnp_dy")
-            BoxCornerEPnPTestDataDy::sigma = sigma_;
+            BoxCornerEPnPTestDataDy::sigma = sigma;
     }
+
+    std::cout << "check sigma: " << sigma << std::endl;
 
     colmap::SetPRNGSeed(0);
 
@@ -51,10 +56,6 @@ int main(int argc, char** argv) {
     std::string output = "/tmp3/Pose_PnP/PnP_result/" + generator_opt + "_" + estimator_opt;
     // Pass these instances to a TestRunner or another part of your application
 
-    double sigma = 0.0003;
-    if(argc > 4) {
-        sigma = std::stod(argv[4]);
-    }
     PnPTestRunner test_runner(std::move(generator), estimator, output, sigma);
     test_runner.run_test();
     

@@ -49,30 +49,30 @@ void InstantiateFiles(FileOptions& files, Dataset dataset) {
         files.colmap_opt.image_name_end = 8;
     }
     else if(dataset == Dataset::Kitti) {
-        files.calib_path = "/tmp3/KITTI_Odometry/gray/";
+        files.calib_path = "/tmp3/kitti_odometry/odometry_gray/dataset/sequences/";
         files.seq_num = "00";
         files.image_path = files.calib_path + files.seq_num + "/image_0";
-        files.pose_path = "/tmp3/KITTI_Odometry/poses/"; // extrinsic reader will add seq num inside
+        files.pose_path = "/tmp3/kiiii_odometry/odometry_pose/dataset/poses/"; // extrinsic reader will add seq num inside
         files.camera_model = colmap::SimplePinholeCameraModel::model_id;
         files.downsample = 1.0;
         files.width = 1241;
         files.height = 376;
         files.image_start = 0;
         files.image_end = 2;
-        files.output = "/tmp3/KITTI_Odometry/kitti_poses_2_seq0_rel_epnp.txt";
+        files.output = "/tmp3/KITTI_Odometry_results/kitti_poses_2_seq0_rel_epnp.txt";
     }
     else if(dataset == Dataset::KittiToColmap) {
         files.seq_num = "00";
-        files.calib_path = "/tmp3/KITTI_Odometry/" + files.seq_num + "_txt/";
-        files.image_path = "/tmp3/KITTI_Odometry/gray/" + files.seq_num + "/image_0";
-        files.pose_path = "/tmp3/KITTI_Odometry/" + files.seq_num + "_txt/images.txt";
+        files.calib_path = "/tmp3/kitti_odometry/" // + files.seq_num + "_txt/";
+        files.image_path = "/tmp3/kitti_odometry/odometry_gray/"// + files.seq_num + "/image_0";
+        files.pose_path = "/tmp3/kitti_odometry/" + // files.seq_num + "_txt/images.txt";
         files.camera_model = colmap::SimplePinholeCameraModel::model_id;
         files.downsample = 1.0;
         files.width = 1241;
         files.height = 376;
         files.image_start = 0;
         files.image_end = 20;
-        files.output = "/tmp3/KITTI_Odometry/" + files.seq_num + "_txt/kitti_poses_20_gt6.txt";
+        files.output = "/tmp3/kitti_odometry/" // + files.seq_num + "_txt/kitti_poses_20_gt6.txt";
         files.colmap_opt.image_name_start = 0;
         files.colmap_opt.image_name_end = 6;
     }

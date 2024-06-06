@@ -17,7 +17,7 @@ struct LHMOptions
     double lhm_epsilon = 1e-8;
 
     // max iteration for lhm's optimization
-    int lhm_iter = 5;
+    int lhm_iter = 15;
 
     // option to use DRaM & Bar-Itzhack as initial guess for rotation
     // or standard SVD et.al.

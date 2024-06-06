@@ -86,6 +86,8 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
 
     Eigen::Matrix3d k_inv = k.inverse();
 
+    std::cout << "check sigma used in generator: " << sigma << std::endl;
+
     // project corners as 2d points, then add noise, and backprojected
     std::vector<Eigen::Vector2d> one_set_2d;
     for(int i = 0; i < camera_space_points.size(); i++) {
@@ -108,13 +110,15 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
     }
 
     int num_rot = 500;
-    double d_min = 15;
-    double d_max = 500;
+    double d_min = 5;
+    double d_max = 5;
 
-    for(int i = 0; i < num_rot; i++) {
+    for(double d = d_min; d <= d_max; d += 1) {
         Eigen::Matrix3d curr_rot;
         EPnPRandomRot(curr_rot);
-        for(double d = d_min; d <= d_max; d += 1) {
+        for(int i = 0; i < num_rot; i++) {
+            Eigen::Matrix3d curr_rot;
+            EPnPRandomRot(curr_rot);
             std::vector<Eigen::Vector3d> curr_points3d;
             Eigen::Vector3d curr_trans = Eigen::Vector3d(5, 5, d);
             const colmap::SimilarityTransform3 orig_tform(1, colmap::RotationMatrixToQuaternion(curr_rot),
@@ -129,6 +133,7 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
             points2D.push_back(one_set_2d);
             points3D.push_back(curr_points3d);
             Eigen::Matrix3x4d curr_gt;
+            // converting [R|t] to [-R^T|-R^T*t]
             curr_gt.block<3, 3>(0, 0) = curr_rot.transpose(); 
             curr_gt.col(3) = -curr_rot.transpose()*curr_trans; 
             composed_extrinsic.push_back(curr_gt);
@@ -173,10 +178,10 @@ void BoxCornerEPnPTestDataDy::generate(std::vector<std::vector<Eigen::Vector2d>>
     double d_min = 15;
     double d_max = 500;
 
-    for(int i = 0; i < num_rot; i++) {
-        Eigen::Matrix3d curr_rot;
-        EPnPRandomRot(curr_rot);
-        for(double d = d_min; d <= d_max; d += 10) {
+    for(double d = d_min; d <= d_max; d += 10) {
+        for(int i = 0; i < num_rot; i++) {
+            Eigen::Matrix3d curr_rot;
+            EPnPRandomRot(curr_rot);
             std::vector<Eigen::Vector3d> curr_points3d;
             Eigen::Vector3d curr_trans = Eigen::Vector3d(5, d, 200);
             const colmap::SimilarityTransform3 orig_tform(1, colmap::RotationMatrixToQuaternion(curr_rot),
@@ -199,7 +204,7 @@ void BoxCornerEPnPTestDataDy::generate(std::vector<std::vector<Eigen::Vector2d>>
 }
 
 // set default values for static members
-double BoxRandomEPnPTestDataDz::sigma = 0.0003;
+double BoxRandomEPnPTestDataDz::sigma = 0.05;
 void BoxRandomEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                                      std::vector<std::vector<Eigen::Vector3d>>& points3D,
                                      std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
