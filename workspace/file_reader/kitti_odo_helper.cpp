@@ -38,12 +38,13 @@ void ExtrinsicFromKitti(const std::string base_path, const std::string seq_num,
     std::ifstream calis(pose_path);
     std::string line;
 
-    while(std::getline(calis, line)){
+    while(std::getline(calis, line)) {
         std::istringstream iss(line);
         // the first iterator process the "line", the second is the dummy one as
         // an end iterator
         std::vector<std::string> curr_line{std::istream_iterator<std::string>{iss}, 
                                            std::istream_iterator<std::string>{}};
+        
 
         std::vector<double> curr_cali;
         for(auto s: curr_line){

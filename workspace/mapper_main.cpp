@@ -94,15 +94,19 @@ int main(int argc, char** argv) {
 
     // read g.t. poses, this request the user specifies the sequence num.
     // for colmap or colmap mapped kitti, we use a dummy seq num
+    // see file_read/kitti_odo_help
     std::vector<std::vector<double>> extrinsic_gts;
 
     if(dataset == Kitti)
         ExtrinsicFromKitti(files_to_run.pose_path, files_to_run.seq_num,
-                        extrinsic_gts);
+                           extrinsic_gts);
     else if(dataset == Colmap || dataset == KittiToColmap)
         ExtrinsicFromColmap(files_to_run.pose_path, extrinsic_gts,
                             files_to_run.colmap_opt.image_name_start, 
                             files_to_run.colmap_opt.image_name_end);
+
+    std::cout << "no seg fault before g.t. map" << std::endl;
+    std::cout << "gt map's size is: " << extrinsic_gts.size() << std::endl;
 
     // specify the g.t. poses needed for initial and incremental processes
     // and init the g.t. poses map
@@ -114,6 +118,8 @@ int main(int argc, char** argv) {
     else if(dataset == Colmap || dataset == KittiToColmap) {
         CreateColmapGTMap(gt_map, gt_poses_num, extrinsic_gts);
     }
+
+    std::cout << "no seg fault after g.t. map" << std::endl;
 
     std::cout << "check g.t. poses 0: " << std::endl;
     std::cout << gt_map[0].first << std::endl;

@@ -52,14 +52,14 @@ void InstantiateFiles(FileOptions& files, Dataset dataset) {
         files.calib_path = "/tmp3/kitti_odometry/odometry_gray/dataset/sequences/";
         files.seq_num = "00";
         files.image_path = files.calib_path + files.seq_num + "/image_0";
-        files.pose_path = "/tmp3/kiiii_odometry/odometry_pose/dataset/poses/"; // extrinsic reader will add seq num inside
+        files.pose_path = "/tmp3/kitti_odometry/odometry_pose/dataset/poses/"; // extrinsic reader will add seq num inside
         files.camera_model = colmap::SimplePinholeCameraModel::model_id;
         files.downsample = 1.0;
         files.width = 1241;
         files.height = 376;
         files.image_start = 0;
         files.image_end = 2;
-        files.output = "/tmp3/KITTI_Odometry_results/kitti_poses_2_seq0_rel_epnp.txt";
+        files.output = "/tmp3/KITTI_Odometry_results/kitti_poses_"+std::to_string(files.image_end)+"_seq"+files.seq_num+"_rel_epnp.txt";
     }
     else if(dataset == Dataset::KittiToColmap) {
         files.seq_num = "00";
