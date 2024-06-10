@@ -110,8 +110,8 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
     }
 
     int num_rot = 500;
-    double d_min = 5;
-    double d_max = 5;
+    double d_min = 15;
+    double d_max = 15;
 
     for(double d = d_min; d <= d_max; d += 1) {
         Eigen::Matrix3d curr_rot;
@@ -120,7 +120,7 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
             Eigen::Matrix3d curr_rot;
             EPnPRandomRot(curr_rot);
             std::vector<Eigen::Vector3d> curr_points3d;
-            Eigen::Vector3d curr_trans = Eigen::Vector3d(5, 5, d);
+            Eigen::Vector3d curr_trans = Eigen::Vector3d(0, 0, d);
             const colmap::SimilarityTransform3 orig_tform(1, colmap::RotationMatrixToQuaternion(curr_rot),
                                                 curr_trans);
             // generate scene points

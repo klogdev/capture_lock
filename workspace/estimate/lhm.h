@@ -14,7 +14,7 @@ struct LHMOptions
     double lhm_tolerance = 1e-5;
 
     // lower bound of objective space error for the termination
-    double lhm_epsilon = 1e-8;
+    double lhm_epsilon = 1e-9;
 
     // max iteration for lhm's optimization
     int lhm_iter = 15;
@@ -120,9 +120,9 @@ class LHMEstimator {
          * @brief calculate relative rotation & translation with the scale of depth
          * from two sets of point clouds
          * @arg 
-         * V: list of line of sight projection for each pixel, eqn. 6
+         * V: list of line of sight projection for each pixel, eqn.6
          * Tfact: the factor to get optimal translation 
-         * up to the current rotation, eqn. 20
+         * up to the current rotation, eqn.20
         */
         bool CalcLHMRotTrans(const std::vector<Eigen::Vector3d>& points3D0,
                              const std::vector<Eigen::Vector3d>& points3D1,

@@ -44,7 +44,7 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
                                   Eigen::Matrix3x4d* proj_matrix) {
     int n_points = points2D.size();
     std::vector<Eigen::Matrix3d> V; // initialize a vector of line of sight matrices
-    Eigen::Matrix3d sum_Vk; // summation of V in eqn. 20
+    Eigen::Matrix3d sum_Vk; // summation of V in eqn.20
     sum_Vk.setZero();
 
     std::vector<Eigen::Vector3d> homogeneous_pts; // for later use in the weak perspective model
@@ -128,7 +128,7 @@ int LHMEstimator::IterationLHM(const std::vector<Eigen::Vector3d>& points3D,
         }
 
         old_err = curr_err;
-        curr_err = ObjSpaceLHMErr(temp_rotated, V); // eqn. 17
+        curr_err = ObjSpaceLHMErr(temp_rotated, V); // eqn.17
 
         for (int i = 0; i < n_points; ++i) {
             temp_rotated[i] = V[i] * temp_rotated[i]; // further polish the points by line of sight projection
@@ -203,7 +203,7 @@ void LHMEstimator::TransFromRotLHM(const std::vector<Eigen::Vector3d>& points3D,
         sum_term += (V[i] - Eigen::Matrix3d::Identity()) * R * points3D[i];
     }
 
-    // t = Tfact * sum_term, here Tfact already averaged by the first 1/n
+    // t = Tfact * sum_term, here Tfact already averaged by the first term 1/n
     t = Tfact * sum_term;
 }
 
@@ -285,8 +285,15 @@ bool LHMEstimator::WeakPerspectiveQuat(const std::vector<Eigen::Vector3d>& point
     // Convert the quaternion to a rotation matrix
     R = quaternion.toRotationMatrix();
 
-    // std::cout << "first estimated matrix is: " << std::endl;
-    // std::cout << R << std::endl;
+    if (gt_pose_ != nullptr) {
+        double matrix_norm = frobeniusNormRot(R, gt_pose_->block<3, 3>(0, 0));
+        std::cout << "current g.t. pose inside LHM: " << std::endl;
+        std::cout << *gt_pose_ << std::endl; 
+        std::cout << "first estimated rotation difference of LHM: " << std::endl;
+        std::cout << matrix_norm << std::endl;
+        LHMEstimator::setFirstFrob(matrix_norm);
+    }
+
 
     // Assuming pc and qc are centroids of pts0 and pts1, and scale is computed
     t = qc - scale * (R * pc); // t = qc - R * scale * pc;
@@ -318,7 +325,7 @@ bool LHMEstimator::WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>&
         double matrix_norm = frobeniusNormRot(rot_opt, gt_pose_->block<3, 3>(0, 0));
         std::cout << "current g.t. pose inside LHM: " << std::endl;
         std::cout << *gt_pose_ << std::endl; 
-        std::cout << "first estimated rotation difference: " << std::endl;
+        std::cout << "first estimated rotation difference of DRaM-LHM: " << std::endl;
         std::cout << matrix_norm << std::endl;
         LHMEstimator::setFirstFrob(matrix_norm);
     }
