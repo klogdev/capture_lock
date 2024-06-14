@@ -19,6 +19,7 @@
 LHMOptions LHMEstimator::options_ = LHMOptions();
 Eigen::Matrix3x4d* LHMEstimator::gt_pose_ = nullptr;
 double LHMEstimator::first_estimated_frob = 0;
+double LHMEstimator::first_estimated_rela_quat = 0;
 int LHMEstimator::num_iterations = 0;
 
 std::vector<LHMEstimator::M_t> LHMEstimator::Estimate(
@@ -286,12 +287,14 @@ bool LHMEstimator::WeakPerspectiveQuat(const std::vector<Eigen::Vector3d>& point
     R = quaternion.toRotationMatrix();
 
     if (gt_pose_ != nullptr) {
-        double matrix_norm = frobeniusNormRot(R, gt_pose_->block<3, 3>(0, 0));
+        Eigen::Matrix3x4d dummy_extrinsic = Eigen::Matrix<double, 3, 4>::Zero();
+        dummy_extrinsic.block<3,3>(0,0) = R;
+        double first_quat = RelativeQuatErr(dummy_extrinsic, *gt_pose_);
         std::cout << "current g.t. pose inside LHM: " << std::endl;
         std::cout << *gt_pose_ << std::endl; 
-        std::cout << "first estimated rotation difference of LHM: " << std::endl;
-        std::cout << matrix_norm << std::endl;
-        LHMEstimator::setFirstFrob(matrix_norm);
+        std::cout << "first estimated quaternion error of Horn: " << std::endl;
+        std::cout << first_quat << std::endl;
+        LHMEstimator::setFirstRelaQuat(first_quat);
     }
 
 
@@ -364,6 +367,10 @@ void LHMEstimator::setGlobalOptions(const LHMOptions& options) {
 
 void LHMEstimator::setFirstFrob(const double frob) {
     LHMEstimator::first_estimated_frob = frob;
+}
+
+void LHMEstimator::setFirstRelaQuat(const double quat_err) {
+    LHMEstimator::first_estimated_rela_quat = quat_err;
 }
 
 void LHMEstimator::setNumIters(const int iters) {

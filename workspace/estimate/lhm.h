@@ -23,7 +23,7 @@ struct LHMOptions
     // or standard SVD et.al.
     std::string rot_init_est = "horn";
 
-    // optimization method for the iteration
+    // optimization method for the iteration, can be "lhm" or "gn"
     std::string optim_option = "lhm";
 };
 
@@ -74,14 +74,21 @@ class LHMEstimator {
         static void setGlobalOptions(const LHMOptions& options);
 
         /**
-         * @brief set the first estimated frobenius norm between DRaM and g.t.
+         * @brief set the first estimated frobenius norm between DRaM or Horn
+         *  and the g.t.
         */
         static void setFirstFrob(const double frob);
 
         /**
+         * @brief set the first estimated relative quaternion error
+         * between DRaM or Horn estimated and the g.t.
+        */
+        static void setFirstRelaQuat(const double quat_err);
+
+        /**
          * @brief set the number of iterations to be read as a metric
         */
-       static void setNumIters(const int iters);
+        static void setNumIters(const int iters);
 
         /**
          * @brief the g.t. pose as a 3x4 extrinsic matrix
@@ -95,10 +102,16 @@ class LHMEstimator {
         static LHMOptions options_;
 
         /**
-         * @brief Frobenius norm respect to the g.t.
+         * @brief Frobenius norm w.r.t the g.t. after initial guess
          * will be overwrote after DRaM estimation
         */
         static double first_estimated_frob;
+
+        /**
+         * @brief relative quaternion error w.r.t the g.t. 
+         * after initial guess
+        */
+        static double first_estimated_rela_quat;
 
         /**
          * @brief number of iterations of GN or LHM
