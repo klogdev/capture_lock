@@ -53,14 +53,14 @@ int main(int argc, char** argv) {
 
         Eigen::Matrix3d R;
         bool rot_test = HornRot(points3D, points3D_1, R);
-        double frob_R = frobeniusNormRot(R, gt_rot);
+        double frob_R = frobeniusNorm(R, gt_rot);
         std::cout << "estimated matrix by Horn is: " << std::endl;
         std::cout << R << std::endl;
         std::cout << "the Frob norm for Horn's 3D reg is: " << frob_R << std::endl;
 
         Eigen::Matrix3d R_weak;
         bool weak = HornRot(points3D, points3D_homo, R_weak);
-        double frob_Rw = frobeniusNormRot(R_weak, gt_rot);
+        double frob_Rw = frobeniusNorm(R_weak, gt_rot);
         std::cout << "estimated matrix by Horn for the weak perspective is: " << std::endl;
         std::cout << R_weak << std::endl;
         std::cout << "the Frob norm for Horn's weak perpective is: " << frob_Rw << std::endl;
@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
 
         Eigen::Matrix3d R_bi;
         bool bi_rot = BarItzhackOptRot(points3D, points2D_1, R_bi);
-        double frob_Rbi = frobeniusNormRot(R_bi, gt_rot);
+        double frob_Rbi = frobeniusNorm(R_bi, gt_rot);
         std::cout << "estimated matrix by DRaM for the weak perspective is: " << std::endl;
         std::cout << R_bi << std::endl;
         std::cout << "the Frob norm for DRaM's weak perpective is: " << frob_Rbi << std::endl;

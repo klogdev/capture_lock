@@ -120,6 +120,28 @@ class LHMEstimator {
         static int num_iterations;
 
         /**
+         * @brief object space error during the LHM iterations
+        */
+        static std::vector<double> obj_errs;
+
+        /**
+         * @brief relative quaternion difference during iteration
+         */
+        static std::vector<double> rel_quats;
+
+        /**
+         * @brief append current relative quaternion error to
+         * the static container
+         */
+        static void addRelQuats(const double rel_quat);
+
+        /**
+         * @brief append current object space error to 
+         * the static container
+         */
+        static void addObjErrs(const double obj_err);
+
+        /**
          * @brief estimate the absolute pose via LHM from corresponded 
          * 2D, 3D points, here we adopt COLMAP's convention that the 
          * 2D points are normalized points in the camera space

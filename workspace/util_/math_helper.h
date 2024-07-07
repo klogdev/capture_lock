@@ -3,18 +3,18 @@
 
 #include "util/types.h"
 
-/**
- * @brief estimation norm between two rotational matrices
-*/
-double frobeniusNormRot(const Eigen::Matrix3d& estimated, const Eigen::Matrix3d& gt);
 
 /**
- * @brief estimation norm between two extrinsic matrices
+ * @brief estimation norm between two matrices
+ * could be 3x3, i.e. rotation matrix or 3x4, i.e. extrinsic matrix
 */
-double frobeniusNormExt(const Eigen::Matrix3x4d& estimated, const Eigen::Matrix3x4d& gt);
+template<typename MatrixType>
+double frobeniusNorm(const MatrixType& estimated, const MatrixType& gt) {
+    return (estimated - gt).norm();
+}
 
 /**
- * @brief generate random rotation for SO3 manifold as an unit quaternion
+ * @brief generate random rotation from SO3 manifold as an unit quaternion
 */
 Eigen::Vector4d GenRandomRot();
 
@@ -34,10 +34,10 @@ double RandomGaussian(double mean, double std);
  * @brief calculate relative quaternion difference
  * from the g.t. and estimated extrinsic matrix
 */
-double RelativeQuatErr(const Eigen::Matrix3x4d& gt, const Eigen::Matrix3x4d& estimate);
+double RelativeQuatErr(const Eigen::Matrix3d& gt, const Eigen::Matrix3d& estimate);
 
 /**
  * @brief calculate relative translation difference 
  * from the g.t. and estimated extrinsic matrix
 */
-double RelativeTransErr(const Eigen::Matrix3x4d& gt, const Eigen::Matrix3x4d& estimate);
+double RelativeTransErr(const Eigen::Vector3d& gt, const Eigen::Vector3d& estimate);

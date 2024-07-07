@@ -143,7 +143,8 @@ int main(int argc, char** argv){
     std::cout << "estimated converted fundamental: " << std::endl;
     std::cout << k_t*F*k << std::endl;
 
-    double frob = frobeniusNormRot(E, k_t*F*k);
+    Eigen::Matrix<double, 3, 3> result = k_t*F*k;  // Explicitly evaluate the product
+    double frob = frobeniusNorm(E, result);
     std::cout << "frob between them is: " << frob << std::endl;
 
     // load colmap's log
@@ -213,7 +214,8 @@ int main(int argc, char** argv){
     std::cout << "estimated converted fundamental from log: " << std::endl;
     std::cout << k_t*F_log*k << std::endl;
 
-    double frob_log = frobeniusNormRot(E_log, k_t*F_log*k);
+    Eigen::Matrix<double, 3, 3> result_log = k_t*F_log*k;
+    double frob_log = frobeniusNorm(E_log, result_log);
     std::cout << "frob between them is: " << frob_log << std::endl;
 
 }

@@ -7,14 +7,6 @@
 
 #include "util/types.h"
 
-double frobeniusNormRot(const Eigen::Matrix3d& estimated, const Eigen::Matrix3d& gt) {
-    return (estimated - gt).norm();
-}
-
-double frobeniusNormExt(const Eigen::Matrix3x4d& estimated, const Eigen::Matrix3x4d& gt) {
-    return (estimated - gt).norm();
-}
-
 Eigen::Vector4d GenRandomRot() {
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -54,19 +46,17 @@ double RandomGaussian(double mean, double std) {
     return random_number;
 }
 
-double RelativeQuatErr(const Eigen::Matrix3x4d& gt, const Eigen::Matrix3x4d& estimate) {
-    Eigen::Matrix3d rot_gt = gt.block<3, 3>(0, 0);
-    Eigen::Matrix3d rot_est = estimate.block<3, 3>(0, 0);
-
-    Eigen::Vector4d quat_gt = colmap::RotationMatrixToQuaternion(rot_gt);
-    Eigen::Vector4d quat_est = colmap::RotationMatrixToQuaternion(rot_est);
+double RelativeQuatErr(const Eigen::Matrix3d& gt, const Eigen::Matrix3d& estimate) {
+    
+    Eigen::Vector4d quat_gt = colmap::RotationMatrixToQuaternion(gt);
+    Eigen::Vector4d quat_est = colmap::RotationMatrixToQuaternion(estimate);
 
     double diff = (quat_gt - quat_est).norm();
     double est_norm = quat_est.norm();
     return diff/est_norm;
 }
 
-double RelativeTransErr(const Eigen::Matrix3x4d& gt, const Eigen::Matrix3x4d& estimate) {
+double RelativeTransErr(const Eigen::Vector3d& gt, const Eigen::Vector3d& estimate) {
     Eigen::Vector3d trans_gt = gt.col(3);
     Eigen::Vector3d trans_est = estimate.col(3);
 

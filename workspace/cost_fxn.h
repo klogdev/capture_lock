@@ -11,7 +11,7 @@ class BACostFxn{
         explicit BACostFxn(const Eigen::Vector2d& point_2d)
             :obs_x(point_2d(0)), obs_y(point_2d(1)){}
         // num_res, list[dim_paras]
-        static ceres::CostFunction* Create(const Eigen::Vector2d& point_2d){
+        static ceres::CostFunction* Create(const Eigen::Vector2d& point_2d) {
             return new ceres::AutoDiffCostFunction<BACostFxn<CameraModel>,
                                                    2,4,3,3,CameraModel::kNumParams>(
                 new BACostFxn(point_2d)
@@ -69,8 +69,8 @@ template <typename CameraModel>
 class BAConstPoseCostFxn {
  public:
     BAConstPoseCostFxn(const Eigen::Vector4d& qvec,
-                        const Eigen::Vector3d& tvec,
-                        const Eigen::Vector2d& point_2d)
+                       const Eigen::Vector3d& tvec,
+                       const Eigen::Vector2d& point_2d)
       : qw_(qvec(0)),
         qx_(qvec(1)),
         qy_(qvec(2)),

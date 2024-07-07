@@ -21,6 +21,8 @@ Eigen::Matrix3x4d* LHMEstimator::gt_pose_ = nullptr;
 double LHMEstimator::first_estimated_frob = 0;
 double LHMEstimator::first_estimated_rela_quat = 0;
 int LHMEstimator::num_iterations = 0;
+std::vector<double> LHMEstimator::obj_errs = {};
+std::vector<double> LHMEstimator::rel_quats = {};
 
 std::vector<LHMEstimator::M_t> LHMEstimator::Estimate(
     const std::vector<X_t>& points2D, const std::vector<Y_t>& points3D) {
@@ -118,6 +120,7 @@ int LHMEstimator::IterationLHM(const std::vector<Eigen::Vector3d>& points3D,
     int iter = 0;
     double curr_err = std::numeric_limits<double>::max();
     double old_err = -1.0; // dummy old error to start the while loop
+    double curr_rel_quat;
 
     std::vector<Eigen::Vector3d> temp_rotated; // update 3D points iteratively
     temp_rotated.resize(n_points);
@@ -130,6 +133,11 @@ int LHMEstimator::IterationLHM(const std::vector<Eigen::Vector3d>& points3D,
 
         old_err = curr_err;
         curr_err = ObjSpaceLHMErr(temp_rotated, V); // eqn.17
+        // record errors/residuals on the fly
+        LHMEstimator::addObjErrs(curr_err);
+        curr_rel_quat = RelativeQuatErr(init_rot, gt_pose_->block<3, 3>(0, 0));
+        LHMEstimator::addRelQuats(curr_rel_quat);
+        
 
         for (int i = 0; i < n_points; ++i) {
             temp_rotated[i] = V[i] * temp_rotated[i]; // further polish the points by line of sight projection
@@ -287,9 +295,7 @@ bool LHMEstimator::WeakPerspectiveQuat(const std::vector<Eigen::Vector3d>& point
     R = quaternion.toRotationMatrix();
 
     if (gt_pose_ != nullptr) {
-        Eigen::Matrix3x4d dummy_extrinsic = Eigen::Matrix<double, 3, 4>::Zero();
-        dummy_extrinsic.block<3,3>(0,0) = R;
-        double first_quat = RelativeQuatErr(dummy_extrinsic, *gt_pose_);
+        double first_quat = RelativeQuatErr(R, gt_pose_->block<3, 3>(0, 0));
         std::cout << "current g.t. pose inside LHM: " << std::endl;
         std::cout << *gt_pose_ << std::endl; 
         std::cout << "first estimated quaternion error of Horn: " << std::endl;
@@ -325,12 +331,12 @@ bool LHMEstimator::WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>&
 
     bool bi_correct = BarItzhackOptRot(shifted_pts, projected_pts, rot_opt);
     if (gt_pose_ != nullptr) {
-        double matrix_norm = frobeniusNormRot(rot_opt, gt_pose_->block<3, 3>(0, 0));
+        double first_quat = RelativeQuatErr(rot_opt, gt_pose_->block<3, 3>(0, 0));
         std::cout << "current g.t. pose inside LHM: " << std::endl;
         std::cout << *gt_pose_ << std::endl; 
-        std::cout << "first estimated rotation difference of DRaM-LHM: " << std::endl;
-        std::cout << matrix_norm << std::endl;
-        LHMEstimator::setFirstFrob(matrix_norm);
+        std::cout << "first estimated quaternion error of Horn: " << std::endl;
+        std::cout << first_quat << std::endl;
+        LHMEstimator::setFirstRelaQuat(first_quat);
     }
 
     std::cout << "first estimated matrix by DRaM is: " << std::endl;
@@ -375,4 +381,12 @@ void LHMEstimator::setFirstRelaQuat(const double quat_err) {
 
 void LHMEstimator::setNumIters(const int iters) {
     LHMEstimator::num_iterations = iters;
+}
+
+void LHMEstimator::addRelQuats(const double rel_quat) {
+    LHMEstimator::rel_quats.push_back(rel_quat);
+}
+
+void LHMEstimator::addObjErrs(const double obj_err) {
+    LHMEstimator::obj_errs.push_back(obj_err);
 }
