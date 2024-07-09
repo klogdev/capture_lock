@@ -33,10 +33,8 @@ int main(int argc, char** argv) {
     std::cout << "check sigma: " << sigma << std::endl;
 
     bool lhm_type = false;
-    if(argc >= 5) {
-        if(std::stoi(argv[5]) == 1) {
-            lhm_type = true;
-        }
+    if(estimator_opt == "lhm" || estimator_opt == "dram_lhm" || estimator_opt == "dram_gn") {
+        lhm_type = true;
     }
     std::cout << "check type boolean: " << lhm_type << std::endl;
 
@@ -60,7 +58,8 @@ int main(int argc, char** argv) {
     EstimatorWrapper estimator(est_type, options); // Assuming EstimatorWrapper can be directly instantiated like this
 
     // specify the output path for saving metrics
-    std::string output = "/tmp3/Pose_PnP/PnP_result/" + generator_opt + std::to_string(sigma) + "/" + estimator_opt + "_";
+    // here we create new folder for each generator+estimator option
+    std::string output = "/tmp3/Pose_PnP/PnP_result/" + generator_opt + "_" + std::to_string(sigma) + "/" + estimator_opt;
     // Pass these instances to a TestRunner or another part of your application
 
     PnPTestRunner test_runner(std::move(generator), std::move(estimator), output, sigma, lhm_type);

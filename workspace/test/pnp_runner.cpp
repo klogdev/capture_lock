@@ -101,13 +101,13 @@ void PnPTestRunner::run_test() {
     }
     std::string curr_sigma = std::to_string(sigma_);
     // save data
-    save1DVec(residual_data, output_path_ + "_residuals_" + "_.txt");
-    save1DVec(frobenius_data, output_path_ + "_frobenius_" + "_.txt");
-    save1DVec(first_quat_data, output_path_ + "_first_quat_" + "_.txt");
-    save1DVec(time_data, output_path_ + "_durations_" + "_.txt");
-    save1DVec(rot_data, output_path_ + "_rot_" + "_.txt");
-    save1DVec(trans_data, output_path_ + "_trans_" + "_.txt");
-    save1DVec(iter_data, output_path_ + "_iters_" + "_.txt");
+    save1DVec(residual_data, output_path_ + "_residuals_" + ".txt");
+    save1DVec(frobenius_data, output_path_ + "_frobenius_" + ".txt");
+    save1DVec(first_quat_data, output_path_ + "_first_quat_" + ".txt");
+    save1DVec(time_data, output_path_ + "_durations_" + ".txt");
+    save1DVec(rot_data, output_path_ + "_rot_" + ".txt");
+    save1DVec(trans_data, output_path_ + "_trans_" + ".txt");
+    save1DVec(iter_data, output_path_ + "_iters_" + ".txt");
     // list of time series of LHM-rleated methods
     if(obj_err_series.size() != 0)
         save2DdoubleVec(obj_err_series, output_path_ + "_obj_space_err_" + curr_sigma + "_.txt");
