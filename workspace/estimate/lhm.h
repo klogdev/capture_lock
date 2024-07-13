@@ -129,6 +129,8 @@ class LHMEstimator {
          */
         static std::vector<double> rel_quats;
 
+        static int num_iters;
+
         /**
          * @brief append current relative quaternion error to
          * the static container
@@ -140,6 +142,16 @@ class LHMEstimator {
          * the static container
          */
         static void addObjErrs(const double obj_err);
+
+        /**
+         * @brief clear the vector after each round of iteration
+         */
+        static void clearObjErrs();
+
+        /**
+         * @brief clear the vector after each round of iteration
+         */
+        static void clearRelQuats();
 
         /**
          * @brief estimate the absolute pose via LHM from corresponded 

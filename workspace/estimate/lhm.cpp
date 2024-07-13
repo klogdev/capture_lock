@@ -112,10 +112,10 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
 }
 
 int LHMEstimator::IterationLHM(const std::vector<Eigen::Vector3d>& points3D,
-                                const std::vector<Eigen::Matrix3d>& V,
-                                const Eigen::Matrix3d& Tfact,
-                                Eigen::Matrix3d& init_rot,
-                                Eigen::Vector3d& init_trans) {
+                               const std::vector<Eigen::Matrix3d>& V,
+                               const Eigen::Matrix3d& Tfact,
+                               Eigen::Matrix3d& init_rot,
+                               Eigen::Vector3d& init_trans) {
     int n_points = points3D.size();
     int iter = 0;
     double curr_err = std::numeric_limits<double>::max();
@@ -147,7 +147,9 @@ int LHMEstimator::IterationLHM(const std::vector<Eigen::Vector3d>& points3D,
                                            init_rot, init_trans);
         iter++;
     }
+    std::cout << "current size of object space error is: " << LHMEstimator::obj_errs.size() << std::endl;
 
+    LHMEstimator::setNumIters(iter);
     return iter;
 }
 
@@ -389,4 +391,12 @@ void LHMEstimator::addRelQuats(const double rel_quat) {
 
 void LHMEstimator::addObjErrs(const double obj_err) {
     LHMEstimator::obj_errs.push_back(obj_err);
+}
+
+void LHMEstimator::clearObjErrs() {
+    LHMEstimator::obj_errs.clear();
+}
+
+void LHMEstimator::clearRelQuats() {
+    LHMEstimator::rel_quats.clear();
 }

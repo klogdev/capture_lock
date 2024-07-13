@@ -21,7 +21,6 @@ void PnPTestRunner::run_test() {
     // initialize vectors to save metrics
     std::vector<double> residual_data;
     std::vector<double> frobenius_data;
-    std::vector<double> first_quat_data;
     std::vector<double> time_data;
     std::vector<int> iter_data;
     std::vector<double> rot_data;
@@ -51,23 +50,18 @@ void PnPTestRunner::run_test() {
         if(lhm_type_) {
             std::vector<double> curr_rel_quat = LHMEstimator::obj_errs;
             std::vector<double> curr_obj_err = LHMEstimator::rel_quats;
+            std::cout << "current size of object space error from runner is: "
+            << curr_obj_err.size() << std::endl;
+            LHMEstimator::clearObjErrs();
+            LHMEstimator::clearRelQuats();
             obj_err_series.push_back(curr_obj_err);
             quat_err_series.push_back(curr_rel_quat);
         }
         
-        Eigen::Matrix3x4d manual_extrinsic; 
-        LHMEstimator lhm;
-        bool manual_lhm = lhm.ComputeLHMPose(points2D[i], points3D[i], 
-                                         &manual_extrinsic);
-        
-        double first_quat = lhm.first_estimated_rela_quat;
-        int iters = lhm.num_iterations;
+        int iters = LHMEstimator::num_iterations;
 
         std::cout << "current g.t. pose is: " << std::endl;
         std::cout << gt_extrinsic[i] << std::endl;
-
-        std::cout << "manually estimated lhm is: " << std::endl;
-        std::cout << manual_extrinsic << std::endl;
         
         // Check for estimation success
         if (!success) {
@@ -93,7 +87,6 @@ void PnPTestRunner::run_test() {
         // append all metrics
         residual_data.push_back(avg_residual);
         frobenius_data.push_back(error);
-        first_quat_data.push_back(first_quat);
         time_data.push_back(seconds_pnp);
         iter_data.push_back(iters);
         rot_data.push_back(quat_err);
@@ -103,7 +96,6 @@ void PnPTestRunner::run_test() {
     // save data
     save1DVec(residual_data, output_path_ + "_residuals_" + ".txt");
     save1DVec(frobenius_data, output_path_ + "_frobenius_" + ".txt");
-    save1DVec(first_quat_data, output_path_ + "_first_quat_" + ".txt");
     save1DVec(time_data, output_path_ + "_durations_" + ".txt");
     save1DVec(rot_data, output_path_ + "_rot_" + ".txt");
     save1DVec(trans_data, output_path_ + "_trans_" + ".txt");
