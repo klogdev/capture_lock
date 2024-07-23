@@ -2,6 +2,10 @@
 #include <memory>
 #include <chrono>
 
+#include "base/projection.h"
+#include "base/camera.h"
+#include "base/pose.h"
+
 #include "test/pnp_test_template.h"
 #include "test/pnp_test_data.h"
 #include "test/pnp_runner.h"
@@ -82,7 +86,9 @@ void PnPTestRunner::run_test() {
         double avg_residual = std::accumulate(residuals.begin(), residuals.end(), 0.0) / residuals.size();
                 
         // calculate relative error
-        double quat_err = RelativeQuatErr(gt_extrinsic[i].block<3, 3>(0, 0), estimated_extrinsic[0].block<3, 3>(0, 0));
+        Eigen::Vector4d est_quat = colmap::RotationMatrixToQuaternion(estimated_extrinsic[i].block<3, 3>(0, 0));
+        Eigen::Vector4d gt_quat = colmap::RotationMatrixToQuaternion(gt_extrinsic[i].block<3, 3>(0, 0));
+        double quat_err = RelativeQuatErr(gt_quat, est_quat);
         double trans_err = RelativeTransErr(gt_extrinsic[i].col(3), estimated_extrinsic[0].col(3));
         // append all metrics
         residual_data.push_back(avg_residual);

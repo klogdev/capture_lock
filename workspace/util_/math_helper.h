@@ -34,7 +34,7 @@ double RandomGaussian(double mean, double std);
  * @brief calculate relative quaternion difference
  * from the g.t. and estimated extrinsic matrix
 */
-double RelativeQuatErr(const Eigen::Matrix3d& gt, const Eigen::Matrix3d& estimate);
+double RelativeQuatErr(const Eigen::Vector4d& quat_gt, const Eigen::Vector4d& quat_est);
 
 /**
  * @brief calculate relative translation difference 

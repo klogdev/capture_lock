@@ -135,7 +135,9 @@ int LHMEstimator::IterationLHM(const std::vector<Eigen::Vector3d>& points3D,
         curr_err = ObjSpaceLHMErr(temp_rotated, V); // eqn.17
         // record errors/residuals on the fly
         LHMEstimator::addObjErrs(curr_err);
-        curr_rel_quat = RelativeQuatErr(init_rot, gt_pose_->block<3, 3>(0, 0));
+        Eigen::Vector4d curr_init = colmap::RotationMatrixToQuaternion(init_rot);
+        Eigen::Vector4d curr_gt = colmap::RotationMatrixToQuaternion(gt_pose_->block<3, 3>(0, 0));
+        curr_rel_quat = RelativeQuatErr(curr_init, curr_gt);
         LHMEstimator::addRelQuats(curr_rel_quat);
         
 
@@ -292,12 +294,20 @@ bool LHMEstimator::WeakPerspectiveQuat(const std::vector<Eigen::Vector3d>& point
 
     // Create a Quaternion from the eigenvector
     Eigen::Quaterniond quaternion(eigenvec(0), eigenvec(1), eigenvec(2), eigenvec(3));
+    Eigen::Vector4d quat_vec(eigenvec(0), eigenvec(1), eigenvec(2), eigenvec(3));
     
     // Convert the quaternion to a rotation matrix
     R = quaternion.toRotationMatrix();
 
+    Eigen::Vector4d quat_gt = colmap::RotationMatrixToQuaternion(gt_pose_->block<3, 3>(0, 0));
+
+    std::cout << "current g.t. quat: " << std::endl;
+    std::cout << quat_gt << std::endl;
+    std::cout << "current estimate: " << std::endl;
+    std::cout << quat_vec << std::endl;
+
     if (gt_pose_ != nullptr) {
-        double first_quat = RelativeQuatErr(R, gt_pose_->block<3, 3>(0, 0));
+        double first_quat = RelativeQuatErr(quat_gt, quat_vec);
         std::cout << "current g.t. pose inside LHM: " << std::endl;
         std::cout << *gt_pose_ << std::endl; 
         std::cout << "first estimated quaternion error of Horn: " << std::endl;
@@ -333,7 +343,9 @@ bool LHMEstimator::WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>&
 
     bool bi_correct = BarItzhackOptRot(shifted_pts, projected_pts, rot_opt);
     if (gt_pose_ != nullptr) {
-        double first_quat = RelativeQuatErr(rot_opt, gt_pose_->block<3, 3>(0, 0));
+        Eigen::Vector4d curr_opt = colmap::RotationMatrixToQuaternion(rot_opt);
+        Eigen::Vector4d curr_gt = colmap::RotationMatrixToQuaternion(gt_pose_->block<3, 3>(0, 0));
+        double first_quat = RelativeQuatErr(curr_opt, curr_gt);
         std::cout << "current g.t. pose inside LHM: " << std::endl;
         std::cout << *gt_pose_ << std::endl; 
         std::cout << "first estimated quaternion error of Horn: " << std::endl;

@@ -46,11 +46,7 @@ double RandomGaussian(double mean, double std) {
     return random_number;
 }
 
-double RelativeQuatErr(const Eigen::Matrix3d& gt, const Eigen::Matrix3d& estimate) {
-    
-    Eigen::Vector4d quat_gt = colmap::RotationMatrixToQuaternion(gt);
-    Eigen::Vector4d quat_est = colmap::RotationMatrixToQuaternion(estimate);
-
+double RelativeQuatErr(const Eigen::Vector4d& quat_gt, const Eigen::Vector4d& quat_est) {
     double diff = (quat_gt - quat_est).norm();
     double est_norm = quat_est.norm();
     return diff/est_norm;
