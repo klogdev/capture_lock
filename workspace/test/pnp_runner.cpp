@@ -1,6 +1,7 @@
 #include <Eigen/Core>
 #include <memory>
 #include <chrono>
+#include <boost/format.hpp>
 
 #include "base/projection.h"
 #include "base/camera.h"
@@ -86,8 +87,14 @@ void PnPTestRunner::run_test() {
         double avg_residual = std::accumulate(residuals.begin(), residuals.end(), 0.0) / residuals.size();
                 
         // calculate relative error
-        Eigen::Vector4d est_quat = colmap::RotationMatrixToQuaternion(estimated_extrinsic[i].block<3, 3>(0, 0));
+        Eigen::Vector4d est_quat = colmap::RotationMatrixToQuaternion(estimated_extrinsic[0].block<3, 3>(0, 0));
         Eigen::Vector4d gt_quat = colmap::RotationMatrixToQuaternion(gt_extrinsic[i].block<3, 3>(0, 0));
+
+        std::cout << "final estimated rot in quat: " << std::endl;
+        std::cout << est_quat << std::endl;
+        std::cout << "g.t. rot in quat: " << std::endl;
+        std::cout << gt_quat << std::endl;
+
         double quat_err = RelativeQuatErr(gt_quat, est_quat);
         double trans_err = RelativeTransErr(gt_extrinsic[i].col(3), estimated_extrinsic[0].col(3));
         // append all metrics

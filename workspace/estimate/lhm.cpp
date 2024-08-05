@@ -4,6 +4,7 @@
 
 #include <limits>
 #include <iostream>
+#include <boost/format.hpp>
 
 #include "estimate/lhm.h"
 #include "estimate/least_sqr_pnp.h"
@@ -311,7 +312,7 @@ bool LHMEstimator::WeakPerspectiveQuat(const std::vector<Eigen::Vector3d>& point
         std::cout << "current g.t. pose inside LHM: " << std::endl;
         std::cout << *gt_pose_ << std::endl; 
         std::cout << "first estimated quaternion error of Horn: " << std::endl;
-        std::cout << first_quat << std::endl;
+        std::cout << boost::format("%.15f") % first_quat << std::endl;
         LHMEstimator::setFirstRelaQuat(first_quat);
     }
 
@@ -349,7 +350,7 @@ bool LHMEstimator::WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>&
         std::cout << "current g.t. pose inside LHM: " << std::endl;
         std::cout << *gt_pose_ << std::endl; 
         std::cout << "first estimated quaternion error of Horn: " << std::endl;
-        std::cout << first_quat << std::endl;
+        std::cout << boost::format("%.15f") % first_quat << std::endl;
         LHMEstimator::setFirstRelaQuat(first_quat);
     }
 

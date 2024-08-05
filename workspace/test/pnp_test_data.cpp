@@ -109,7 +109,7 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
         std::cout << p << std::endl;
     }
 
-    int num_rot = 500;
+    int num_rot = 5;
     double d_min = 15;
     double d_max = 15;
 
