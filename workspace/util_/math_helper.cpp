@@ -57,11 +57,8 @@ double RelativeQuatErr(const Eigen::Vector4d& quat_gt, const Eigen::Vector4d& qu
 }
 
 double RelativeTransErr(const Eigen::Vector3d& gt, const Eigen::Vector3d& estimate) {
-    Eigen::Vector3d trans_gt = gt.col(3);
-    Eigen::Vector3d trans_est = estimate.col(3);
-
-    double diff = (trans_gt - trans_est).norm();
-    double est_norm = trans_est.norm();
+    double diff = (gt - estimate).norm();
+    double est_norm = estimate.norm();
 
     return diff/est_norm;
 }

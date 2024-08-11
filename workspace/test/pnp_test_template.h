@@ -23,7 +23,8 @@ inline EstimatorType getEstimatorFromName(const std::string& name) {
         {"dram_lhm", EstimatorType::DRaM_LHM},
         {"dram_gn", EstimatorType::DRaM_GN},
         {"epnp", EstimatorType::EPnP},
-        {"lhm", EstimatorType::LHM}
+        {"lhm", EstimatorType::LHM},
+        {"dls", EstimatorType::DLS}
     };
 
     auto it = estimatorMap.find(name);

@@ -9,6 +9,7 @@
 #include "util/random.h"
 
 #include "estimate/lhm.h"
+#include "estimate/dls.h"
 
 #include "test/pnp_test_template.h"
 
@@ -35,6 +36,14 @@ bool EstimatorWrapper::runStandalone(const std::vector<Eigen::Vector2d>& points2
             colmap::EPNPEstimator estimator;
             estimated_extrinsic = estimator.Estimate(points2D, points3D);
             if (residuals) {
+                estimator.Residuals(points2D, points3D, estimated_extrinsic[0], residuals);
+            }
+            break;
+        }
+        case EstimatorType::DLS: {
+            DLSEstimator estimator;
+            estimated_extrinsic = estimator.Estimate(points2D, points3D);
+            if(residuals) {
                 estimator.Residuals(points2D, points3D, estimated_extrinsic[0], residuals);
             }
             break;
@@ -107,6 +116,29 @@ bool EstimatorWrapper::runWithRansac(const std::vector<Eigen::Vector2d>& points2
             estimated_extrinsic = {report.model};
             if (residuals) {
                 colmap::EPNPEstimator::Residuals(points2D, points3D, report.model, residuals);
+            }
+            break;
+        }
+        case EstimatorType::DLS: {
+            colmap::RANSACOptions options;
+            options.max_error = 1e-5;
+            colmap::RANSAC<DLSEstimator> ransac(options);
+            const auto report = ransac.Estimate(points2D, points3D);
+
+            std::cout << "current w/ ransac & dls estimate" << std::endl;
+            std::cout << "current ransac option inside estimator is: " << options_.use_ransac << std::endl;
+
+
+            if(report.success == true) {
+                std::cout << "current ransac passed" << std::endl; 
+            }
+            else {
+                std::cout << "current ransac failed" << std::endl; 
+            }
+
+            estimated_extrinsic = {report.model};
+            if (residuals) {
+                DLSEstimator::Residuals(points2D, points3D, report.model, residuals);
             }
             break;
         }

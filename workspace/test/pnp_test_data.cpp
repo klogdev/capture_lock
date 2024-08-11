@@ -115,8 +115,8 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
         std::cout << p << std::endl;
     }
 
-    double d_min = 35;
-    double d_max = 35;
+    double d_min = 5;
+    double d_max = 5;
 
     for(double d = d_min; d <= d_max; d += 1) {
         Eigen::Matrix3d curr_rot;
