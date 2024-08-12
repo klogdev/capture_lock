@@ -116,16 +116,16 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
     }
 
     double d_min = 5;
-    double d_max = 5;
+    double d_max = 500;
 
-    for(double d = d_min; d <= d_max; d += 1) {
+    for(double d = d_min; d <= d_max; d += 10) {
         Eigen::Matrix3d curr_rot;
         EPnPRandomRot(curr_rot);
         for(int i = 0; i < num_samples; i++) {
             Eigen::Matrix3d curr_rot;
             EPnPRandomRot(curr_rot);
             std::vector<Eigen::Vector3d> curr_points3d;
-            Eigen::Vector3d curr_trans = Eigen::Vector3d(0, 0, d);
+            Eigen::Vector3d curr_trans = Eigen::Vector3d(5, 5, d);
             const colmap::SimilarityTransform3 orig_tform(1, colmap::RotationMatrixToQuaternion(curr_rot),
                                                 curr_trans);
             // generate scene points from non-noised camera points
@@ -134,7 +134,7 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
                 orig_tform.TransformPoint(&point3D_world);
                 curr_points3d.push_back(point3D_world);
             }
-            // EPnP generate all scene points from a single camera points set
+            // EPnP generate all scene points from an identical set camera points set
             points2D.push_back(all_2ds[i]);
             points3D.push_back(curr_points3d);
             Eigen::Matrix3x4d curr_gt;
@@ -180,7 +180,7 @@ void BoxCornerEPnPTestDataDy::generate(std::vector<std::vector<Eigen::Vector2d>>
         all_2ds[j] = one_set_2d;
     }
 
-    double d_min = 15;
+    double d_min = 5;
     double d_max = 500;
 
     for(double d = d_min; d <= d_max; d += 10) {
@@ -237,11 +237,6 @@ void BoxRandomEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
                                     noised_camera_pt.y()/noised_camera_pt.z()));
     }
 
-    std::cout << "check backprojected camera points: " << std::endl;
-    for(auto& p: one_set_2d) {
-        std::cout << p << std::endl;
-    }
-
     int num_rot = 500;
     double d_min = 15;
     double d_max = 500;
@@ -268,6 +263,26 @@ void BoxRandomEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
             curr_gt.col(3) = -curr_rot.transpose()*curr_trans; 
             composed_extrinsic.push_back(curr_gt);
         }
+    }
+}
+
+void GenOneSetNoise2D(std::vector<Eigen::Vector3d>& camera_space_points, 
+                      std::vector<Eigen::Vector2d>& one_set_2d,
+                      Eigen::Matrix3d& k, double sigma) {
+    Eigen::Matrix3d k_inv = k.inverse();
+
+    for(int i = 0; i < camera_space_points.size(); i++) {
+        Eigen::Vector3d curr_camera_pt = camera_space_points[i];
+        Eigen::Vector3d curr_projected = k*curr_camera_pt;
+        double curr_pix_x = curr_projected.x()/curr_projected.z();
+        double curr_pix_y = curr_projected.y()/curr_projected.z();
+        Eigen::Vector3d noised_image_pt = 
+                        Eigen::Vector3d(RandomGaussian(curr_pix_x, sigma),
+                                        RandomGaussian(curr_pix_y, sigma),
+                                        1);
+        Eigen::Vector3d noised_camera_pt = k_inv*noised_image_pt;
+        one_set_2d.push_back(Eigen::Vector2d(noised_camera_pt.x()/noised_camera_pt.z(),
+                                    noised_camera_pt.y()/noised_camera_pt.z()));
     }
 }
 

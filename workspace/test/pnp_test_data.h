@@ -138,6 +138,13 @@ void EPnPRandomRot(Eigen::Matrix3d& rot);
 void SetIntrinsic(std::string calib_path, Eigen::Matrix3d& calib_mat);
 
 /**
+ * @brief generate noised 2d set from a list of camera space points
+ */
+void GenOneSetNoise2D(std::vector<Eigen::Vector3d>& camera_space_points, 
+                      std::vector<Eigen::Vector2d>& one_set__2d,
+                      Eigen::Matrix3d& k, double sigma);
+
+/**
  * @brief the calibration file reader for the simulated data from EPFL CV-Lab
  * @arg calib_mat: the intrinsic matrix to be loaded
 */
