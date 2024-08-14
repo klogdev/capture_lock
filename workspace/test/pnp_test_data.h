@@ -15,7 +15,7 @@
 #include "estimate/lhm.h"
 
 enum class GeneratorType {
-    COLMAP, CVLab, EPnPdZ, EPnPdY, RandomDz
+    COLMAP, CVLab, EPnPdZ, EPnPdY, RandomNoise
 };
 
 inline GeneratorType getGeneratorFromName(const std::string& name) {
@@ -24,7 +24,7 @@ inline GeneratorType getGeneratorFromName(const std::string& name) {
         {"cv_lab", GeneratorType::CVLab},
         {"epnp_dz", GeneratorType::EPnPdZ},
         {"epnp_dy", GeneratorType::EPnPdY},
-        {"random_dz", GeneratorType::RandomDz}
+        {"random_noise", GeneratorType::RandomNoise}
     };
 
     auto it = generatorMap.find(name);
@@ -87,14 +87,19 @@ public:
     static double sigma;
 };
 
-class BoxRandomEPnPTestDataDz: public DataGenerator {
+/**
+ * @brief use EPnP centered box to generate random data inside it
+ * with different level of noises
+ */
+class BoxRandomEPnPTestDataNoise: public DataGenerator {
 public:
-    BoxRandomEPnPTestDataDz(){};
+    BoxRandomEPnPTestDataNoise(){};
 
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<std::vector<Eigen::Vector3d>>& points3D,
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
-    static double sigma;
+    static double sigma_s; // start sigma
+    static double sigma_e; // end sigma
     static int num_pts;
 };
 
@@ -130,6 +135,11 @@ void EPnPInsideRand(Eigen::Matrix3d& k, std::vector<Eigen::Vector3d>& camera_spa
  * @brief generate a random rotation matrix and pass by reference
 */
 void EPnPRandomRot(Eigen::Matrix3d& rot);
+
+/**
+ * @brief generate a random translation vector and pass by reference
+ */
+void EPnPRandomTrans(Eigen::Vector3d& trans);
 
 /**
  * @brief set the intrinsic matrix to convert the pixel to camera space
