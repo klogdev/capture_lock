@@ -20,17 +20,17 @@ int main(int argc, char** argv) {
     std::string estimator_opt = argv[2];
     std::string use_ransac_ = argv[3];
 
-    double sigma;
+    // in runner, sigma only responsible for file naming
+    // so we set it as -1 as a dummy value
+    double sigma = -1.0;
 
-    if(argc >= 4) {
+    if(argc >= 5) {
         sigma = std::stod(argv[4]);
         if(generator_opt == "epnp_dz")
             BoxCornerEPnPTestDataDz::sigma = sigma;
         else if(generator_opt == "epnp_dy")
             BoxCornerEPnPTestDataDy::sigma = sigma;
     }
-
-    std::cout << "check sigma: " << sigma << std::endl;
 
     bool lhm_type = false;
     if(estimator_opt == "lhm" || estimator_opt == "dram_lhm" || estimator_opt == "dram_gn") {
