@@ -151,7 +151,7 @@ void SetIntrinsic(std::string calib_path, Eigen::Matrix3d& calib_mat);
  * @brief generate noised 2d set from a list of camera space points
  */
 void GenOneSetNoise2D(std::vector<Eigen::Vector3d>& camera_space_points, 
-                      std::vector<Eigen::Vector2d>& one_set__2d,
+                      std::vector<Eigen::Vector2d>& one_set_2d,
                       Eigen::Matrix3d& k, double sigma);
 
 /**

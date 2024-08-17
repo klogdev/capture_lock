@@ -86,35 +86,8 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
 
     Eigen::Matrix3d k_inv = k.inverse();
 
-    std::cout << "check sigma used in generator: " << sigma << std::endl;
-
     int num_samples = 500;
-    std::vector<std::vector<Eigen::Vector2d>> all_2ds(num_samples, std::vector<Eigen::Vector2d>());
-    // project corners as 2d points, then add noise, and backprojected for each set
-    for(int j = 0; j < num_samples; j++) {
-        std::vector<Eigen::Vector2d> one_set_2d;
-        for(int i = 0; i < camera_space_points.size(); i++) {
-            Eigen::Vector3d curr_camera_pt = camera_space_points[i];
-            Eigen::Vector3d curr_projected = k*curr_camera_pt;
-            double curr_pix_x = curr_projected.x()/curr_projected.z();
-            double curr_pix_y = curr_projected.y()/curr_projected.z();
-            Eigen::Vector3d noised_image_pt = 
-                            Eigen::Vector3d(RandomGaussian(curr_pix_x, sigma),
-                                            RandomGaussian(curr_pix_y, sigma),
-                                            1);
-            Eigen::Vector3d noised_camera_pt = k_inv*noised_image_pt; // do backprojection
-            one_set_2d.push_back(Eigen::Vector2d(noised_camera_pt.x()/noised_camera_pt.z(),
-                                        noised_camera_pt.y()/noised_camera_pt.z()));
-        }
-        std::cout << "size of " << j << "'s 2d set is: " << one_set_2d.size() << std::endl;
-        all_2ds[j] = one_set_2d;
-    }
-
-    std::cout << "check the 1st set of backprojected camera points: " << std::endl;
-    for(auto& p: all_2ds[0]) {
-        std::cout << p << std::endl;
-    }
-
+    
     double d_min = 5;
     double d_max = 500;
 
@@ -135,7 +108,10 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
                 curr_points3d.push_back(point3D_world);
             }
             // EPnP generate all scene points from an identical set camera points set
-            points2D.push_back(all_2ds[i]);
+            std::vector<Eigen::Vector2d> curr_points2d;
+            GenOneSetNoise2D(camera_space_points, curr_points2d, k, BoxCornerEPnPTestDataDz::sigma);
+
+            points2D.push_back(curr_points2d);
             points3D.push_back(curr_points3d);
             Eigen::Matrix3x4d curr_gt;
             // converting [R|t] to [-R^T|-R^T*t]
@@ -159,26 +135,6 @@ void BoxCornerEPnPTestDataDy::generate(std::vector<std::vector<Eigen::Vector2d>>
     Eigen::Matrix3d k_inv = k.inverse();
 
     int num_samples = 500;
-    std::vector<std::vector<Eigen::Vector2d>> all_2ds(num_samples, std::vector<Eigen::Vector2d>());
-
-    // project corners as 2d points
-    for(int j = 0; j < num_samples; j++) {
-        std::vector<Eigen::Vector2d> one_set_2d;
-        for(int i = 0; i < camera_space_points.size(); i++) {
-            Eigen::Vector3d curr_camera_pt = camera_space_points[i];
-            Eigen::Vector3d curr_projected = k*curr_camera_pt;
-            double curr_pix_x = curr_projected.x()/curr_projected.z();
-            double curr_pix_y = curr_projected.y()/curr_projected.z();
-            Eigen::Vector3d noised_image_pt = 
-                            Eigen::Vector3d(RandomGaussian(curr_pix_x, sigma),
-                                            RandomGaussian(curr_pix_y, sigma),
-                                            1);
-            Eigen::Vector3d noised_camera_pt = k_inv*noised_image_pt;
-            one_set_2d.push_back(Eigen::Vector2d(noised_camera_pt.x()/noised_camera_pt.z(),
-                                        noised_camera_pt.y()/noised_camera_pt.z()));
-        }
-        all_2ds[j] = one_set_2d;
-    }
 
     double d_min = 5;
     double d_max = 500;
@@ -198,7 +154,10 @@ void BoxCornerEPnPTestDataDy::generate(std::vector<std::vector<Eigen::Vector2d>>
                 curr_points3d.push_back(point3D_world);
             }
             // EPnP generate all scene points from a single camera points set
-            points2D.push_back(all_2ds[i]);
+           std::vector<Eigen::Vector2d> curr_points2d;
+            GenOneSetNoise2D(camera_space_points, curr_points2d, k, BoxCornerEPnPTestDataDy::sigma);
+
+            points2D.push_back(curr_points2d);
             points3D.push_back(curr_points3d);
             Eigen::Matrix3x4d curr_gt;
             curr_gt.block<3, 3>(0, 0) = curr_rot.transpose(); 
