@@ -9,7 +9,7 @@ template <typename CameraModel> // use template to instantiate camera model
 class BACostFxn{
     public:
         explicit BACostFxn(const Eigen::Vector2d& point_2d)
-            :obs_x(point_2d(0)), obs_y(point_2d(1)){}
+            :obs_x(point_2d(0)), obs_y(point_2d(1)) {}
         // num_res, list[dim_paras]
         static ceres::CostFunction* Create(const Eigen::Vector2d& point_2d) {
             return new ceres::AutoDiffCostFunction<BACostFxn<CameraModel>,

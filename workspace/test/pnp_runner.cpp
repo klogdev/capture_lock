@@ -24,7 +24,7 @@ void PnPTestRunner::run_test() {
     data_generator_->generate(points2D, points3D, gt_extrinsic);
 
     // initialize vectors to save metrics
-    std::vector<double> residual_data;
+    std::vector<std::vector<double>> residual_data;
     std::vector<double> frobenius_data;
     std::vector<double> time_data;
     std::vector<int> iter_data;
@@ -82,9 +82,6 @@ void PnPTestRunner::run_test() {
         // of the difference between the estimated and ground truth extrinsic matrices.
         double error = frobeniusNorm(estimated_extrinsic[0], gt_extrinsic[i]);
         // std::cout << "Estimation error (Frobenius norm): " << error << std::endl;
-
-        // analyze and log residuals or other metrics
-        double avg_residual = std::accumulate(residuals.begin(), residuals.end(), 0.0) / residuals.size();
                 
         // calculate relative error
         Eigen::Vector4d est_quat = colmap::RotationMatrixToQuaternion(estimated_extrinsic[0].block<3, 3>(0, 0));
@@ -98,7 +95,7 @@ void PnPTestRunner::run_test() {
         double quat_err = RelativeQuatErr(gt_quat, est_quat);
         double trans_err = RelativeTransErr(gt_extrinsic[i].col(3), estimated_extrinsic[0].col(3));
         // append all metrics
-        residual_data.push_back(avg_residual);
+        residual_data.push_back(residuals); // 2D vector
         frobenius_data.push_back(error);
         time_data.push_back(seconds_pnp);
         iter_data.push_back(iters);
@@ -107,12 +104,14 @@ void PnPTestRunner::run_test() {
     }
     std::string curr_sigma = std::to_string(sigma_);
     // save data
-    save1DVec(residual_data, output_path_ + "_residuals_" + ".txt");
     save1DVec(frobenius_data, output_path_ + "_frobenius_" + ".txt");
     save1DVec(time_data, output_path_ + "_durations_" + ".txt");
     save1DVec(rot_data, output_path_ + "_rot_" + ".txt");
     save1DVec(trans_data, output_path_ + "_trans_" + ".txt");
     save1DVec(iter_data, output_path_ + "_iters_" + ".txt");
+
+    // save all reprojection errors
+    save2DdoubleVec(residual_data, output_path_ + "_residuals_" + ".txt");
     // list of time series of LHM-rleated methods
     if(obj_err_series.size() != 0)
         save2DdoubleVec(obj_err_series, output_path_ + "_obj_space_err_" + curr_sigma + "_.txt");

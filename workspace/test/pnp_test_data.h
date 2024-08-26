@@ -15,16 +15,16 @@
 #include "estimate/lhm.h"
 
 enum class GeneratorType {
-    COLMAP, CVLab, EPnPdZ, EPnPdY, RandomNoise
+    COLMAP, CVLab, EPnPdZ, EPnPdY, RandomNoise, NumPts
 };
 
 inline GeneratorType getGeneratorFromName(const std::string& name) {
     static const std::unordered_map<std::string, GeneratorType> generatorMap = {
-        {"colmap", GeneratorType::COLMAP},
         {"cv_lab", GeneratorType::CVLab},
         {"epnp_dz", GeneratorType::EPnPdZ},
         {"epnp_dy", GeneratorType::EPnPdY},
-        {"random_noise", GeneratorType::RandomNoise}
+        {"random_noise", GeneratorType::RandomNoise},
+        {"num_pts", GeneratorType::NumPts}
     };
 
     auto it = generatorMap.find(name);
@@ -46,20 +46,6 @@ public:
     static std::unique_ptr<DataGenerator> createDataGenerator(const GeneratorType type);
     virtual ~DataGenerator() = default;
 };
-
-/**
- * @brief derived data generator that 
- * simply copy the COLMAP's test data for EPnP and P3P
-*/
-class COLMAPTestData: public DataGenerator {
-public:
-    COLMAPTestData(){};
-
-    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
-                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
-                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
-};
-
 
 /**
  * @brief data generator that 
@@ -104,6 +90,22 @@ public:
 };
 
 /**
+ * @brief varying number of control points inside the box
+ * with a fixed noise sigma
+ */
+class BoxRandomTestNumPts: public DataGenerator {
+public:
+    BoxRandomTestNumPts(){};
+
+    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
+    static double sigma;
+    static int min_pts;
+    static int max_pts;
+};
+
+/**
  * @brief derived data generator from
  * EPFL CV lab's testing data
 */
@@ -122,13 +124,18 @@ private:
  * @brief preprocessing of the EPnP box corner data generation
  * @arg  3D points in camera space
 */
-void EPnPBoxCorner(Eigen::Matrix3d& k, std::vector<Eigen::Vector3d>& camera_space_points);
+void EPnPBoxCorner(std::vector<Eigen::Vector3d>& camera_space_points);
+
+/**
+ * @brief pass the intrinsic matrix by reference
+ */
+void GetIntrinsic(Eigen::Matrix3d& k);
 
 /**
  * @brief preprocessing of the EPnP random data generation
  * inside the box [-2,2]x[-2,2]x[4,8]
 */
-void EPnPInsideRand(Eigen::Matrix3d& k, std::vector<Eigen::Vector3d>& camera_space_points,
+void EPnPInsideRand(std::vector<Eigen::Vector3d>& camera_space_points,
                     int num_pts);
 
 /**
