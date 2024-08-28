@@ -34,6 +34,8 @@ DataGenerator::createDataGenerator(const GeneratorType type) {
             return std::make_unique<BoxRandomEPnPTestDataNoise>(BoxRandomEPnPTestDataNoise());
         case GeneratorType::NumPts:
             return std::make_unique<BoxRandomTestNumPts>(BoxRandomTestNumPts());
+        case GeneratorType::PlanarChk:
+            return std::make_unique<BoxCornerPlanarSanity>(BoxCornerPlanarSanity());
         // Handle unsupported types
         default:
             return nullptr;
@@ -229,6 +231,58 @@ void BoxRandomTestNumPts::generate(std::vector<std::vector<Eigen::Vector2d>>& po
     }
 }
 
+double BoxCornerPlanarSanity::sigma_s = 0.05;
+double BoxCornerPlanarSanity::sigma_e = 0.50;
+std::string BoxCornerPlanarSanity::option = "planar";
+void BoxCornerPlanarSanity::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                                     std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                                     std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
+    Eigen::Matrix3d k;
+    GetIntrinsic(k);
+    Eigen::Matrix3d k_inv = k.inverse();
+
+    int num_sample = 500;
+    for(double i = BoxCornerPlanarSanity::sigma_s; i <= BoxCornerPlanarSanity::sigma_e; i += 0.05) {
+        for(int j = 0; j < num_sample; j++) {
+            // generate one set of camera space points
+            std::vector<Eigen::Vector3d> curr_camera_space;
+            if(BoxCornerPlanarSanity::option == "box") {
+                EPnPBoxCorner(curr_camera_space);
+            }
+            else {
+                EPnPPlanar(curr_camera_space);
+            }
+            
+            Perturbation3D(curr_camera_space, i);
+
+            // generate noised 2d points from camera space points
+            std::vector<Eigen::Vector2d> curr_points2d;
+            GenOneSetNoise2D(curr_camera_space, curr_points2d, k, 0.5);
+
+            Eigen::Matrix3d curr_rot;
+            Eigen::Vector3d curr_trans(5, 5, 15);
+            EPnPRandomRot(curr_rot);
+
+            std::vector<Eigen::Vector3d> curr_points3d;
+            const colmap::SimilarityTransform3 orig_tform(1, colmap::RotationMatrixToQuaternion(curr_rot),
+                                                curr_trans);
+            // generate scene points
+            for (size_t i = 0; i < curr_camera_space.size(); i++) {
+                Eigen::Vector3d point3D_world = curr_camera_space[i];
+                orig_tform.TransformPoint(&point3D_world);
+                curr_points3d.push_back(point3D_world);
+            }
+            // EPnP generate all scene points from a single camera points set
+            points2D.push_back(curr_points2d);
+            points3D.push_back(curr_points3d);
+            Eigen::Matrix3x4d curr_gt;
+            curr_gt.block<3, 3>(0, 0) = curr_rot.transpose(); 
+            curr_gt.col(3) = -curr_rot.transpose()*curr_trans; 
+            composed_extrinsic.push_back(curr_gt);
+        }
+    }
+}
+
 void GetIntrinsic(Eigen::Matrix3d& k) {
     k << 800, 0, 320,
          0, 800, 240,
@@ -252,6 +306,20 @@ void GenOneSetNoise2D(std::vector<Eigen::Vector3d>& camera_space_points,
         Eigen::Vector3d noised_camera_pt = k_inv*noised_image_pt;
         one_set_2d.push_back(Eigen::Vector2d(noised_camera_pt.x()/noised_camera_pt.z(),
                                     noised_camera_pt.y()/noised_camera_pt.z()));
+    }
+}
+
+void Perturbation3D(std::vector<Eigen::Vector3d>& camera_space_points, double sigma) {
+    // Create a random engine and a Gaussian distribution
+    std::random_device rd;  // Seed for the random number engine
+    std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()
+    std::normal_distribution<> dis(0, sigma); // mean 0 and standard deviation sigma
+
+    // Apply Gaussian noise to each point
+    for (Eigen::Vector3d& p : camera_space_points) {
+        p.x() += dis(gen);
+        p.y() += dis(gen);
+        p.z() += dis(gen);
     }
 }
 
@@ -302,6 +370,20 @@ void EPnPBoxCorner(std::vector<Eigen::Vector3d>& camera_space_points) {
             for (int k = 0; k < 2; k++) {
                 camera_space_points.push_back(Eigen::Vector3d(x_values[i], y_values[j], z_values[k]));
             }
+        }
+    }
+}
+
+void EPnPPlanar(std::vector<Eigen::Vector3d>& camera_space_points) {
+    // Define the ranges for x and y, and set a fixed z value
+    double x_values[2] = {-2, 2};
+    double y_values[2] = {-2, 2};
+    double fixed_z_value = 6;  // Choose a mid-range value between 4 and 8
+
+    // Generate points on the plane
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {
+            camera_space_points.push_back(Eigen::Vector3d(x_values[i], y_values[j], fixed_z_value));
         }
     }
 }

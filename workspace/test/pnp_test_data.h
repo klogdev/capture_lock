@@ -15,7 +15,7 @@
 #include "estimate/lhm.h"
 
 enum class GeneratorType {
-    COLMAP, CVLab, EPnPdZ, EPnPdY, RandomNoise, NumPts
+    COLMAP, CVLab, EPnPdZ, EPnPdY, RandomNoise, NumPts, PlanarChk
 };
 
 inline GeneratorType getGeneratorFromName(const std::string& name) {
@@ -24,7 +24,8 @@ inline GeneratorType getGeneratorFromName(const std::string& name) {
         {"epnp_dz", GeneratorType::EPnPdZ},
         {"epnp_dy", GeneratorType::EPnPdY},
         {"random_noise", GeneratorType::RandomNoise},
-        {"num_pts", GeneratorType::NumPts}
+        {"num_pts", GeneratorType::NumPts},
+        {"planar_chk", GeneratorType::PlanarChk}
     };
 
     auto it = generatorMap.find(name);
@@ -55,7 +56,7 @@ public:
 */
 class BoxCornerEPnPTestDataDz: public DataGenerator {
 public:
-    BoxCornerEPnPTestDataDz(){};
+    BoxCornerEPnPTestDataDz() {};
 
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<std::vector<Eigen::Vector3d>>& points3D,
@@ -65,7 +66,7 @@ public:
 
 class BoxCornerEPnPTestDataDy: public DataGenerator {
 public:
-    BoxCornerEPnPTestDataDy(){};
+    BoxCornerEPnPTestDataDy() {};
 
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<std::vector<Eigen::Vector3d>>& points3D,
@@ -79,7 +80,7 @@ public:
  */
 class BoxRandomEPnPTestDataNoise: public DataGenerator {
 public:
-    BoxRandomEPnPTestDataNoise(){};
+    BoxRandomEPnPTestDataNoise() {};
 
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<std::vector<Eigen::Vector3d>>& points3D,
@@ -95,7 +96,7 @@ public:
  */
 class BoxRandomTestNumPts: public DataGenerator {
 public:
-    BoxRandomTestNumPts(){};
+    BoxRandomTestNumPts() {};
 
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<std::vector<Eigen::Vector3d>>& points3D,
@@ -106,12 +107,30 @@ public:
 };
 
 /**
+ * @brief sanity test with box corners or nearly planar cases
+ * in this case we add noise directly to the 3D points
+ * @arg option: the option to test planar or box corners
+ */
+class BoxCornerPlanarSanity: public DataGenerator {
+public:
+    BoxCornerPlanarSanity() {};
+
+    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
+
+    static double sigma_s;
+    static double sigma_e;
+    static std::string option;
+};
+
+/**
  * @brief derived data generator from
  * EPFL CV lab's testing data
 */
 class CVLabTestData: public DataGenerator {
 public:
-    CVLabTestData(){};
+    CVLabTestData() {};
 
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<std::vector<Eigen::Vector3d>>& points3D,
@@ -125,6 +144,13 @@ private:
  * @arg  3D points in camera space
 */
 void EPnPBoxCorner(std::vector<Eigen::Vector3d>& camera_space_points);
+
+/**
+ * @brief 
+ * preprocessing of a planar data generation comparable to EPnP box corners
+ * @arg 3D points in camera space
+ */
+void EPnPPlanar(std::vector<Eigen::Vector3d>& camara_space_points);
 
 /**
  * @brief pass the intrinsic matrix by reference
@@ -161,6 +187,11 @@ void GenOneSetNoise2D(std::vector<Eigen::Vector3d>& camera_space_points,
                       std::vector<Eigen::Vector2d>& one_set_2d,
                       Eigen::Matrix3d& k, double sigma);
 
+/**
+ * @brief add small perturbation to each camera space point
+ */
+void Perturbation3D(std::vector<Eigen::Vector3d>& camera_space_points,
+                    double sigma);
 /**
  * @brief the calibration file reader for the simulated data from EPFL CV-Lab
  * @arg calib_mat: the intrinsic matrix to be loaded
