@@ -150,7 +150,6 @@ int LHMEstimator::IterationLHM(const std::vector<Eigen::Vector3d>& points3D,
                                            init_rot, init_trans);
         iter++;
     }
-    std::cout << "current size of object space error is: " << LHMEstimator::obj_errs.size() << std::endl;
 
     LHMEstimator::setNumIters(iter);
     return iter;
@@ -302,17 +301,12 @@ bool LHMEstimator::WeakPerspectiveQuat(const std::vector<Eigen::Vector3d>& point
 
     Eigen::Vector4d quat_gt = colmap::RotationMatrixToQuaternion(gt_pose_->block<3, 3>(0, 0));
 
-    std::cout << "current g.t. quat: " << std::endl;
-    std::cout << quat_gt << std::endl;
-    std::cout << "current estimate: " << std::endl;
-    std::cout << quat_vec << std::endl;
-
     if (gt_pose_ != nullptr) {
         double first_quat = RelativeQuatErr(quat_gt, quat_vec);
-        std::cout << "current g.t. pose inside LHM: " << std::endl;
-        std::cout << *gt_pose_ << std::endl; 
-        std::cout << "first estimated quaternion error of Horn: " << std::endl;
-        std::cout << boost::format("%.15f") % first_quat << std::endl;
+        // std::cout << "current g.t. pose inside LHM: " << std::endl;
+        // std::cout << *gt_pose_ << std::endl; 
+        // std::cout << "first estimated quaternion error of Horn: " << std::endl;
+        // std::cout << boost::format("%.15f") % first_quat << std::endl;
         LHMEstimator::setFirstRelaQuat(first_quat);
     }
 
@@ -347,15 +341,13 @@ bool LHMEstimator::WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>&
         Eigen::Vector4d curr_opt = colmap::RotationMatrixToQuaternion(rot_opt);
         Eigen::Vector4d curr_gt = colmap::RotationMatrixToQuaternion(gt_pose_->block<3, 3>(0, 0));
         double first_quat = RelativeQuatErr(curr_opt, curr_gt);
-        std::cout << "current g.t. pose inside LHM: " << std::endl;
-        std::cout << *gt_pose_ << std::endl; 
-        std::cout << "first estimated quaternion error of Horn: " << std::endl;
-        std::cout << boost::format("%.15f") % first_quat << std::endl;
+        // std::cout << "current g.t. pose inside LHM: " << std::endl;
+        // std::cout << *gt_pose_ << std::endl; 
+        // std::cout << "first estimated quaternion error of Horn: " << std::endl;
+        // std::cout << boost::format("%.15f") % first_quat << std::endl;
         LHMEstimator::setFirstRelaQuat(first_quat);
     }
 
-    std::cout << "first estimated matrix by DRaM is: " << std::endl;
-    std::cout << rot_opt << std::endl;
     if(bi_correct)
         return true;
     else    

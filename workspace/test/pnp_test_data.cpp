@@ -34,6 +34,8 @@ DataGenerator::createDataGenerator(const GeneratorType type) {
             return std::make_unique<BoxRandomEPnPTestDataNoise>(BoxRandomEPnPTestDataNoise());
         case GeneratorType::NumPts:
             return std::make_unique<BoxRandomTestNumPts>(BoxRandomTestNumPts());
+        case GeneratorType::Outlier:
+            return std::make_unique<BoxRandomOutliers>(BoxRandomOutliers());
         case GeneratorType::PlanarChk:
             return std::make_unique<BoxCornerPlanarSanity>(BoxCornerPlanarSanity());
         // Handle unsupported types
@@ -231,8 +233,54 @@ void BoxRandomTestNumPts::generate(std::vector<std::vector<Eigen::Vector2d>>& po
     }
 }
 
+double BoxRandomOutliers::percent_s = 0.05; // 5%
+double BoxRandomOutliers::percent_e = 0.25;
+void BoxRandomOutliers::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                                 std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                                 std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
+    Eigen::Matrix3d k;
+    GetIntrinsic(k);
+    Eigen::Matrix3d k_inv = k.inverse();
+
+    int num_samples = 5;
+    for(double i = BoxRandomOutliers::percent_s; i <= BoxRandomOutliers::percent_e; i += 0.05) {
+        for(int j = 0; j < num_samples; j++) {
+            // generate one set of camera space points with fixed # 20
+            std::vector<Eigen::Vector3d> curr_camera_space;
+            EPnPInsideRand(curr_camera_space, 20);
+
+            // generate noised 2d points from camera space points
+            std::vector<Eigen::Vector2d> curr_points2d;
+            GenOneSetNoise2D(curr_camera_space, curr_points2d, k, 5.0);
+            AddOutlier2D(curr_points2d, i, 640, 480);
+
+            Eigen::Matrix3d curr_rot;
+            Eigen::Vector3d curr_trans;
+            EPnPRandomRot(curr_rot);
+            EPnPRandomTrans(curr_trans);
+
+            std::vector<Eigen::Vector3d> curr_points3d;
+            const colmap::SimilarityTransform3 orig_tform(1, colmap::RotationMatrixToQuaternion(curr_rot),
+                                                curr_trans);
+            // generate scene points
+            for (size_t i = 0; i < curr_camera_space.size(); i++) {
+                Eigen::Vector3d point3D_world = curr_camera_space[i];
+                orig_tform.TransformPoint(&point3D_world);
+                curr_points3d.push_back(point3D_world);
+            }
+            // EPnP generate all scene points from a single camera points set
+            points2D.push_back(curr_points2d);
+            points3D.push_back(curr_points3d);
+            Eigen::Matrix3x4d curr_gt;
+            curr_gt.block<3, 3>(0, 0) = curr_rot.transpose(); 
+            curr_gt.col(3) = -curr_rot.transpose()*curr_trans; 
+            composed_extrinsic.push_back(curr_gt);
+        }
+    }
+}
+
 double BoxCornerPlanarSanity::sigma_s = 0.05;
-double BoxCornerPlanarSanity::sigma_e = 0.50;
+double BoxCornerPlanarSanity::sigma_e = 2.00;
 std::string BoxCornerPlanarSanity::option = "planar";
 void BoxCornerPlanarSanity::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                                      std::vector<std::vector<Eigen::Vector3d>>& points3D,
@@ -242,7 +290,7 @@ void BoxCornerPlanarSanity::generate(std::vector<std::vector<Eigen::Vector2d>>& 
     Eigen::Matrix3d k_inv = k.inverse();
 
     int num_sample = 500;
-    for(double i = BoxCornerPlanarSanity::sigma_s; i <= BoxCornerPlanarSanity::sigma_e; i += 0.05) {
+    for(double i = BoxCornerPlanarSanity::sigma_s; i <= BoxCornerPlanarSanity::sigma_e; i += 0.2) {
         for(int j = 0; j < num_sample; j++) {
             // generate one set of camera space points
             std::vector<Eigen::Vector3d> curr_camera_space;
@@ -320,6 +368,22 @@ void Perturbation3D(std::vector<Eigen::Vector3d>& camera_space_points, double si
         p.x() += dis(gen);
         p.y() += dis(gen);
         p.z() += dis(gen);
+    }
+}
+
+void AddOutlier2D(std::vector<Eigen::Vector2d>& points2D, double outlier_rate, 
+                  const int image_x, const int image_y) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> dis_x(0, image_x);
+    std::uniform_real_distribution<> dis_y(0, image_y);
+    
+    int num_points = points2D.size();
+    int num_outliers = static_cast<int>(num_points * outlier_rate);
+    
+    for (int i = 0; i < num_outliers; i++) {
+        int index = rand() % num_points;
+        points2D[index] = Eigen::Vector2d(dis_x(gen), dis_y(gen)); // Random outlier
     }
 }
 

@@ -110,7 +110,8 @@ void PnPTestRunner::run_test() {
     save1DVec(trans_data, output_path_ + "_trans_" + ".txt");
     save1DVec(iter_data, output_path_ + "_iters_" + ".txt");
 
-    // save all reprojection errors
+    // save all reprojection errors,
+    // for the run with RANSAC, we need to pick reasonable residuals with inlier masks
     save2DdoubleVec(residual_data, output_path_ + "_residuals_" + ".txt");
     // list of time series of LHM-rleated methods
     if(obj_err_series.size() != 0)

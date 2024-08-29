@@ -15,7 +15,7 @@
 #include "estimate/lhm.h"
 
 enum class GeneratorType {
-    COLMAP, CVLab, EPnPdZ, EPnPdY, RandomNoise, NumPts, PlanarChk
+    COLMAP, CVLab, EPnPdZ, EPnPdY, RandomNoise, NumPts, Outlier, PlanarChk
 };
 
 inline GeneratorType getGeneratorFromName(const std::string& name) {
@@ -25,6 +25,7 @@ inline GeneratorType getGeneratorFromName(const std::string& name) {
         {"epnp_dy", GeneratorType::EPnPdY},
         {"random_noise", GeneratorType::RandomNoise},
         {"num_pts", GeneratorType::NumPts},
+        {"outliers", GeneratorType::Outlier},
         {"planar_chk", GeneratorType::PlanarChk}
     };
 
@@ -104,6 +105,22 @@ public:
     static double sigma;
     static int min_pts;
     static int max_pts;
+};
+
+/**
+ * @brief varying percentage of outliers with fixed number
+ * of random points inside the EPnP box
+ */
+class BoxRandomOutliers: public DataGenerator {
+public:
+    BoxRandomOutliers() {};
+
+    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
+
+    static double percent_s;
+    static double percent_e;
 };
 
 /**
@@ -192,6 +209,13 @@ void GenOneSetNoise2D(std::vector<Eigen::Vector3d>& camera_space_points,
  */
 void Perturbation3D(std::vector<Eigen::Vector3d>& camera_space_points,
                     double sigma);
+
+/**
+ * @brief replace part of 2D points as outliers
+ * we follow the EPnP data where the aspect ratio for image is 640, 480
+ */
+void AddOutlier2D(std::vector<Eigen::Vector2d>& points2D, double outlier_rate, 
+                  const int image_x, const int image_y);
 /**
  * @brief the calibration file reader for the simulated data from EPFL CV-Lab
  * @arg calib_mat: the intrinsic matrix to be loaded

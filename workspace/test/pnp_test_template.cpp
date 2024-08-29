@@ -172,6 +172,8 @@ bool EstimatorWrapper::runWithRansac(const std::vector<Eigen::Vector2d>& points2
             
             colmap::RANSACOptions options;
             options.max_error = 1e-5;
+            options.min_inlier_ratio = 0.02;
+            options.max_num_trials = 10000;
             colmap::RANSAC<LHMEstimator> ransac(options);
             const auto report = ransac.Estimate(points2D, points3D);
 
