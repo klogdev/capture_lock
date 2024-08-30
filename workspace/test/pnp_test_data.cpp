@@ -242,7 +242,7 @@ void BoxRandomOutliers::generate(std::vector<std::vector<Eigen::Vector2d>>& poin
     GetIntrinsic(k);
     Eigen::Matrix3d k_inv = k.inverse();
 
-    int num_samples = 5;
+    int num_samples = 500;
     for(double i = BoxRandomOutliers::percent_s; i <= BoxRandomOutliers::percent_e; i += 0.05) {
         for(int j = 0; j < num_samples; j++) {
             // generate one set of camera space points with fixed # 20
@@ -280,7 +280,7 @@ void BoxRandomOutliers::generate(std::vector<std::vector<Eigen::Vector2d>>& poin
 }
 
 double BoxCornerPlanarSanity::sigma_s = 0.05;
-double BoxCornerPlanarSanity::sigma_e = 2.00;
+double BoxCornerPlanarSanity::sigma_e = 0.65;
 std::string BoxCornerPlanarSanity::option = "planar";
 void BoxCornerPlanarSanity::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                                      std::vector<std::vector<Eigen::Vector3d>>& points3D,
@@ -290,7 +290,7 @@ void BoxCornerPlanarSanity::generate(std::vector<std::vector<Eigen::Vector2d>>& 
     Eigen::Matrix3d k_inv = k.inverse();
 
     int num_sample = 500;
-    for(double i = BoxCornerPlanarSanity::sigma_s; i <= BoxCornerPlanarSanity::sigma_e; i += 0.2) {
+    for(double i = BoxCornerPlanarSanity::sigma_s; i <= BoxCornerPlanarSanity::sigma_e; i += 0.1) {
         for(int j = 0; j < num_sample; j++) {
             // generate one set of camera space points
             std::vector<Eigen::Vector3d> curr_camera_space;
@@ -440,16 +440,20 @@ void EPnPBoxCorner(std::vector<Eigen::Vector3d>& camera_space_points) {
 
 void EPnPPlanar(std::vector<Eigen::Vector3d>& camera_space_points) {
     // Define the ranges for x and y, and set a fixed z value
-    double x_values[2] = {-2, 2};
-    double y_values[2] = {-2, 2};
+    double x_values[3] = {-2, 0, 2};  // Using three positions along x
+    double y_values[3] = {-2, 0, 2};  // Using three positions along y
     double fixed_z_value = 6;  // Choose a mid-range value between 4 and 8
 
     // Generate points on the plane
-    for (int i = 0; i < 2; i++) {
-        for (int j = 0; j < 2; j++) {
-            camera_space_points.push_back(Eigen::Vector3d(x_values[i], y_values[j], fixed_z_value));
-        }
-    }
+    // Select 8 points including corners, midpoints of edges, and center point
+    camera_space_points.push_back(Eigen::Vector3d(x_values[0], y_values[0], fixed_z_value)); // Corner
+    camera_space_points.push_back(Eigen::Vector3d(x_values[0], y_values[1], fixed_z_value)); // Edge midpoint
+    camera_space_points.push_back(Eigen::Vector3d(x_values[0], y_values[2], fixed_z_value)); // Corner
+    camera_space_points.push_back(Eigen::Vector3d(x_values[1], y_values[0], fixed_z_value)); // Edge midpoint
+    camera_space_points.push_back(Eigen::Vector3d(x_values[1], y_values[2], fixed_z_value)); // Edge midpoint
+    camera_space_points.push_back(Eigen::Vector3d(x_values[2], y_values[0], fixed_z_value)); // Corner
+    camera_space_points.push_back(Eigen::Vector3d(x_values[2], y_values[1], fixed_z_value)); // Edge midpoint
+    camera_space_points.push_back(Eigen::Vector3d(x_values[2], y_values[2], fixed_z_value)); // Corner
 }
 
 void EPnPInsideRand(std::vector<Eigen::Vector3d>& camera_space_points,
