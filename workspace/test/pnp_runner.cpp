@@ -52,16 +52,14 @@ void PnPTestRunner::run_test() {
         double seconds_pnp = std::chrono::duration<double>(duration_pnp).count();
 
         // record time series of metrics during iterations
-        if(lhm_type_) {
-            std::vector<double> curr_rel_quat = LHMEstimator::obj_errs;
-            std::vector<double> curr_obj_err = LHMEstimator::rel_quats;
-            std::cout << "current size of object space error from runner is: "
-            << curr_obj_err.size() << std::endl;
-            LHMEstimator::clearObjErrs();
-            LHMEstimator::clearRelQuats();
-            obj_err_series.push_back(curr_obj_err);
-            quat_err_series.push_back(curr_rel_quat);
-        }
+        // if(lhm_type_) {
+        //     std::vector<double> curr_rel_quat = LHMEstimator::obj_errs;
+        //     std::vector<double> curr_obj_err = LHMEstimator::rel_quats;
+        //     LHMEstimator::clearObjErrs();
+        //     LHMEstimator::clearRelQuats();
+        //     obj_err_series.push_back(curr_obj_err);
+        //     quat_err_series.push_back(curr_rel_quat);
+        // }
         
         int iters = LHMEstimator::num_iterations;
 

@@ -52,7 +52,6 @@ double RelativeQuatErr(const Eigen::Vector4d& quat_gt, const Eigen::Vector4d& qu
     double diff = (quat_gt - quat_est).norm();
     double est_norm = quat_est.norm();
 
-    std::cout << "relative quat error inside fn is: " << boost::format("%.15f") %(diff/est_norm) << std::endl;
     return diff/est_norm;
 }
 
