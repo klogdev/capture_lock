@@ -242,7 +242,7 @@ void BoxRandomOutliers::generate(std::vector<std::vector<Eigen::Vector2d>>& poin
     GetIntrinsic(k);
     Eigen::Matrix3d k_inv = k.inverse();
 
-    int num_samples = 500;
+    int num_samples = 10;
     for(double i = BoxRandomOutliers::percent_s; i <= BoxRandomOutliers::percent_e; i += 0.05) {
         for(int j = 0; j < num_samples; j++) {
             // generate one set of camera space points with fixed # 20
