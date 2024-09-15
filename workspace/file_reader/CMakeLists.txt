@@ -13,6 +13,15 @@ target_include_directories(
 target_link_libraries(
   stream PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES} img sift)
 
+add_library(tum STATIC
+tum_rgbd.h
+tum_rgbd.cpp
+)
+target_include_directories(
+  tum PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${OpenCV_INCLUDE_DIRS}")
+target_link_libraries(
+  tum PUBLIC Eigen3::Eigen ${absl_LIBRARIES})
+
 add_library(file_option STATIC
 file_options.h
 )

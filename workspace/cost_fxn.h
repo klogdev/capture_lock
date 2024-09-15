@@ -83,7 +83,7 @@ class BAConstPoseCostFxn {
 
     static ceres::CostFunction* Create(const Eigen::Vector4d& qvec,
                                        const Eigen::Vector3d& tvec,
-                                       const Eigen::Vector2d& point_2d){
+                                       const Eigen::Vector2d& point_2d) {
         return (new ceres::AutoDiffCostFunction<
                 BAConstPoseCostFxn<CameraModel>, 2, 3, CameraModel::kNumParams>(
             new BAConstPoseCostFxn(qvec, tvec, point_2d)));
