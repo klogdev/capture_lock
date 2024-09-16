@@ -192,6 +192,11 @@ void EPnPRandomRot(Eigen::Matrix3d& rot);
 void EPnPRandomTrans(Eigen::Vector3d& trans);
 
 /**
+ * @brief translate points inside the camera space
+ */
+void CameraSpaceShift(std::vector<Eigen::Vector3d>& camera_pts, const Eigen::Vector3d& trans);
+
+/**
  * @brief set the intrinsic matrix to convert the pixel to camera space
  * if use film plane data, set the intrinsic as an identity by default
 */

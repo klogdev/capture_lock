@@ -59,8 +59,8 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
 
     int num_samples = 500;
     
-    double d_min = 35;
-    double d_max = 35;
+    double d_min = 5;
+    double d_max = 50;
 
     for(double d = d_min; d <= d_max; d += 10) {
         Eigen::Matrix3d curr_rot;
@@ -69,7 +69,7 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
             Eigen::Matrix3d curr_rot;
             EPnPRandomRot(curr_rot);
             std::vector<Eigen::Vector3d> curr_points3d;
-            Eigen::Vector3d curr_trans = Eigen::Vector3d(5, 15, d);
+            Eigen::Vector3d curr_trans = Eigen::Vector3d(5, 5, d);
             const colmap::SimilarityTransform3 orig_tform(1, colmap::RotationMatrixToQuaternion(curr_rot),
                                                 curr_trans);
             // generate scene points from non-noised camera points
@@ -335,6 +335,13 @@ void GetIntrinsic(Eigen::Matrix3d& k) {
     k << 800, 0, 320,
          0, 800, 240,
          0, 0, 1;
+}
+
+void CameraSpaceShift(std::vector<Eigen::Vector3d>& camera_pts, const Eigen::Vector3d& trans) {
+    for (Eigen::Vector3d& pt : camera_pts) {
+        // Add the translation vector to the current point
+        pt += trans;
+    }
 }
 
 void GenOneSetNoise2D(std::vector<Eigen::Vector3d>& camera_space_points, 
