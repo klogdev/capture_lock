@@ -194,7 +194,9 @@ void EPnPRandomTrans(Eigen::Vector3d& trans);
 /**
  * @brief translate points inside the camera space
  */
-void CameraSpaceShift(std::vector<Eigen::Vector3d>& camera_pts, const Eigen::Vector3d& trans);
+void CameraSpaceShift(const std::vector<Eigen::Vector3d>& camera_pts, 
+                      const Eigen::Vector3d& trans,
+                      std::vector<Eigen::Vector3d>& shifted_pts);
 
 /**
  * @brief set the intrinsic matrix to convert the pixel to camera space

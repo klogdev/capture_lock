@@ -56,7 +56,14 @@ target_include_directories(
 pnp PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
 pnp PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES}
-img sift test_util lhm pnp_runner pnp_data pnp_template)
+img test_util lhm pnp_runner pnp_data pnp_template)
+
+add_executable(pnp_iter pnp_iteration.cpp)
+target_include_directories(
+pnp_iter PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+pnp_iter PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES}
+img test_util lhm pnp_runner pnp_data pnp_template)
 
 add_executable(rot_test rot_test.cpp)
 target_include_directories(

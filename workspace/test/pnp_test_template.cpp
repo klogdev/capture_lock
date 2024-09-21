@@ -49,7 +49,7 @@ bool EstimatorWrapper::runStandalone(const std::vector<Eigen::Vector2d>& points2
             break;
         }
         case EstimatorType::LHM: {
-            LHMEstimator::setGlobalOptions(options_.lhm_opt); // Set global LHM options
+            LHMEstimator::options_.rot_init_est = "horn"; // Set global LHM options
             std::cout << "current ransac option inside estimator is: " << options_.use_ransac << std::endl;
 
             LHMEstimator estimator;
@@ -60,9 +60,8 @@ bool EstimatorWrapper::runStandalone(const std::vector<Eigen::Vector2d>& points2
             break;
         }
         case EstimatorType::DRaM_GN: {
-            options_.lhm_opt.rot_init_est = "dram";
-            options_.lhm_opt.optim_option = "gn";
-            LHMEstimator::setGlobalOptions(options_.lhm_opt); // Set global LHM options
+            LHMEstimator::options_.rot_init_est = "dram";
+            LHMEstimator::options_.optim_option = "gn";
 
             LHMEstimator estimator;
             estimated_extrinsic = estimator.Estimate(points2D, points3D);
@@ -72,9 +71,8 @@ bool EstimatorWrapper::runStandalone(const std::vector<Eigen::Vector2d>& points2
             break;
         }
         case EstimatorType::DRaM_LHM: {
-            options_.lhm_opt.rot_init_est = "dram";
-            options_.lhm_opt.optim_option = "lhm";
-            LHMEstimator::setGlobalOptions(options_.lhm_opt); // Set global LHM options
+            LHMEstimator::options_.rot_init_est = "dram";
+            LHMEstimator::options_.optim_option = "lhm";
 
             LHMEstimator estimator;
             estimated_extrinsic = estimator.Estimate(points2D, points3D);
@@ -101,6 +99,8 @@ bool EstimatorWrapper::runWithRansac(const std::vector<Eigen::Vector2d>& points2
         case EstimatorType::EPnP: {
             colmap::RANSACOptions options;
             options.max_error = 1e-5;
+            options.min_inlier_ratio = 0.02;
+            options.max_num_trials = 10000;
             colmap::RANSAC<colmap::EPNPEstimator> ransac(options);
             const auto report = ransac.Estimate(points2D, points3D);
 
@@ -122,6 +122,8 @@ bool EstimatorWrapper::runWithRansac(const std::vector<Eigen::Vector2d>& points2
         case EstimatorType::DLS: {
             colmap::RANSACOptions options;
             options.max_error = 1e-5;
+            options.min_inlier_ratio = 0.02;
+            options.max_num_trials = 10000;
             colmap::RANSAC<DLSEstimator> ransac(options);
             const auto report = ransac.Estimate(points2D, points3D);
 
@@ -145,6 +147,8 @@ bool EstimatorWrapper::runWithRansac(const std::vector<Eigen::Vector2d>& points2
         case EstimatorType::LHM: {
             colmap::RANSACOptions options;
             options.max_error = 1e-5;
+            options.min_inlier_ratio = 0.02;
+            options.max_num_trials = 10000;
             colmap::RANSAC<LHMEstimator> ransac(options);
             const auto report = ransac.Estimate(points2D, points3D);
 
@@ -166,9 +170,8 @@ bool EstimatorWrapper::runWithRansac(const std::vector<Eigen::Vector2d>& points2
             break;
         }
         case EstimatorType::DRaM_LHM: {
-            options_.lhm_opt.rot_init_est = "dram";
-            options_.lhm_opt.optim_option = "lhm";
-            LHMEstimator::setGlobalOptions(options_.lhm_opt); // Set global LHM options
+            LHMEstimator::options_.rot_init_est = "dram";
+            LHMEstimator::options_.optim_option = "lhm";
             
             colmap::RANSACOptions options;
             options.max_error = 1e-5;
@@ -191,9 +194,8 @@ bool EstimatorWrapper::runWithRansac(const std::vector<Eigen::Vector2d>& points2
             break;
         }
          case EstimatorType::DRaM_GN: {
-            options_.lhm_opt.rot_init_est = "dram";
-            options_.lhm_opt.optim_option = "gn";
-            LHMEstimator::setGlobalOptions(options_.lhm_opt); // Set global LHM options
+            LHMEstimator::options_.rot_init_est = "dram";
+            LHMEstimator::options_.optim_option = "gn";
             
             colmap::RANSACOptions options;
             options.max_error = 1e-5;

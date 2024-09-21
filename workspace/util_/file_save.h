@@ -27,7 +27,7 @@ void save1DVec(const std::vector<T>& data_vec, std::string out_path) {
         }
     }
 
-    std::ofstream outfile(out_path);
+    std::ofstream outfile(out_path, std::ios::app);
     if (!outfile.is_open()) {
         std::cerr << "Error: Unable to open file " << out_path << " for writing." << std::endl;
         return;

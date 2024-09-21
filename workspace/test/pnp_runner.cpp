@@ -79,7 +79,6 @@ void PnPTestRunner::run_test() {
         // For demonstration, let's assume we're just printing the Frobenius norm
         // of the difference between the estimated and ground truth extrinsic matrices.
         double error = frobeniusNorm(estimated_extrinsic[0], gt_extrinsic[i]);
-        // std::cout << "Estimation error (Frobenius norm): " << error << std::endl;
                 
         // calculate relative error
         Eigen::Vector4d est_quat = colmap::RotationMatrixToQuaternion(estimated_extrinsic[0].block<3, 3>(0, 0));

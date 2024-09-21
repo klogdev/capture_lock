@@ -117,6 +117,8 @@ int LHMEstimator::IterationLHM(const std::vector<Eigen::Vector3d>& points3D,
                                const Eigen::Matrix3d& Tfact,
                                Eigen::Matrix3d& init_rot,
                                Eigen::Vector3d& init_trans) {
+    std::cout << "current option is: " << options_.lhm_iter << std::endl;
+    std::cout << "current threshold is: " << options_.lhm_epsilon << std::endl;
     int n_points = points3D.size();
     int iter = 0;
     double curr_err = std::numeric_limits<double>::max();

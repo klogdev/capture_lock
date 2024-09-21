@@ -37,7 +37,6 @@ inline EstimatorType getEstimatorFromName(const std::string& name) {
 
 struct EstimatorOptions {
     bool use_ransac = false; // Default to standalone estimation
-    LHMOptions lhm_opt = LHMOptions();
 };
 
 class EstimatorWrapper {

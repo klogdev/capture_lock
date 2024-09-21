@@ -36,13 +36,8 @@ int main(int argc, char** argv) {
     if(estimator_opt == "lhm" || estimator_opt == "dram_lhm" || estimator_opt == "dram_gn") {
         lhm_type = true;
     }
-    std::cout << "check type boolean: " << lhm_type << std::endl;
 
     colmap::SetPRNGSeed(0);
-
-    std::vector<Eigen::Vector3d> points3D;
-    std::vector<Eigen::Vector2d> points2D;
-    std::vector<Eigen::Matrix3x4d> poses;
 
     // Get the generator and estimator types from names
     GeneratorType gen_type = getGeneratorFromName(generator_opt);
@@ -62,7 +57,7 @@ int main(int argc, char** argv) {
     std::string output = "/tmp3/Pose_PnP/PnP_result/" + generator_opt + "_" + std::to_string(sigma) + "/" + estimator_opt;
     // Pass these instances to a TestRunner or another part of your application
 
-    PnPTestRunner test_runner(std::move(generator), std::move(estimator), output, sigma, lhm_type);
+    PnPTestRunner test_runner(std::move(generator), estimator, output, sigma, lhm_type);
     test_runner.run_test();
     
     return 0;
