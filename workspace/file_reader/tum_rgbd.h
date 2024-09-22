@@ -15,13 +15,15 @@ struct TUMIntrinsic {
 
 /**
  * @brief get sorted files via timestamps
+ * @arg directory: parent path
+ * files: all files inside the parent path
  */
 void GetSortedFiles(const boost::filesystem::path& directory, 
                     std::vector<boost::filesystem::path>& files);
 
 /**
  * @brief get associated rgb and depth map by providing
- * 2 parent directory
+ * 2 parent directory, all_rgb & all_depth should be aligned by there timestamp
  */
 void DepthRGBMap(const boost::filesystem::path& rgb_path,
                  const boost::filesystem::path& depth_path,
@@ -38,7 +40,7 @@ void DepthToCameraSpace(int u, int v, float depth, Eigen::Vector3d& point,
  * @brief process one pair of rgb and depth file
  */
 void OnePairDepthRGB(std::string& rgb_file, std::string& depth_file,
-                     Eigen::Vector3d& camera_pt, TUMIntrinsic& paras);
+                     std::vector<Eigen::Vector3d>& camera_pts, TUMIntrinsic& paras);
 
 
 /**

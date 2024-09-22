@@ -38,10 +38,11 @@ int main(int argc, char** argv) {
         std::unique_ptr<DataGenerator> generator = DataGenerator::createDataGenerator(gen_type);
         EstimatorWrapper estimator(est_type, options); // Assuming EstimatorWrapper can be directly instantiated like this
 
-        // estimator.options_.lhm_opt.lhm_epsilon = error_threshold;
-        // estimator.options_.lhm_opt.lhm_iter = std::numeric_limits<int>::max();
         LHMEstimator::options_.lhm_epsilon = error_threshold;
         LHMEstimator::options_.lhm_iter = std::numeric_limits<int>::max();
+        // Set tolerance to a very large number
+        LHMEstimator::options_.lhm_tolerance = 1e-9;
+
 
         // specify the output path for saving metrics
         // here we create new folder for each generator+estimator option

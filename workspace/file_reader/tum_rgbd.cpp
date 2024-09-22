@@ -53,7 +53,7 @@ void DepthToCameraSpace(int u, int v, float depth, Eigen::Vector3d& point,
 }
 
 void OnePairDepthRGB(std::string& rgb_file, std::string& depth_file,
-                     Eigen::Vector3d& camera_pt, TUMIntrinsic& paras) {
+                     std::vector<Eigen::Vector3d>& camera_pts, TUMIntrinsic& paras) {
     cv::Mat rgb_image = cv::imread(rgb_file, cv::IMREAD_COLOR);
     cv::Mat depth_image = cv::imread(depth_file, cv::IMREAD_ANYDEPTH);
 
@@ -67,7 +67,9 @@ void OnePairDepthRGB(std::string& rgb_file, std::string& depth_file,
             uint16_t depth_value = depth_image.at<uint16_t>(v, u);  // Assuming depth image is 16-bit
             if (depth_value > 0) {  // Check for valid depth
                 float depth_in_meters = depth_value / paras.scale;  // Convert to meters if necessary
-                DepthToCameraSpace(u, v, depth_value, camera_pt, paras);
+                Eigen::Vector3d curr_pt;
+                DepthToCameraSpace(u, v, depth_value, curr_pt, paras);
+                camera_pts.push_back(curr_pt)
             }
         }
     }
