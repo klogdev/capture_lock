@@ -223,6 +223,8 @@ void Perturbation3D(std::vector<Eigen::Vector3d>& camera_space_points,
  */
 void AddOutlier2D(std::vector<Eigen::Vector2d>& points2D, double outlier_rate, 
                   const int image_x, const int image_y);
+
+
 /**
  * @brief the calibration file reader for the simulated data from EPFL CV-Lab
  * @arg calib_mat: the intrinsic matrix to be loaded

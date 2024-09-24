@@ -9,6 +9,8 @@
 #include <opencv2/opencv.hpp>
 #include <Eigen/Core>
 
+#include "base/pose.h"
+
 #include "file_reader/tum_rgbd.h"
 
 void GetSortedFiles(const boost::filesystem::path& directory, std::vector<boost::filesystem::path>& files) {
@@ -52,13 +54,12 @@ void DepthToCameraSpace(int u, int v, float depth, Eigen::Vector3d& point,
     point[1] = (v - paras.cy) * depth / paras.fy;  // Y value
 }
 
-void OnePairDepthRGB(std::string& rgb_file, std::string& depth_file,
-                     std::vector<Eigen::Vector3d>& camera_pts, TUMIntrinsic& paras) {
-    cv::Mat rgb_image = cv::imread(rgb_file, cv::IMREAD_COLOR);
+void OnePairDepthRGB(const std::string& depth_file, std::vector<Eigen::Vector3d>& camera_pts, 
+                     std::vector<Eigen::Vector2d>& normalized_pts, TUMIntrinsic& paras) {
     cv::Mat depth_image = cv::imread(depth_file, cv::IMREAD_ANYDEPTH);
 
     // Check if images are loaded
-    if (rgb_image.empty() || depth_image.empty()) {
+    if (depth_image.empty()) {
         std::cerr << "Error loading images" << std::endl;
     }
 
@@ -66,10 +67,11 @@ void OnePairDepthRGB(std::string& rgb_file, std::string& depth_file,
         for (int u = 0; u < depth_image.cols; u++) {
             uint16_t depth_value = depth_image.at<uint16_t>(v, u);  // Assuming depth image is 16-bit
             if (depth_value > 0) {  // Check for valid depth
-                float depth_in_meters = depth_value / paras.scale;  // Convert to meters if necessary
+                double depth_in_meters = depth_value / paras.scale;  // Convert to meters if necessary
                 Eigen::Vector3d curr_pt;
-                DepthToCameraSpace(u, v, depth_value, curr_pt, paras);
-                camera_pts.push_back(curr_pt)
+                DepthToCameraSpace(u, v, depth_in_meters, curr_pt, paras);
+                camera_pts.push_back(curr_pt);
+                normalized_pts.push_back(Eigen::Vector2d(curr_pt.x()/depth_in_meters, curr_pt.y()/depth_in_meters));
             }
         }
     }
@@ -103,4 +105,42 @@ void LoadTUMPoses(const std::string& gt_file, std::vector<Eigen::Vector4d>& quat
     }
 
     file.close();
+}
+
+void PairsCameraToWorld(const std::vector<Eigen::Vector3d>& camera_pts,
+                        const Eigen::Vector4d& quat,
+                        const Eigen::Vector3d& trans,
+                        std::vector<Eigen::Vector3d>& world_pts) {
+    Eigen::Matrix3d R = colmap::QuaternionToRotationMatrix(quat);
+
+    for (const auto& pt : camera_pts) {
+        Eigen::Vector3d world_pt = R * pt + trans;
+        world_pts.push_back(world_pt);
+    }
+}
+
+void ProcessAllPairs(const std::vector<std::string>& depth_files,
+                     const std::vector<Eigen::Vector4d>& quats,
+                     const std::vector<Eigen::Vector3d>& trans,
+                     TUMIntrinsic& paras,
+                     std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                     std::vector<std::vector<Eigen::Vector3d>>& points3D) {
+        // Ensure the input lists are of the same length
+    assert(depth_files.size() == quats.size());
+
+    // Process each pair
+    for (size_t i = 0; i < depth_files.size(); i++) {
+        std::vector<Eigen::Vector2d> normalized_pts;
+        std::vector<Eigen::Vector3d> camera_pts;
+        std::vector<Eigen::Vector3d> world_pts;
+
+        // Convert depth and RGB to camera space points
+        OnePairDepthRGB(depth_files[i], camera_pts, normalized_pts, paras);
+
+        // Transform camera space points to world space using GT poses
+        PairsCameraToWorld(camera_pts, quats[i], trans[i], world_pts);
+
+        points2D.push_back(normalized_pts);
+        points3D.push_back(world_pts);
+    }
 }
