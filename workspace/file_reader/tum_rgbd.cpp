@@ -6,8 +6,11 @@
 #include <string>
 #include <algorithm>
 #include <boost/filesystem.hpp>
-#include <opencv2/opencv.hpp>
 #include <Eigen/Core>
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp> // For imread
+#include <opencv2/imgproc/imgproc.hpp> // If you use image processing functions
+
 
 #include "base/pose.h"
 
@@ -120,13 +123,17 @@ void PairsCameraToWorld(const std::vector<Eigen::Vector3d>& camera_pts,
 }
 
 void ProcessAllPairs(const std::vector<std::string>& depth_files,
-                     const std::vector<Eigen::Vector4d>& quats,
-                     const std::vector<Eigen::Vector3d>& trans,
+                     const std::string& gt_pose,
                      TUMIntrinsic& paras,
                      std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                      std::vector<std::vector<Eigen::Vector3d>>& points3D) {
-        // Ensure the input lists are of the same length
+    // Ensure the input lists are of the same length
     assert(depth_files.size() == quats.size());
+
+    std::vector<Eigen::Vector4d> quats;
+    std::vector<Eigen::Vector3d> trans;
+
+    LoadTUMPoses(gt_pose, quats, trans);
 
     // Process each pair
     for (size_t i = 0; i < depth_files.size(); i++) {

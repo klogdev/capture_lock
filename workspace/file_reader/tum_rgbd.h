@@ -1,3 +1,7 @@
+#ifndef FILE_READER_TUM_RGBD_H_
+#define FILE_READER_TUM_RGBD_H_
+
+
 #include <boost/filesystem.hpp>
 #include <Eigen/Core>
 
@@ -64,10 +68,13 @@ void PairsCameraToWorld(const std::vector<Eigen::Vector3d>& camera_pts,
 
 /**
  * covert all pairs of depth maps and g.t. poses to world space points
+ * @arg depth_files: a list of directory to depth map files
+ * gt_pose: a single files with pre-aligned gt poses 
  */
 void ProcessAllPairs(const std::vector<std::string>& depth_files,
-                     const std::vector<Eigen::Vector4d>& quats,
-                     const std::vector<Eigen::Vector3d>& trans,
+                     const std::string& gt_pose,
                      TUMIntrinsic& paras,
                      std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                      std::vector<std::vector<Eigen::Vector3d>>& points3D);
+
+#endif // FILE_READER_TUM_RGBD_H_
