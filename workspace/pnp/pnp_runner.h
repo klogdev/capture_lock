@@ -4,8 +4,8 @@
 #include <Eigen/Core>
 #include <memory>
 
-#include "test/pnp_test_template.h"
-#include "test/pnp_test_data.h"
+#include "pnp/pnp_test_template.h"
+#include "pnp/pnp_test_data.h"
 
 #include "estimate/lhm.h"
 

@@ -11,7 +11,7 @@
 #include "estimate/lhm.h"
 #include "estimate/dls.h"
 
-#include "test/pnp_test_template.h"
+#include "pnp/pnp_test_template.h"
 
 // Function to perform estimation
 bool EstimatorWrapper::estimate(const std::vector<Eigen::Vector2d>& points2D,

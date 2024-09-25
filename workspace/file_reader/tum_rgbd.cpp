@@ -114,7 +114,7 @@ void PairsCameraToWorld(const std::vector<Eigen::Vector3d>& camera_pts,
     Eigen::Matrix3d R = colmap::QuaternionToRotationMatrix(quat);
 
     for (const auto& pt : camera_pts) {
-        Eigen::Vector3d world_pt = R * pt + trans;
+        Eigen::Vector3d world_pt = R.transpose() * pt - R.transpose() * trans;
         world_pts.push_back(world_pt);
     }
 }

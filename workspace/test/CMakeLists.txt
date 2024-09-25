@@ -24,47 +24,6 @@ target_include_directories(
 target_link_libraries(
   horn PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
 
-add_library(pnp_template STATIC
-pnp_test_template.h
-pnp_test_template.cpp
-)
-target_include_directories(
-  pnp_template PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
-target_link_libraries(
-  pnp_template PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} lhm lsq dls)
-
-add_library(pnp_data STATIC
-pnp_test_data.h
-pnp_test_data.cpp
-)
-target_include_directories(
-  pnp_data PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
-target_link_libraries(
-  pnp_data PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} lhm math_help)
-
-add_library(pnp_runner STATIC
-pnp_runner.h
-pnp_runner.cpp
-)
-target_include_directories(
-  pnp_runner PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
-target_link_libraries(
-  pnp_runner PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} pnp_data pnp_template lhm file_save)
-
-add_executable(pnp pnp_test.cpp)
-target_include_directories(
-pnp PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
-target_link_libraries(
-pnp PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES}
-img test_util lhm pnp_runner pnp_data pnp_template)
-
-add_executable(pnp_iter pnp_iteration.cpp)
-target_include_directories(
-pnp_iter PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
-target_link_libraries(
-pnp_iter PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES}
-img test_util lhm pnp_runner pnp_data pnp_template)
-
 add_executable(rot_test rot_test.cpp)
 target_include_directories(
 rot_test PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")

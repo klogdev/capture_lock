@@ -20,7 +20,7 @@
 
 #include "estimate/lhm.h"
 #include "util_/math_helper.h"
-#include "test/pnp_test_data.h"
+#include "pnp/pnp_test_data.h"
 
 std::unique_ptr<DataGenerator> 
 DataGenerator::createDataGenerator(const GeneratorType type) {

@@ -48,4 +48,9 @@ void save1DVec(const std::vector<T>& data_vec, std::string out_path) {
 */
 void save2DdoubleVec(const std::vector<std::vector<double>>& data_vec, std::string out_path);
 
+/**
+ * @brief save a sequence of 3d clouds to a file
+ */
+void Save3DPoints(const std::string& filename, const std::vector<std::vector<Eigen::Vector3d>>& points3D);
+
 #endif // UTIL__FILE_SAVE_H_

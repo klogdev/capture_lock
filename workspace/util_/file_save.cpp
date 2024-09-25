@@ -38,3 +38,22 @@ void save2DdoubleVec(const std::vector<std::vector<double>>& data_vec, std::stri
     outfile.close();
     std::cout << "2D vector data saved to file: " << out_path << std::endl;
 }
+
+void Save3DPoints(const std::string& filename, const std::vector<std::vector<Eigen::Vector3d>>& points3D) {
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Error: Unable to open file " << filename << " for writing." << std::endl;
+        return;
+    }
+
+    for (const auto& vector : points3D) {
+        for (const Eigen::Vector3d& point : vector) {
+            file << point.x() << " " << point.y() << " " << point.z() << "\n";
+        }
+        // You may want to separate each vector's points for clarity
+        file << "\n";  // Blank line to separate different vectors of points
+    }
+
+    file.close();
+    std::cout << "3D point data saved to file: " << filename << std::endl;
+}

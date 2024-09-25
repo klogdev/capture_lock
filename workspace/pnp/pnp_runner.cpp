@@ -7,9 +7,9 @@
 #include "base/camera.h"
 #include "base/pose.h"
 
-#include "test/pnp_test_template.h"
-#include "test/pnp_test_data.h"
-#include "test/pnp_runner.h"
+#include "pnp/pnp_test_template.h"
+#include "pnp/pnp_test_data.h"
+#include "pnp/pnp_runner.h"
 
 #include "estimate/lhm.h"
 
