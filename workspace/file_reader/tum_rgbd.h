@@ -1,7 +1,6 @@
 #ifndef FILE_READER_TUM_RGBD_H_
 #define FILE_READER_TUM_RGBD_H_
 
-
 #include <boost/filesystem.hpp>
 #include <Eigen/Core>
 
@@ -75,6 +74,7 @@ void ProcessAllPairs(const std::vector<std::string>& depth_files,
                      const std::string& gt_pose,
                      TUMIntrinsic& paras,
                      std::vector<std::vector<Eigen::Vector2d>>& points2D, 
-                     std::vector<std::vector<Eigen::Vector3d>>& points3D);
+                     std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                     std::vector<Eigen::Matrix<double, 3, 4>>& composed_extrinsic);
 
 #endif // FILE_READER_TUM_RGBD_H_

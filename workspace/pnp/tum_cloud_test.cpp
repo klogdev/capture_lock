@@ -23,7 +23,8 @@ int main(int argc, char** argv) {
     TUMIntrinsic tum_para = TUMIntrinsic();
     std::vector<std::vector<Eigen::Vector2d>> points2D;
     std::vector<std::vector<Eigen::Vector3d>> points3D;
-    ProcessAllPairs(depth_strings, gt_dir, tum_para, points2D, points3D);
+    std::vector<Eigen::Matrix<double, 3, 4>> extrinsic;
+    ProcessAllPairs(depth_strings, gt_dir, tum_para, points2D, points3D, extrinsic);
 
     Save3DPoints("/tmp3/Pose_PnP/points3D.txt", points3D);
 

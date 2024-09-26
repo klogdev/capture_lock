@@ -13,9 +13,11 @@
 #include "util/random.h"
 
 #include "estimate/lhm.h"
+#include "file_reader/tum_rgbd.h"
 
 enum class GeneratorType {
-    COLMAP, CVLab, EPnPdZ, EPnPdY, RandomNoise, NumPts, Outlier, PlanarChk
+    COLMAP, CVLab, EPnPdZ, EPnPdY, RandomNoise, NumPts, Outlier, 
+    PlanarChk, TUM
 };
 
 inline GeneratorType getGeneratorFromName(const std::string& name) {
@@ -26,7 +28,8 @@ inline GeneratorType getGeneratorFromName(const std::string& name) {
         {"random_noise", GeneratorType::RandomNoise},
         {"num_pts", GeneratorType::NumPts},
         {"outliers", GeneratorType::Outlier},
-        {"planar_chk", GeneratorType::PlanarChk}
+        {"planar_chk", GeneratorType::PlanarChk},
+        {"tum_rgbd", GeneratorType::TUM}
     };
 
     auto it = generatorMap.find(name);
@@ -139,6 +142,18 @@ public:
     static double sigma_s;
     static double sigma_e;
     static std::string option;
+};
+
+class TumRgbd: public DataGenerator {
+public:
+    TumRgbd() {};
+
+    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
+    
+    static std::string depth_parent;
+    static std::string align_pose;
 };
 
 /**

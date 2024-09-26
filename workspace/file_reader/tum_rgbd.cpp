@@ -9,10 +9,9 @@
 #include <Eigen/Core>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp> // For imread
-#include <opencv2/imgproc/imgproc.hpp> // If you use image processing functions
-
 
 #include "base/pose.h"
+#include "base/projection.h"
 
 #include "file_reader/tum_rgbd.h"
 
@@ -126,7 +125,8 @@ void ProcessAllPairs(const std::vector<std::string>& depth_files,
                      const std::string& gt_pose,
                      TUMIntrinsic& paras,
                      std::vector<std::vector<Eigen::Vector2d>>& points2D, 
-                     std::vector<std::vector<Eigen::Vector3d>>& points3D) {
+                     std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                     std::vector<Eigen::Matrix<double, 3, 4>>& composed_extrinsic) {
     // Ensure the input lists are of the same length
     assert(depth_files.size() == quats.size());
 
@@ -149,5 +149,6 @@ void ProcessAllPairs(const std::vector<std::string>& depth_files,
 
         points2D.push_back(normalized_pts);
         points3D.push_back(world_pts);
+        composed_extrinsic.push_back(colmap::ComposeProjectionMatrix(quats[i], trans[i]));
     }
 }

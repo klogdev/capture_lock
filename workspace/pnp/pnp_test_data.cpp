@@ -21,6 +21,7 @@
 #include "estimate/lhm.h"
 #include "util_/math_helper.h"
 #include "pnp/pnp_test_data.h"
+#include "file_reader/tum_rgbd.h"
 
 std::unique_ptr<DataGenerator> 
 DataGenerator::createDataGenerator(const GeneratorType type) {
@@ -39,6 +40,8 @@ DataGenerator::createDataGenerator(const GeneratorType type) {
             return std::make_unique<BoxRandomOutliers>(BoxRandomOutliers());
         case GeneratorType::PlanarChk:
             return std::make_unique<BoxCornerPlanarSanity>(BoxCornerPlanarSanity());
+        case GeneratorType::TUM:
+            return std::make_unique<TumRgbd>(TumRgbd());
         // Handle unsupported types
         default:
             return nullptr;
@@ -191,7 +194,6 @@ void BoxRandomEPnPTestDataNoise::generate(std::vector<std::vector<Eigen::Vector2
 int BoxRandomTestNumPts::min_pts = 5;
 int BoxRandomTestNumPts::max_pts = 50;
 double BoxRandomTestNumPts::sigma = 5.0;
-
 void BoxRandomTestNumPts::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                                    std::vector<std::vector<Eigen::Vector3d>>& points3D,
                                    std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
@@ -331,6 +333,23 @@ void BoxCornerPlanarSanity::generate(std::vector<std::vector<Eigen::Vector2d>>& 
             composed_extrinsic.push_back(curr_gt);
         }
     }
+}
+
+std::string TumRgbd::depth_parent = "tmp3/tum_rgbd/depth/";
+std::string TumRgbd::align_pose = "tmp3/Pose_PnP/aligned_poses.txt";
+void TumRgbd::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                       std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                       std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
+    std::vector<boost::filesystem::path> depth_files;
+    GetSortedFiles(TumRgbd::depth_parent, depth_files);
+
+    std::vector<std::string> depth_strings;
+    for (const auto& path : depth_files) {
+        depth_strings.push_back(path.string());  // Convert path to string and add to the list
+    }
+
+    TUMIntrinsic tum_para = TUMIntrinsic();
+    ProcessAllPairs(depth_strings, TumRgbd::align_pose, tum_para, points2D, points3D, composed_extrinsic);
 }
 
 void GetIntrinsic(Eigen::Matrix3d& k) {
