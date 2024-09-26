@@ -335,8 +335,8 @@ void BoxCornerPlanarSanity::generate(std::vector<std::vector<Eigen::Vector2d>>& 
     }
 }
 
-std::string TumRgbd::depth_parent = "tmp3/tum_rgbd/depth/";
-std::string TumRgbd::align_pose = "tmp3/Pose_PnP/aligned_poses.txt";
+std::string TumRgbd::depth_parent = "/tmp3/tum_rgbd/depth/";
+std::string TumRgbd::align_pose = "/tmp3/Pose_PnP/aligned_poses.txt";
 void TumRgbd::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                        std::vector<std::vector<Eigen::Vector3d>>& points3D,
                        std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {

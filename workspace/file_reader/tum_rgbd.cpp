@@ -18,7 +18,7 @@
 void GetSortedFiles(const boost::filesystem::path& directory, std::vector<boost::filesystem::path>& files) {
     // Check if the directory exists and is indeed a directory
     if (!boost::filesystem::exists(directory) || !boost::filesystem::is_directory(directory)) {
-        std::cerr << "Provided path is not a directory or does not exist." << std::endl;
+        std::cerr << "Provided path: " << directory << " is not a directory or does not exist." << std::endl;
         return;
     }
 
@@ -84,11 +84,6 @@ void LoadTUMPoses(const std::string& gt_file, std::vector<Eigen::Vector4d>& quat
     std::ifstream file(gt_file);
     std::string line;
     double timestamp;
-
-    if (!file.is_open()) {
-        std::cerr << "Failed to open file: " << gt_file << std::endl;
-        return;  // Make sure to exit if file cannot be opened
-    }
 
     while (getline(file, line)) {
         std::istringstream iss(line);
