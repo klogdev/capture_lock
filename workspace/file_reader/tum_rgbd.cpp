@@ -36,7 +36,6 @@ void GetSortedFiles(const boost::filesystem::path& directory, std::vector<boost:
     });
 }
 
-
 void DepthRGBMap(const boost::filesystem::path& rgb_path,
                  const boost::filesystem::path& depth_path,
                  std::vector<boost::filesystem::path>& all_rgb,

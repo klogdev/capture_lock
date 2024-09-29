@@ -42,6 +42,8 @@ DataGenerator::createDataGenerator(const GeneratorType type) {
             return std::make_unique<BoxCornerPlanarSanity>(BoxCornerPlanarSanity());
         case GeneratorType::TUM:
             return std::make_unique<TumRgbd>(TumRgbd());
+        case GeneratorType::EPnPSim:
+            return std::make_unique<EPnPSimulator>(EPnPSimulator());
         // Handle unsupported types
         default:
             return nullptr;
@@ -283,6 +285,71 @@ void BoxRandomOutliers::generate(std::vector<std::vector<Eigen::Vector2d>>& poin
     }
 }
 
+std::string TumRgbd::depth_parent = "/tmp3/tum_rgbd/depth/";
+std::string TumRgbd::align_pose = "/tmp3/Pose_PnP/aligned_poses.txt";
+void TumRgbd::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                       std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                       std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
+    std::vector<boost::filesystem::path> depth_files;
+    GetSortedFiles(TumRgbd::depth_parent, depth_files);
+
+    std::vector<std::string> depth_strings;
+    for (const auto& path : depth_files) {
+        depth_strings.push_back(path.string());  // Convert path to string and add to the list
+    }
+
+    TUMIntrinsic tum_para = TUMIntrinsic();
+    ProcessAllPairs(depth_strings, TumRgbd::align_pose, tum_para, points2D, points3D, composed_extrinsic);
+}
+
+double EPnPSimulator::sigma_s = 1.0;
+double EPnPSimulator::sigma_e = 15.0;
+void EPnPSimulator::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                             std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                             std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
+    Eigen::Matrix3d k;
+    GetIntrinsic(k);
+    int num_pts = 6;
+    Eigen::Matrix3d k_inv = k.inverse();
+
+    int num_sample = 500;
+    for(double i = EPnPSimulator::sigma_s; i <= EPnPSimulator::sigma_e; i += 1.0) {
+        for(int j = 0; j < num_sample; j++) {
+            std::vector<Eigen::Vector3d> curr_camera_space;
+            EPnPInsideRand(curr_camera_space, 6);
+            // obtain the projected points as usual
+            std::vector<Eigen::Vector2d> curr_points2d;
+            GenOneSetNoise2D(curr_camera_space, curr_points2d, k, i);
+            // shift the cloud to (0,0,0) via regarding CoM of cloud
+            // as the world's origin
+            Eigen::Vector3d curr_trans;
+            CalculateCoM(curr_camera_space, curr_trans);
+            std::vector<Eigen::Vector3d> shifted_camera;
+            CameraSpaceShift(curr_camera_space, -curr_trans, shifted_camera);
+
+            Eigen::Matrix3d curr_rot;
+            EPnPRandomRot(curr_rot);
+
+            std::vector<Eigen::Vector3d> curr_points3d;
+            const colmap::SimilarityTransform3 orig_tform(1, colmap::RotationMatrixToQuaternion(curr_rot.transpose()),
+                                                Eigen::Vector3d(0,0,0));
+            // generate scene points
+            for (size_t i = 0; i < shifted_camera.size(); i++) {
+                Eigen::Vector3d point3D_world = shifted_camera[i];
+                orig_tform.TransformPoint(&point3D_world);
+                curr_points3d.push_back(point3D_world);
+            }
+            // EPnP generate all scene points from a single camera points set
+            points2D.push_back(curr_points2d);
+            points3D.push_back(curr_points3d);
+            Eigen::Matrix3x4d curr_gt;
+            curr_gt.block<3, 3>(0, 0) = curr_rot; 
+            curr_gt.col(3) = curr_trans; 
+            composed_extrinsic.push_back(curr_gt);            
+        }
+    }
+}
+
 double BoxCornerPlanarSanity::sigma_s = 0.05;
 double BoxCornerPlanarSanity::sigma_e = 0.65;
 std::string BoxCornerPlanarSanity::option = "planar";
@@ -333,23 +400,6 @@ void BoxCornerPlanarSanity::generate(std::vector<std::vector<Eigen::Vector2d>>& 
             composed_extrinsic.push_back(curr_gt);
         }
     }
-}
-
-std::string TumRgbd::depth_parent = "/tmp3/tum_rgbd/depth/";
-std::string TumRgbd::align_pose = "/tmp3/Pose_PnP/aligned_poses.txt";
-void TumRgbd::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
-                       std::vector<std::vector<Eigen::Vector3d>>& points3D,
-                       std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
-    std::vector<boost::filesystem::path> depth_files;
-    GetSortedFiles(TumRgbd::depth_parent, depth_files);
-
-    std::vector<std::string> depth_strings;
-    for (const auto& path : depth_files) {
-        depth_strings.push_back(path.string());  // Convert path to string and add to the list
-    }
-
-    TUMIntrinsic tum_para = TUMIntrinsic();
-    ProcessAllPairs(depth_strings, TumRgbd::align_pose, tum_para, points2D, points3D, composed_extrinsic);
 }
 
 void GetIntrinsic(Eigen::Matrix3d& k) {

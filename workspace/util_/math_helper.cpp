@@ -61,3 +61,20 @@ double RelativeTransErr(const Eigen::Vector3d& gt, const Eigen::Vector3d& estima
 
     return diff/est_norm;
 }
+
+void CalculateCoM(const std::vector<Eigen::Vector3d>& point_cloud,
+                    Eigen::Vector3d& com) {
+    if (point_cloud.empty()) {
+        std::cerr << "Error: Point cloud is empty." << std::endl;
+        com = Eigen::Vector3d::Zero(); // Return zero vector if the point cloud is empty
+        return;
+    }
+
+    Eigen::Vector3d accum_pts = Eigen::Vector3d::Zero();
+
+    for(auto& vec: point_cloud) {
+        accum_pts += vec;
+    }
+
+    com = accum_pts / static_cast<double>(point_cloud.size()); 
+}

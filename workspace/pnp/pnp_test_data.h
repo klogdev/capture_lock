@@ -17,7 +17,7 @@
 
 enum class GeneratorType {
     COLMAP, CVLab, EPnPdZ, EPnPdY, RandomNoise, NumPts, Outlier, 
-    PlanarChk, TUM
+    PlanarChk, TUM, EPnPSim
 };
 
 inline GeneratorType getGeneratorFromName(const std::string& name) {
@@ -29,7 +29,8 @@ inline GeneratorType getGeneratorFromName(const std::string& name) {
         {"num_pts", GeneratorType::NumPts},
         {"outliers", GeneratorType::Outlier},
         {"planar_chk", GeneratorType::PlanarChk},
-        {"tum_rgbd", GeneratorType::TUM}
+        {"tum_rgbd", GeneratorType::TUM},
+        {"epnp_sim", GeneratorType::EPnPSim}
     };
 
     auto it = generatorMap.find(name);
@@ -127,6 +128,23 @@ public:
 };
 
 /**
+ * @brief interface class to load pre-aligned TUM-RGBD data
+ * the g.t. poses are aligned with most closest timestamp of 
+ * depth map data
+ */
+class TumRgbd: public DataGenerator {
+public:
+    TumRgbd() {};
+
+    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
+    
+    static std::string depth_parent;
+    static std::string align_pose;
+};
+
+/**
  * @brief sanity test with box corners or nearly planar cases
  * in this case we add noise directly to the 3D points
  * @arg option: the option to test planar or box corners
@@ -144,16 +162,16 @@ public:
     static std::string option;
 };
 
-class TumRgbd: public DataGenerator {
+class EPnPSimulator: public DataGenerator {
 public:
-    TumRgbd() {};
+    EPnPSimulator() {};
 
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<std::vector<Eigen::Vector3d>>& points3D,
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
-    
-    static std::string depth_parent;
-    static std::string align_pose;
+
+    static double sigma_s;
+    static double sigma_e;
 };
 
 /**

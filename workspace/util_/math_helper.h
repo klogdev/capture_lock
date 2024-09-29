@@ -41,3 +41,9 @@ double RelativeQuatErr(const Eigen::Vector4d& quat_gt, const Eigen::Vector4d& qu
  * from the g.t. and estimated extrinsic matrix
 */
 double RelativeTransErr(const Eigen::Vector3d& gt, const Eigen::Vector3d& estimate);
+
+/**
+ * @brief calculate the CoM of the presented cloud
+ */
+void CalculateCoM(const std::vector<Eigen::Vector3d>& point_cloud,
+                  Eigen::Vector3d& com);
