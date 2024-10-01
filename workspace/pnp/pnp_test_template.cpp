@@ -10,6 +10,7 @@
 
 #include "estimate/lhm.h"
 #include "estimate/dls.h"
+#include "estimate/epnp.h"
 
 #include "pnp/pnp_test_template.h"
 
@@ -33,7 +34,7 @@ bool EstimatorWrapper::runStandalone(const std::vector<Eigen::Vector2d>& points2
 
     switch (type_) {
         case EstimatorType::EPnP: {
-            colmap::EPNPEstimator estimator;
+            EPNPEstimator_ estimator;
             estimated_extrinsic = estimator.Estimate(points2D, points3D);
             if (residuals) {
                 estimator.Residuals(points2D, points3D, estimated_extrinsic[0], residuals);
@@ -101,7 +102,7 @@ bool EstimatorWrapper::runWithRansac(const std::vector<Eigen::Vector2d>& points2
             options.max_error = 1e-5;
             options.min_inlier_ratio = 0.02;
             options.max_num_trials = 10000;
-            colmap::RANSAC<colmap::EPNPEstimator> ransac(options);
+            colmap::RANSAC<EPNPEstimator_> ransac(options);
             const auto report = ransac.Estimate(points2D, points3D);
 
             std::cout << "current w/ ransac & epnp estimate" << std::endl;
@@ -115,7 +116,7 @@ bool EstimatorWrapper::runWithRansac(const std::vector<Eigen::Vector2d>& points2
 
             estimated_extrinsic = {report.model};
             if (residuals) {
-                colmap::EPNPEstimator::Residuals(points2D, points3D, report.model, residuals);
+                EPNPEstimator_::Residuals(points2D, points3D, report.model, residuals);
             }
             break;
         }
