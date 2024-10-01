@@ -1,5 +1,5 @@
-#ifndef TEST_PNP_TEST_TEMPLATE_H_
-#define TEST_PNP_TEST_TEMPLATE_H_
+#ifndef PNP_PNP_TEST_TEMPLATE_H_
+#define PNP_PNP_TEST_TEMPLATE_H_
 
 #include <Eigen/Core>
 
@@ -77,4 +77,4 @@ private:
 };
 
 
-#endif // TEST_PNP_TEST_TEMPLATE_H_
+#endif // PNP_PNP_TEST_TEMPLATE_H_

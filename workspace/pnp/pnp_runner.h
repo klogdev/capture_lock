@@ -1,5 +1,5 @@
-#ifndef TEST_PNP_RUNNER_H_
-#define TEST_PNP_RUNNER_H_
+#ifndef PNP_PNP_RUNNER_H_
+#define PNP_PNP_RUNNER_H_
 
 #include <Eigen/Core>
 #include <memory>
@@ -30,4 +30,4 @@ private:
 };
 
 
-#endif // TEST_PNP_RUNNER_H_
+#endif // PNP_PNP_RUNNER_H_

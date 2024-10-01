@@ -13,6 +13,16 @@ target_include_directories(
 target_link_libraries(
   pnp_template PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} lhm lsq dls epnp)
 
+add_library(pnp_help STATIC
+pnp_helper.h
+pnp_helper.cpp
+)
+target_include_directories(
+  pnp_help PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  pnp_help PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} lhm math_help)
+  
+
 add_library(pnp_data STATIC
 pnp_test_data.h
 pnp_test_data.cpp
@@ -20,7 +30,7 @@ pnp_test_data.cpp
 target_include_directories(
   pnp_data PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  pnp_data PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} lhm math_help tum)
+  pnp_data PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} lhm math_help tum pnp_help)
 
 add_library(pnp_runner STATIC
 pnp_runner.h

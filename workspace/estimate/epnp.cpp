@@ -291,7 +291,7 @@ void EPNPEstimator_::RunGaussNewton(const Eigen::Matrix<double, 6, 10>& L6x10,
   Eigen::Matrix<double, 6, 4> A;
   Eigen::Matrix<double, 6, 1> b;
 
-  const int kNumIterations = 5;
+  const int kNumIterations = 10;
   for (int k = 0; k < kNumIterations; ++k) {
     for (int i = 0; i < 6; ++i) {
       A(i, 0) = 2 * L6x10(i, 0) * (*betas)[0] + L6x10(i, 1) * (*betas)[1] +

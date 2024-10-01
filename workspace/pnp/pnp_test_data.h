@@ -1,5 +1,5 @@
-#ifndef TEST_PNP_TEST_DATA_H_
-#define TEST_PNP_TEST_DATA_H_
+#ifndef PNP_PNP_TEST_DATA_H_
+#define PNP_PNP_TEST_DATA_H_
 
 #include <Eigen/Core>
 #include <unordered_map>
@@ -16,13 +16,12 @@
 #include "file_reader/tum_rgbd.h"
 
 enum class GeneratorType {
-    COLMAP, CVLab, EPnPdZ, EPnPdY, RandomNoise, NumPts, Outlier, 
-    PlanarChk, TUM, EPnPSim
+    COLMAP, EPnPdZ, EPnPdY, RandomNoise, NumPts, Outlier, 
+    PlanarChk, TUM, EPnPSimNoise, EPnPSimNum
 };
 
 inline GeneratorType getGeneratorFromName(const std::string& name) {
     static const std::unordered_map<std::string, GeneratorType> generatorMap = {
-        {"cv_lab", GeneratorType::CVLab},
         {"epnp_dz", GeneratorType::EPnPdZ},
         {"epnp_dy", GeneratorType::EPnPdY},
         {"random_noise", GeneratorType::RandomNoise},
@@ -30,7 +29,8 @@ inline GeneratorType getGeneratorFromName(const std::string& name) {
         {"outliers", GeneratorType::Outlier},
         {"planar_chk", GeneratorType::PlanarChk},
         {"tum_rgbd", GeneratorType::TUM},
-        {"epnp_sim", GeneratorType::EPnPSim}
+        {"epnp_sim_noise", GeneratorType::EPnPSimNoise},
+        {"epnp_sim_num", GeneratorType::EPnPSimNum}
     };
 
     auto it = generatorMap.find(name);
@@ -162,9 +162,9 @@ public:
     static std::string option;
 };
 
-class EPnPSimulator: public DataGenerator {
+class EPnPSimulatorNoise: public DataGenerator {
 public:
-    EPnPSimulator() {};
+    EPnPSimulatorNoise() {};
 
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<std::vector<Eigen::Vector3d>>& points3D,
@@ -174,104 +174,17 @@ public:
     static double sigma_e;
 };
 
-/**
- * @brief derived data generator from
- * EPFL CV lab's testing data
-*/
-class CVLabTestData: public DataGenerator {
+class EPnPSimulatorNumPts: public DataGenerator {
 public:
-    CVLabTestData() {};
+    EPnPSimulatorNumPts() {};
 
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<std::vector<Eigen::Vector3d>>& points3D,
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
-private:
-    std::string file_path = "/tmp3/Pose_PnP/LHM/";
+
+    static double sigma;
+    static int min_pts;
+    static int max_pts;
 };
 
-/**
- * @brief preprocessing of the EPnP box corner data generation
- * @arg  3D points in camera space
-*/
-void EPnPBoxCorner(std::vector<Eigen::Vector3d>& camera_space_points);
-
-/**
- * @brief 
- * preprocessing of a planar data generation comparable to EPnP box corners
- * @arg 3D points in camera space
- */
-void EPnPPlanar(std::vector<Eigen::Vector3d>& camara_space_points);
-
-/**
- * @brief pass the intrinsic matrix by reference
- */
-void GetIntrinsic(Eigen::Matrix3d& k);
-
-/**
- * @brief preprocessing of the EPnP random data generation
- * inside the box [-2,2]x[-2,2]x[4,8]
-*/
-void EPnPInsideRand(std::vector<Eigen::Vector3d>& camera_space_points,
-                    int num_pts);
-
-/**
- * @brief generate a random rotation matrix and pass by reference
-*/
-void EPnPRandomRot(Eigen::Matrix3d& rot);
-
-/**
- * @brief generate a random translation vector and pass by reference
- */
-void EPnPRandomTrans(Eigen::Vector3d& trans);
-
-/**
- * @brief translate points inside the camera space
- */
-void CameraSpaceShift(const std::vector<Eigen::Vector3d>& camera_pts, 
-                      const Eigen::Vector3d& trans,
-                      std::vector<Eigen::Vector3d>& shifted_pts);
-
-/**
- * @brief set the intrinsic matrix to convert the pixel to camera space
- * if use film plane data, set the intrinsic as an identity by default
-*/
-void SetIntrinsic(std::string calib_path, Eigen::Matrix3d& calib_mat);
-
-/**
- * @brief generate noised 2d set from a list of camera space points
- */
-void GenOneSetNoise2D(std::vector<Eigen::Vector3d>& camera_space_points, 
-                      std::vector<Eigen::Vector2d>& one_set_2d,
-                      Eigen::Matrix3d& k, double sigma);
-
-/**
- * @brief add small perturbation to each camera space point
- */
-void Perturbation3D(std::vector<Eigen::Vector3d>& camera_space_points,
-                    double sigma);
-
-/**
- * @brief replace part of 2D points as outliers
- * we follow the EPnP data where the aspect ratio for image is 640, 480
- */
-void AddOutlier2D(std::vector<Eigen::Vector2d>& points2D, double outlier_rate, 
-                  const int image_x, const int image_y);
-
-
-/**
- * @brief the calibration file reader for the simulated data from EPFL CV-Lab
- * @arg calib_mat: the intrinsic matrix to be loaded
-*/
-void ReadCVLabCalib(std::string calib_path, Eigen::Matrix3d& calib_mat);
-
-/**
- * @brief the 3d points reader for the simulated data from EPFL CV-Lab
-*/
-void ReadCVLab3D(std::string point3d_path, std::vector<Eigen::Vector3d>& points3D);
-
-/**
- * @brief the 2d points reader for the simulated data from EPFL CV-Lab
-*/
-void ReadCVLab2D(std::string point2d_path, std::vector<Eigen::Vector2d>& points2D);
-
-#endif // TEST_PNP_TEST_DATA_H_
+#endif // PNP_PNP_TEST_DATA_H_
