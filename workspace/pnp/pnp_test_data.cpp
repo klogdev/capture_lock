@@ -71,30 +71,34 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
 
     for(double d = d_min; d <= d_max; d += 5) {
         for(int i = 0; i < num_samples; i++) {
-            Eigen::Matrix3d curr_rot;
-            EPnPRandomRot(curr_rot);
             std::vector<Eigen::Vector3d> curr_points3d;
             Eigen::Vector3d curr_trans = Eigen::Vector3d(0, 0, d); // in camera space
+            // shift to the desired dist inside camera
             std::vector<Eigen::Vector3d> shifted;
             CameraSpaceShift(camera_space_points, curr_trans, shifted);
+            // got related noised 2D points
+            std::vector<Eigen::Vector2d> curr_points2d;
+            GenOneSetNoise2D(shifted, curr_points2d, k, BoxCornerEPnPTestDataDz::sigma);
+            // shifted the CoM to overlap with camera's origin
+            std::vector<Eigen::Vector3d> world_pts;
+            CameraSpaceShift(shifted, Eigen::Vector3d(0,0,-6-d), world_pts);
+            // generate world pts with random rotation
+            Eigen::Matrix3d curr_rot;
+            EPnPRandomRot(curr_rot);
             const colmap::SimilarityTransform3 orig_tform(1, colmap::RotationMatrixToQuaternion(curr_rot.transpose()),
                                                 Eigen::Vector3d(0,0,0));
             // generate scene points from non-noised camera points
-            for (size_t i = 0; i < camera_space_points.size(); i++) {
-                Eigen::Vector3d point3D_world = shifted[i] - Eigen::Vector3d(0,0,6+d);
+            for (size_t i = 0; i < world_pts.size(); i++) {
+                Eigen::Vector3d point3D_world = world_pts[i];
                 orig_tform.TransformPoint(&point3D_world);
                 curr_points3d.push_back(point3D_world);
             }
-            // EPnP generate all scene points from an identical set camera points set
-            std::vector<Eigen::Vector2d> curr_points2d;
-            GenOneSetNoise2D(shifted, curr_points2d, k, BoxCornerEPnPTestDataDz::sigma);
-
             points2D.push_back(curr_points2d);
             points3D.push_back(curr_points3d);
             Eigen::Matrix3x4d curr_gt;
             // converting [R|t] to [R^T|-R^T*t]
-            curr_gt.block<3, 3>(0, 0) = curr_rot;//.transpose(); 
-            curr_gt.col(3) = Eigen::Vector3d(0,0,6+d);//-curr_rot.transpose()*Eigen::Vector3d(1,1,1); 
+            curr_gt.block<3, 3>(0, 0) = curr_rot;
+            curr_gt.col(3) = Eigen::Vector3d(0,0,6+d);
             composed_extrinsic.push_back(curr_gt);
         }
     }
