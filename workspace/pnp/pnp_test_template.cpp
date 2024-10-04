@@ -301,7 +301,6 @@ bool EstimatorWrapper::runWithLoRansac(const std::vector<Eigen::Vector2d>& point
             break;
         }
         case EstimatorType::EPnP_Colmap: {
-            std::cout << "enter this case" << std::endl;
             colmap::RANSACOptions options;
             options.max_error = 1e-5;
             options.min_inlier_ratio = 0.02;
