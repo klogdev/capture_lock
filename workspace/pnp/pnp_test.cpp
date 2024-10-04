@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
     }
 
     bool lhm_type = false;
-    if(estimator_opt == "lhm" || estimator_opt == "dram_lhm" || estimator_opt == "dram_gn") {
+    if(estimator_opt == "lhm" || estimator_opt == "dram_lhm") {
         lhm_type = true;
     }
 
@@ -44,8 +44,8 @@ int main(int argc, char** argv) {
     EstimatorType est_type = getEstimatorFromName(estimator_opt);
 
     EstimatorOptions options = EstimatorOptions();
-    if(use_ransac_ == "1")
-        options.use_ransac = true;
+    
+    options.use_ransac = std::stoi(use_ransac_);  
     std::cout << "current ransac option is: " << options.use_ransac << std::endl;
 
     // Create the data generator and estimator instances

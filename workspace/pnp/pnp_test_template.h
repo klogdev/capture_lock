@@ -16,15 +16,15 @@ using Y_t = Eigen::Vector3d;
 using M_t = Eigen::Matrix3x4d;
 
 
-enum class EstimatorType {EPnP, DLS, LHM, DRaM_LHM, DRaM_GN};
+enum class EstimatorType {EPnP, DLS, LHM, DRaM_LHM, EPnP_Colmap};
 
 inline EstimatorType getEstimatorFromName(const std::string& name) {
     static const std::unordered_map<std::string, EstimatorType> estimatorMap = {
         {"dram_lhm", EstimatorType::DRaM_LHM},
-        {"dram_gn", EstimatorType::DRaM_GN},
         {"epnp", EstimatorType::EPnP},
         {"lhm", EstimatorType::LHM},
-        {"dls", EstimatorType::DLS}
+        {"dls", EstimatorType::DLS},
+        {"epnp_colmap", EstimatorType::EPnP_Colmap}
     };
 
     auto it = estimatorMap.find(name);
@@ -36,7 +36,7 @@ inline EstimatorType getEstimatorFromName(const std::string& name) {
 }
 
 struct EstimatorOptions {
-    bool use_ransac = false; // Default to standalone estimation
+    int use_ransac = 1; // Default to standalone estimation, 1 will be ransac, 2 will be loransac
 };
 
 class EstimatorWrapper {
@@ -74,6 +74,14 @@ private:
                        const std::vector<Eigen::Vector3d>& points3D,
                        std::vector<Eigen::Matrix3x4d>& estimatedExtrinsic,
                        std::vector<double>* residuals);
+
+    /**
+     * @brief runs the estimators w/ LO-RANSAC
+     */
+    bool runWithLoRansac(const std::vector<Eigen::Vector2d>& points2D,
+                         const std::vector<Eigen::Vector3d>& points3D,
+                         std::vector<Eigen::Matrix3x4d>& estimatedExtrinsic,
+                         std::vector<double>* residuals);
 };
 
 

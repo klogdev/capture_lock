@@ -45,9 +45,9 @@ void GenOneSetNoise2D(std::vector<Eigen::Vector3d>& camera_space_points,
         double curr_pix_x = curr_projected.x()/curr_projected.z();
         double curr_pix_y = curr_projected.y()/curr_projected.z();
         Eigen::Vector3d noised_image_pt = 
-                        Eigen::Vector3d(RandomGaussian(curr_pix_x, sigma),
-                                        RandomGaussian(curr_pix_y, sigma),
-                                        1);
+                    Eigen::Vector3d(RandomGaussian(curr_pix_x, sigma),
+                                    RandomGaussian(curr_pix_y, sigma),
+                                    1);
         Eigen::Vector3d noised_camera_pt = k_inv*noised_image_pt;
         one_set_2d.push_back(Eigen::Vector2d(noised_camera_pt.x()/noised_camera_pt.z(),
                                     noised_camera_pt.y()/noised_camera_pt.z()));

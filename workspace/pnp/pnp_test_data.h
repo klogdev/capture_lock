@@ -17,7 +17,7 @@
 
 enum class GeneratorType {
     COLMAP, EPnPdZ, EPnPdY, RandomNoise, NumPts, Outlier, 
-    PlanarChk, TUM, EPnPSimNoise, EPnPSimNum
+    PlanarChk, TUM, EPnPSimNoise, EPnPSimNum, EPnPSimOutlier
 };
 
 inline GeneratorType getGeneratorFromName(const std::string& name) {
@@ -30,7 +30,8 @@ inline GeneratorType getGeneratorFromName(const std::string& name) {
         {"planar_chk", GeneratorType::PlanarChk},
         {"tum_rgbd", GeneratorType::TUM},
         {"epnp_sim_noise", GeneratorType::EPnPSimNoise},
-        {"epnp_sim_num", GeneratorType::EPnPSimNum}
+        {"epnp_sim_num", GeneratorType::EPnPSimNum},
+        {"epnp_sim_outlier", GeneratorType::EPnPSimOutlier}
     };
 
     auto it = generatorMap.find(name);
@@ -186,5 +187,19 @@ public:
     static int min_pts;
     static int max_pts;
 };
+
+class EPnPSimulatorOutliers: public DataGenerator {
+public:
+    EPnPSimulatorOutliers() {};
+
+    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
+
+    static double sigma;
+    static int min_pts;
+    static int max_pts;
+};
+
 
 #endif // PNP_PNP_TEST_DATA_H_
