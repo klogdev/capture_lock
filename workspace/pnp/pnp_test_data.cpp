@@ -245,7 +245,7 @@ void BoxRandomTestNumPts::generate(std::vector<std::vector<Eigen::Vector2d>>& po
 }
 
 double BoxRandomOutliers::percent_s = 0.05; // 5%
-double BoxRandomOutliers::percent_e = 0.25;
+double BoxRandomOutliers::percent_e = 0.25; // 25%
 void BoxRandomOutliers::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
                                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
@@ -265,17 +265,20 @@ void BoxRandomOutliers::generate(std::vector<std::vector<Eigen::Vector2d>>& poin
             GenOneSetNoise2D(curr_camera_space, curr_points2d, k, 5.0);
             AddOutlier2D(curr_points2d, i, 640, 480);
 
-            Eigen::Matrix3d curr_rot;
             Eigen::Vector3d curr_trans;
+            CalculateCoM(curr_camera_space, curr_trans);
+            std::vector<Eigen::Vector3d> shifted_camera;
+            CameraSpaceShift(curr_camera_space, -curr_trans, shifted_camera);
+
+            Eigen::Matrix3d curr_rot;
             EPnPRandomRot(curr_rot);
-            EPnPRandomTrans(curr_trans);
 
             std::vector<Eigen::Vector3d> curr_points3d;
-            const colmap::SimilarityTransform3 orig_tform(1, colmap::RotationMatrixToQuaternion(curr_rot),
-                                                curr_trans);
+            const colmap::SimilarityTransform3 orig_tform(1, colmap::RotationMatrixToQuaternion(curr_rot.transpose()),
+                                                Eigen::Vector3d(0,0,0));
             // generate scene points
-            for (size_t i = 0; i < curr_camera_space.size(); i++) {
-                Eigen::Vector3d point3D_world = curr_camera_space[i];
+            for (size_t i = 0; i < shifted_camera.size(); i++) {
+                Eigen::Vector3d point3D_world = shifted_camera[i];
                 orig_tform.TransformPoint(&point3D_world);
                 curr_points3d.push_back(point3D_world);
             }
@@ -283,8 +286,8 @@ void BoxRandomOutliers::generate(std::vector<std::vector<Eigen::Vector2d>>& poin
             points2D.push_back(curr_points2d);
             points3D.push_back(curr_points3d);
             Eigen::Matrix3x4d curr_gt;
-            curr_gt.block<3, 3>(0, 0) = curr_rot.transpose(); 
-            curr_gt.col(3) = -curr_rot.transpose()*curr_trans; 
+            curr_gt.block<3, 3>(0, 0) = curr_rot; 
+            curr_gt.col(3) = curr_trans; 
             composed_extrinsic.push_back(curr_gt);
         }
     }
@@ -421,7 +424,7 @@ void EPnPSimulatorOutliers::generate(std::vector<std::vector<Eigen::Vector2d>>& 
             // obtain the projected points as usual
             std::vector<Eigen::Vector2d> curr_points2d;
             GenOneSetNoise2D(curr_camera_space, curr_points2d, k, EPnPSimulatorOutliers::sigma);
-            AddOutlier2D(curr_points2d, i, 640, 480);
+            AddOutlier2D(curr_points2d, 0.25, 640, 480);
             // shift the cloud to (0,0,0) via regarding CoM of cloud
             // as the world's origin
             Eigen::Vector3d curr_trans;
