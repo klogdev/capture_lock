@@ -293,7 +293,7 @@ void BoxRandomOutliers::generate(std::vector<std::vector<Eigen::Vector2d>>& poin
     }
 }
 
-std::string TumRgbd::depth_parent = "/tmp3/dataset/tum_rgbd/depth/";
+std::string TumRgbd::depth_parent = "/tmp3/dataset/tum_rgbd/rgbd_dataset_freiburg1_xyz/depth/";
 std::string TumRgbd::align_pose = "/tmp3/Pose_PnP/aligned_poses.txt";
 void TumRgbd::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                        std::vector<std::vector<Eigen::Vector3d>>& points3D,
