@@ -293,21 +293,28 @@ void BoxRandomOutliers::generate(std::vector<std::vector<Eigen::Vector2d>>& poin
     }
 }
 
+std::string TumRgbd::image_parent = "/tmp3/dataset/tum_rgbd/rgbd_dataset_freiburg1_xyz/rgb/";
 std::string TumRgbd::depth_parent = "/tmp3/dataset/tum_rgbd/rgbd_dataset_freiburg1_xyz/depth/";
 std::string TumRgbd::align_pose = "/tmp3/Pose_PnP/aligned_poses.txt";
 void TumRgbd::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                        std::vector<std::vector<Eigen::Vector3d>>& points3D,
                        std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
     std::vector<boost::filesystem::path> depth_files;
-    GetSortedFiles(TumRgbd::depth_parent, depth_files);
+    std::vector<boost::filesystem::path> image_files;
+    DepthRGBMap(TumRgbd::image_parent, TumRgbd::depth_parent, image_files, depth_files);
 
     std::vector<std::string> depth_strings;
     for (const auto& path : depth_files) {
         depth_strings.push_back(path.string());  // Convert path to string and add to the list
     }
 
+    std::vector<std::string> image_strings;
+    for (const auto& path : image_files) {
+        image_strings.push_back(path.string());  // Convert path to string and add to the list
+    }
+
     TUMIntrinsic tum_para = TUMIntrinsic();
-    ProcessAllPairs(depth_strings, TumRgbd::align_pose, tum_para, points2D, points3D, composed_extrinsic);
+    ProcessAllPairs(image_strings, depth_strings, TumRgbd::align_pose, tum_para, points2D, points3D, composed_extrinsic);
 }
 
 double EPnPSimulatorNoise::sigma_s = 1.0;

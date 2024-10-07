@@ -141,6 +141,7 @@ public:
                   std::vector<std::vector<Eigen::Vector3d>>& points3D,
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
     
+    static std::string image_parent;
     static std::string depth_parent;
     static std::string align_pose;
 };

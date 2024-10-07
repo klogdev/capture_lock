@@ -44,14 +44,17 @@ void DepthToCameraSpace(int u, int v, float depth, Eigen::Vector3d& point,
  * outputting point cloud inside the camera space
  * @arg normalized_pts: normalized pts from depth map that has non-zero depth
  */
-void OnePairDepthRGB(const std::string& depth_file, std::vector<Eigen::Vector3d>& camera_pts, 
-                     std::vector<Eigen::Vector2d>& normalized_pts, TUMIntrinsic& paras);
+void OnePairDepthRGB(const std::string& image_file, 
+                     const std::string& depth_file, 
+                     std::vector<Eigen::Vector3d>& camera_pts, 
+                     std::vector<Eigen::Vector2d>& normalized_pts, 
+                     TUMIntrinsic& paras);
 
 /**
  * @brief load pre-aligned ground truth poses of TUM-RGBD file
  * the file was preprocessed via a separate python script, to aligning 
  * depth/image with g.t. poses
- * the format is: time, qx,qy,qz,qw,tx,ty,tz
+ * the format is: time,qx,qy,qz,qw,tx,ty,tz
  */
 void LoadTUMPoses(std::string& gt_file, std::vector<Eigen::Vector4d>& quat,
                   std::vector<Eigen::Vector3d>& trans);
@@ -70,7 +73,8 @@ void PairsCameraToWorld(const std::vector<Eigen::Vector3d>& camera_pts,
  * @arg depth_files: a list of directory to depth map files
  * gt_pose: a single files with pre-aligned gt poses 
  */
-void ProcessAllPairs(const std::vector<std::string>& depth_files,
+void ProcessAllPairs(const std::vector<std::string>& image_files,
+                     const std::vector<std::string>& depth_files,
                      const std::string& gt_pose,
                      TUMIntrinsic& paras,
                      std::vector<std::vector<Eigen::Vector2d>>& points2D, 

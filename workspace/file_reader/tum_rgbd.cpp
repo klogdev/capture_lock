@@ -9,6 +9,7 @@
 #include <Eigen/Core>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp> // For imread
+#include <opencv2/features2d.hpp>
 
 #include "base/pose.h"
 #include "base/projection.h"
@@ -55,25 +56,36 @@ void DepthToCameraSpace(int u, int v, float depth, Eigen::Vector3d& point,
     point[1] = (v - paras.cy) * depth / paras.fy;  // Y value
 }
 
-void OnePairDepthRGB(const std::string& depth_file, std::vector<Eigen::Vector3d>& camera_pts, 
+void OnePairDepthRGB(const std::string& image_file, const std::string& depth_file, 
+                     std::vector<Eigen::Vector3d>& camera_pts, 
                      std::vector<Eigen::Vector2d>& normalized_pts, TUMIntrinsic& paras) {
+    cv::Mat rgb_image = cv::imread(image_file, cv::IMREAD_COLOR);
     cv::Mat depth_image = cv::imread(depth_file, cv::IMREAD_ANYDEPTH);
 
     // Check if images are loaded
-    if (depth_image.empty()) {
+    if (rgb_image.empty() || depth_image.empty()) {
         std::cerr << "Error loading images" << std::endl;
     }
 
-    for (int v = 0; v < depth_image.rows; v++) {
-        for (int u = 0; u < depth_image.cols; u++) {
-            uint16_t depth_value = depth_image.at<uint16_t>(v, u);  // Assuming depth image is 16-bit
-            if (depth_value > 0) {  // Check for valid depth
-                double depth_in_meters = depth_value / paras.scale;  // Convert to meters if necessary
-                Eigen::Vector3d curr_pt;
-                DepthToCameraSpace(u, v, depth_in_meters, curr_pt, paras);
-                camera_pts.push_back(curr_pt);
-                normalized_pts.push_back(Eigen::Vector2d(curr_pt.x()/depth_in_meters, curr_pt.y()/depth_in_meters));
-            }
+    // ORB feature detection
+    cv::Ptr<cv::ORB> orb = cv::ORB::create();
+    std::vector<cv::KeyPoint> keypoints;
+    cv::Mat descriptors;
+
+    // Detect ORB keypoints in the RGB image
+    orb->detectAndCompute(rgb_image, cv::noArray(), keypoints, descriptors);
+
+    for (const auto& kp : keypoints) {
+        int u = static_cast<int>(kp.pt.x); // x-coordinate in RGB image
+        int v = static_cast<int>(kp.pt.y); // y-coordinate in RGB image
+        
+        uint16_t depth_value = depth_image.at<uint16_t>(v, u);  // Assuming depth image is 16-bit
+        if (depth_value > 0) {  // Check for valid depth
+            double depth_in_meters = depth_value / paras.scale;  // Convert to meters if necessary
+            Eigen::Vector3d curr_pt;
+            DepthToCameraSpace(u, v, depth_in_meters, curr_pt, paras);
+            camera_pts.push_back(curr_pt);
+            normalized_pts.push_back(Eigen::Vector2d(curr_pt.x()/depth_in_meters, curr_pt.y()/depth_in_meters));
         }
     }
 }
@@ -115,7 +127,8 @@ void PairsCameraToWorld(const std::vector<Eigen::Vector3d>& camera_pts,
     }
 }
 
-void ProcessAllPairs(const std::vector<std::string>& depth_files,
+void ProcessAllPairs(const std::vector<std::string>& image_files,
+                     const std::vector<std::string>& depth_files,
                      const std::string& gt_pose,
                      TUMIntrinsic& paras,
                      std::vector<std::vector<Eigen::Vector2d>>& points2D, 
@@ -136,7 +149,7 @@ void ProcessAllPairs(const std::vector<std::string>& depth_files,
         std::vector<Eigen::Vector3d> world_pts;
 
         // Convert depth and RGB to camera space points
-        OnePairDepthRGB(depth_files[i], camera_pts, normalized_pts, paras);
+        OnePairDepthRGB(image_files[i], depth_files[i], camera_pts, normalized_pts, paras);
 
         // Transform camera space points to world space using GT poses
         PairsCameraToWorld(camera_pts, quats[i], trans[i], world_pts);
