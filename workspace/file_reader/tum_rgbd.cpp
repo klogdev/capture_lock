@@ -110,6 +110,8 @@ void LoadTUMPoses(const std::string& gt_file, std::vector<Eigen::Vector4d>& quat
 
         quats.push_back(curr_quat);
         trans.push_back(curr_trans);
+        std::cout << "current loaded rot" << std::endl;
+        std::cout << curr_quat << std::endl;
     }
 
     file.close();

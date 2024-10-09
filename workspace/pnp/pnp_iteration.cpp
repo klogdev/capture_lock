@@ -16,17 +16,18 @@
 
 int main(int argc, char** argv) {
     // args should specify the range of accuracy and the choice of estimator
-    int exp_begin = std::stoi(argv[1]); // -3
-    int exp_end = std::stoi(argv[2]);  // -9
+    int iter_begin = std::stoi(argv[1]); // 5
+    int iter_end = std::stoi(argv[2]);  // 60
     std::string estimator_opt = argv[3];
 
     BoxRandomEPnPTestDataNoise::sigma_s = 0.5;
     BoxRandomEPnPTestDataNoise::sigma_e = 0.5;
 
+    LHMEstimator::options_.lhm_epsilon = 1e-10;
+
     bool lhm_type = true;
     
-    for(int i = exp_begin; i >= exp_end; i--) {
-        double error_threshold = std::pow(10, i);
+    for(int i = iter_begin; i <= iter_end; i += 5) {
         
         // Get the generator and estimator types from names
         GeneratorType gen_type = getGeneratorFromName("random_noise");
@@ -38,8 +39,7 @@ int main(int argc, char** argv) {
         std::unique_ptr<DataGenerator> generator = DataGenerator::createDataGenerator(gen_type);
         EstimatorWrapper estimator(est_type, options); // Assuming EstimatorWrapper can be directly instantiated like this
 
-        LHMEstimator::options_.lhm_epsilon = error_threshold;
-        LHMEstimator::options_.lhm_iter = std::numeric_limits<int>::max();
+        LHMEstimator::options_.lhm_iter = i;
         // Set tolerance to a very large number
         LHMEstimator::options_.lhm_tolerance = 1e-9;
 
