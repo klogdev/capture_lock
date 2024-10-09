@@ -144,6 +144,7 @@ public:
     static std::string image_parent;
     static std::string depth_parent;
     static std::string align_pose;
+    static std::string curr_data;
 };
 
 /**
