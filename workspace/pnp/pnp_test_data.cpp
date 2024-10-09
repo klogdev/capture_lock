@@ -414,7 +414,7 @@ void EPnPSimulatorNumPts::generate(std::vector<std::vector<Eigen::Vector2d>>& po
     }
 }
 
-int EPnPSimulatorOutliers::max_pts = 20;
+int EPnPSimulatorOutliers::max_pts = 50;
 int EPnPSimulatorOutliers::min_pts = 5;
 double EPnPSimulatorOutliers::sigma = 5.0;
 void EPnPSimulatorOutliers::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
