@@ -36,7 +36,7 @@ inline EstimatorType getEstimatorFromName(const std::string& name) {
 }
 
 struct EstimatorOptions {
-    int use_ransac = 1; // Default to standalone estimation, 1 will be ransac, 2 will be loransac
+    int use_ransac = 0; // Default to standalone estimation (0), 1 will be ransac, 2 will be loransac
 };
 
 class EstimatorWrapper {
