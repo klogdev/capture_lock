@@ -23,7 +23,8 @@ int main(int argc, char** argv) {
     BoxRandomEPnPTestDataNoise::sigma_s = 0.5;
     BoxRandomEPnPTestDataNoise::sigma_e = 0.5;
 
-    LHMEstimator::options_.lhm_epsilon = 1e-10;
+    LHMEstimator::options_.lhm_epsilon = 1e-15;
+    LHMEstimator::options_.lhm_tolerance = 0.0;
 
     bool lhm_type = true;
     
