@@ -69,7 +69,7 @@ void Perturbation3D(std::vector<Eigen::Vector3d>& camera_space_points, double si
 }
 
 void AddOutlier2D(std::vector<Eigen::Vector2d>& points2D, double outlier_rate, 
-                  const int image_x, const int image_y) {
+                  const int image_x, const int image_y, Eigen::Matrix3d& k_inv) {
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<> dis_x(0, image_x);
@@ -80,7 +80,8 @@ void AddOutlier2D(std::vector<Eigen::Vector2d>& points2D, double outlier_rate,
     
     for (int i = 0; i < num_outliers; i++) {
         int index = rand() % num_points;
-        points2D[index] = Eigen::Vector2d(dis_x(gen), dis_y(gen)); // Random outlier
+        Eigen::Vector3d norm_point = k_inv*Eigen::Vector3d(dis_x(gen), dis_y(gen), 1); // Random outlier
+        points2D[index] = Eigen::Vector2d(norm_point.x(), norm_point.y());
     }
 }
 

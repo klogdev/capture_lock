@@ -165,7 +165,7 @@ void OutliersPercentage::generate(std::vector<std::vector<Eigen::Vector2d>>& poi
             // generate noised 2d points from camera space points
             std::vector<Eigen::Vector2d> curr_points2d;
             GenOneSetNoise2D(curr_camera_space, curr_points2d, k, 5.0);
-            AddOutlier2D(curr_points2d, i, 640, 480);
+            AddOutlier2D(curr_points2d, i, 640, 480, k_inv);
 
             Eigen::Vector3d curr_trans;
             CalculateCoM(curr_camera_space, curr_trans);
@@ -334,7 +334,7 @@ void EPnPSimulatorOutliers::generate(std::vector<std::vector<Eigen::Vector2d>>& 
             // obtain the projected points as usual
             std::vector<Eigen::Vector2d> curr_points2d;
             GenOneSetNoise2D(curr_camera_space, curr_points2d, k, EPnPSimulatorOutliers::sigma);
-            AddOutlier2D(curr_points2d, 0.25, 640, 480);
+            AddOutlier2D(curr_points2d, 0.25, 640, 480, k_inv);
             // shift the cloud to (0,0,0) via regarding CoM of cloud
             // as the world's origin
             Eigen::Vector3d curr_trans;

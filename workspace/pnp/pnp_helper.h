@@ -80,6 +80,6 @@ void Perturbation3D(std::vector<Eigen::Vector3d>& camera_space_points,
  * we follow the EPnP data where the aspect ratio for image is 640, 480
  */
 void AddOutlier2D(std::vector<Eigen::Vector2d>& points2D, double outlier_rate, 
-                  const int image_x, const int image_y);
+                  const int image_x, const int image_y, Eigen::Matrix3d& k_inv);
 
 #endif // PNP_PNP_HELPER_H_
