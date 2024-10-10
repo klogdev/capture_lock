@@ -20,8 +20,8 @@ int main(int argc, char** argv) {
     int iter_end = std::stoi(argv[2]);  // 60
     std::string estimator_opt = argv[3];
 
-    BoxRandomEPnPTestDataNoise::sigma_s = 0.5;
-    BoxRandomEPnPTestDataNoise::sigma_e = 0.5;
+    EPnPSimulatorNoise::sigma_s = 0.5;
+    EPnPSimulatorNoise::sigma_e = 0.5;
 
     LHMEstimator::options_.lhm_epsilon = 1e-15;
     LHMEstimator::options_.lhm_tolerance = 0.0;
@@ -48,9 +48,9 @@ int main(int argc, char** argv) {
         // specify the output path for saving metrics
         // here we create new folder for each generator+estimator option
         std::string base_path = "/tmp3/Pose_PnP/PnP_result/";
-        std::string output = base_path + "iteration_compare_" + std::to_string(BoxRandomEPnPTestDataNoise::sigma_s) + "/" + estimator_opt;
+        std::string output = base_path + "iteration_compare_" + std::to_string(EPnPSimulatorNoise::sigma_s) + "/" + estimator_opt;
 
-        PnPTestRunner test_runner(std::move(generator), estimator, output, BoxRandomEPnPTestDataNoise::sigma_s, lhm_type);
+        PnPTestRunner test_runner(std::move(generator), estimator, output, EPnPSimulatorNoise::sigma_s, lhm_type);
 
         test_runner.run_test();
     }

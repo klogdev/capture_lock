@@ -124,11 +124,19 @@ void EPnPPlanar(std::vector<Eigen::Vector3d>& camera_space_points) {
 
 void EPnPInsideRand(std::vector<Eigen::Vector3d>& camera_space_points,
                     int num_pts) {
-    for(int i = 0; i < num_pts; i++) {
+    int count = 0;
+    while (count < num_pts) {
         double curr_x = RandomUniform(-2, 2);
         double curr_y = RandomUniform(-2, 2);
         double curr_z = RandomUniform(4, 8);
+        Eigen::Vector3d curr_trial = Eigen::Vector3d(curr_x, curr_y, curr_z);
+        double u = curr_x*800/curr_z + 320; // default intrinsic from EPnP simulator
+        double v = curr_y*800/curr_z + 240;
+
+        if(u < 0 || u > 640 || v < 0 || v > 480)
+            continue;
         camera_space_points.push_back(Eigen::Vector3d(curr_x, curr_y, curr_z));
+        count++;
     }
 }
 

@@ -16,16 +16,14 @@
 #include "file_reader/tum_rgbd.h"
 
 enum class GeneratorType {
-    COLMAP, EPnPdZ, EPnPdY, RandomNoise, NumPts, Outlier, 
-    PlanarChk, TUM, EPnPSimNoise, EPnPSimNum, EPnPSimOutlier
+    EPnPdZ, EPnPdY, Outlier, PlanarChk, TUM, 
+    EPnPSimNoise, EPnPSimNum, EPnPSimOutlier
 };
 
 inline GeneratorType getGeneratorFromName(const std::string& name) {
     static const std::unordered_map<std::string, GeneratorType> generatorMap = {
         {"epnp_dz", GeneratorType::EPnPdZ},
         {"epnp_dy", GeneratorType::EPnPdY},
-        {"random_noise", GeneratorType::RandomNoise},
-        {"num_pts", GeneratorType::NumPts},
         {"outliers", GeneratorType::Outlier},
         {"planar_chk", GeneratorType::PlanarChk},
         {"tum_rgbd", GeneratorType::TUM},
@@ -80,45 +78,14 @@ public:
     static double sigma;
 };
 
-/**
- * @brief use EPnP centered box to generate random data inside it
- * with different level of noises
- */
-class BoxRandomEPnPTestDataNoise: public DataGenerator {
-public:
-    BoxRandomEPnPTestDataNoise() {};
-
-    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
-                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
-                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
-    static double sigma_s; // start sigma
-    static double sigma_e; // end sigma
-    static int num_pts;
-};
-
-/**
- * @brief varying number of control points inside the box
- * with a fixed noise sigma
- */
-class BoxRandomTestNumPts: public DataGenerator {
-public:
-    BoxRandomTestNumPts() {};
-
-    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
-                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
-                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
-    static double sigma;
-    static int min_pts;
-    static int max_pts;
-};
 
 /**
  * @brief varying percentage of outliers with fixed number
  * of random points inside the EPnP box
  */
-class BoxRandomOutliers: public DataGenerator {
+class OutliersPercentage: public DataGenerator {
 public:
-    BoxRandomOutliers() {};
+    OutliersPercentage() {};
 
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<std::vector<Eigen::Vector3d>>& points3D,
