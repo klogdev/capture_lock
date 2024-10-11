@@ -4,6 +4,7 @@
 #include <random>
 #include <iostream>
 #include <boost/format.hpp>
+#include <cmath>  // For acos, M_PI
 
 #include "base/pose.h"
 
@@ -53,6 +54,59 @@ double RelativeQuatErr(const Eigen::Vector4d& quat_gt, const Eigen::Vector4d& qu
     double est_norm = quat_est.norm();
 
     return diff/est_norm;
+}
+
+double MaxAxisAlign(const Eigen::Matrix3d& rot_gt, const Eigen::Matrix3d& rot_est) {
+    // Extract the column vectors of the rotation matrices
+    Eigen::Vector3d X1 = rot_gt.col(0);
+    Eigen::Vector3d Y1 = rot_gt.col(1);
+    Eigen::Vector3d Z1 = rot_gt.col(2);
+
+    Eigen::Vector3d X2 = rot_est.col(0);
+    Eigen::Vector3d Y2 = rot_est.col(1);
+    Eigen::Vector3d Z2 = rot_est.col(2);
+
+    // Compute dot products (cosine of angles between corresponding axes)
+    double e_x = X1.dot(X2);
+    double e_y = Y1.dot(Y2);
+    double e_z = Z1.dot(Z2);
+
+    // Clamp the values to avoid acos domain errors (due to floating point inaccuracies)
+    e_x = std::max(-1.0, std::min(1.0, e_x));
+    e_y = std::max(-1.0, std::min(1.0, e_y));
+    e_z = std::max(-1.0, std::min(1.0, e_z));
+
+    // Compute the angles (in radians)
+    double angle_x = std::acos(e_x);
+    double angle_y = std::acos(e_y);
+    double angle_z = std::acos(e_z);
+
+    // Convert angles to degrees
+    angle_x *= 180.0 / M_PI;
+    angle_y *= 180.0 / M_PI;
+    angle_z *= 180.0 / M_PI;
+
+    // Return the maximum absolute angle as the rotation error
+    return std::max({std::abs(angle_x), std::abs(angle_y), std::abs(angle_z)});
+}
+
+double CosineDifference(const Eigen::Vector4d& quat_gt, const Eigen::Vector4d& quat_est) {
+    // Ensure the quaternions are normalized
+    Eigen::Vector4d q_gt_norm = quat_gt.normalized();
+    Eigen::Vector4d q_est_norm = quat_est.normalized();
+
+    // Compute the dot product between the two quaternions
+    double dot_product = std::abs(q_gt_norm.dot(q_est_norm));  // Ensure it's positive to take the shortest path
+
+    // Clamp the dot product to the valid range for acos to avoid numerical issues
+    dot_product = std::max(-1.0, std::min(1.0, dot_product));
+
+    // Compute the angular difference in radians
+    double angle_diff = 2 * std::acos(dot_product);
+
+    // Convert the angle difference from radians to degrees
+    return angle_diff;
+
 }
 
 double RelativeTransErr(const Eigen::Vector3d& gt, const Eigen::Vector3d& estimate) {

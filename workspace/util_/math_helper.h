@@ -37,6 +37,19 @@ double RandomGaussian(double mean, double std);
 double RelativeQuatErr(const Eigen::Vector4d& quat_gt, const Eigen::Vector4d& quat_est);
 
 /**
+ * @brief The error is measured in terms of angles (in degrees), calculated from the 
+ * dot product of corresponding axes of two rotation matrices.
+ */
+double MaxAxisAlign(const Eigen::Matrix3d& rot_gt, const Eigen::Matrix3d& rot_est);
+
+/**
+ * @brief The dot product of the two quaternions, which measures 
+ * the cosine of the half-angle between the two rotations.
+ */ 
+double CosineDifference(const Eigen::Vector4d& quat_gt, const Eigen::Vector4d& quat_est);
+
+
+/**
  * @brief calculate relative translation difference 
  * from the g.t. and estimated extrinsic matrix
 */

@@ -30,6 +30,7 @@ void PnPTestRunner::run_test() {
     std::vector<int> iter_data;
     std::vector<double> rot_data;
     std::vector<double> trans_data;
+    std::vector<double> cosine_diff_data;
 
     // time series of obj error/relative quaternion error on the fly
     std::vector<std::vector<double>> obj_err_series;
@@ -91,6 +92,7 @@ void PnPTestRunner::run_test() {
 
         double quat_err = RelativeQuatErr(gt_quat, est_quat);
         double trans_err = RelativeTransErr(gt_extrinsic[i].col(3), estimated_extrinsic[0].col(3));
+        double cosine_diff = CosineDifference(gt_quat, est_quat);
         // append all metrics
         residual_data.push_back(residuals); // 2D vector
         frobenius_data.push_back(error);
@@ -98,6 +100,7 @@ void PnPTestRunner::run_test() {
         iter_data.push_back(iters);
         rot_data.push_back(quat_err);
         trans_data.push_back(trans_err);
+        cosine_diff_data.push_back(cosine_diff);
     }
     std::string curr_sigma = std::to_string(sigma_);
     // save data
@@ -105,6 +108,7 @@ void PnPTestRunner::run_test() {
     save1DVec(time_data, output_path_ + "_durations_" + ".txt");
     save1DVec(rot_data, output_path_ + "_rot_" + ".txt");
     save1DVec(trans_data, output_path_ + "_trans_" + ".txt");
+    save1DVec(trans_data, output_path_ + "_cos_diff_" + ".txt");
     save1DVec(iter_data, output_path_ + "_iters_" + ".txt");
 
     // save all reprojection errors,
