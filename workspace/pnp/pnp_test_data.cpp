@@ -147,7 +147,7 @@ void BoxCornerEPnPTestDataDy::generate(std::vector<std::vector<Eigen::Vector2d>>
 }
 
 double OutliersPercentage::percent_s = 0.05; // 5%
-double OutliersPercentage::percent_e = 0.25; // 25%
+double OutliersPercentage::percent_e = 0.35; // 35%
 void OutliersPercentage::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
                                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
