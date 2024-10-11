@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
     for(int i = iter_begin; i <= iter_end; i += 5) {
         
         // Get the generator and estimator types from names
-        GeneratorType gen_type = getGeneratorFromName("random_noise");
+        GeneratorType gen_type = getGeneratorFromName("epnp_sim_noise");
         EstimatorType est_type = getEstimatorFromName(estimator_opt);
 
         EstimatorOptions options = EstimatorOptions();
