@@ -108,7 +108,7 @@ void PnPTestRunner::run_test() {
     save1DVec(time_data, output_path_ + "_durations_" + ".txt");
     save1DVec(rot_data, output_path_ + "_rot_" + ".txt");
     save1DVec(trans_data, output_path_ + "_trans_" + ".txt");
-    save1DVec(trans_data, output_path_ + "_cos_diff_" + ".txt");
+    save1DVec(cosine_diff_data, output_path_ + "_cos_diff_" + ".txt");
     save1DVec(iter_data, output_path_ + "_iters_" + ".txt");
 
     // save all reprojection errors,
