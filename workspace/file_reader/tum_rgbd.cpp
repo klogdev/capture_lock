@@ -102,8 +102,8 @@ void LoadTUMPoses(const std::string& gt_file, std::vector<Eigen::Vector4d>& quat
         Eigen::Vector3d curr_trans;
 
         // Parsing directly into vector elements
-        if (!(iss >> timestamp >> curr_quat[0] >> curr_quat[1] >> curr_quat[2] >> curr_quat[3]
-                  >> curr_trans[0] >> curr_trans[1] >> curr_trans[2])) {
+        if (!(iss >> timestamp >> curr_trans[0] >> curr_trans[1] >> curr_trans[2] >> curr_quat[0]
+                  >> curr_quat[1] >> curr_quat[2] >> curr_quat[3])) {
             std::cerr << "Failed to parse line: " << line << std::endl;
             continue;  // Skip malformed lines or handle error appropriately
         }

@@ -54,7 +54,7 @@ void OnePairDepthRGB(const std::string& image_file,
  * @brief load pre-aligned ground truth poses of TUM-RGBD file
  * the file was preprocessed via a separate python script, to aligning 
  * depth/image with g.t. poses
- * the format is: time,qx,qy,qz,qw,tx,ty,tz
+ * the format is: time,tx,ty,tz,qx,qy,qz,qw
  */
 void LoadTUMPoses(std::string& gt_file, std::vector<Eigen::Vector4d>& quat,
                   std::vector<Eigen::Vector3d>& trans);
