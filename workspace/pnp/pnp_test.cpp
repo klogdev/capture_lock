@@ -32,6 +32,11 @@ int main(int argc, char** argv) {
             BoxCornerEPnPTestDataDy::sigma = sigma;
     }
 
+    if(generator_opt == "tum_rgbd") {
+        if(argc >= 5)
+            TumRgbd::curr_data = argv[4];
+    }
+
     bool lhm_type = false;
     if(estimator_opt == "lhm" || estimator_opt == "dram_lhm") {
         lhm_type = true;
