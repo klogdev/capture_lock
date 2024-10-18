@@ -16,6 +16,8 @@
 #include "util_/math_helper.h"
 #include "util_/file_save.h"
 
+#include "file_reader/tum_rgbd.h"
+
 void PnPTestRunner::run_test() {
     // Step 1: Generate data
     std::vector<std::vector<Eigen::Vector2d>> points2D;

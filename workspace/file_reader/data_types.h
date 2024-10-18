@@ -6,13 +6,14 @@
 #include <string>
 #include <unordered_map>
 
-enum Dataset {Kitti, Colmap, KittiToColmap};
+enum Dataset {Kitti, Colmap, KittiToColmap, Any};
 
 inline Dataset getDatasetFromName(const std::string& name) {
     static const std::unordered_map<std::string, Dataset> datasetMap = {
         {"kitti", Dataset::Kitti},
         {"colmap", Dataset::Colmap},
-        {"kitti_colmap", Dataset::KittiToColmap}
+        {"kitti_colmap", Dataset::KittiToColmap},
+        {"any", Dataset::Any}
     };
 
     auto it = datasetMap.find(name);
@@ -22,8 +23,6 @@ inline Dataset getDatasetFromName(const std::string& name) {
         throw std::invalid_argument("Unknown dataset");
     }
 }
-
-
 
 
 #endif // DATASET_TYPES_H

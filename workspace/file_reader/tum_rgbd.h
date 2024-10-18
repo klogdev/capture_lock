@@ -4,6 +4,13 @@
 #include <boost/filesystem.hpp>
 #include <Eigen/Core>
 
+#include "base/camera.h"
+#include "base/camera_models.h"
+#include "base/image.h"
+#include "base/point3d.h"
+
+#include "optim/bundle_adjustment.h"
+
 /**
  * @brief assign precalibrated intrinsic paramaters
  * check https://cvg.cit.tum.de/data/datasets/rgbd-dataset/file_formats
@@ -80,5 +87,34 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
                      std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                      std::vector<std::vector<Eigen::Vector3d>>& points3D,
                      std::vector<Eigen::Matrix<double, 3, 4>>& composed_extrinsic);
+
+/**
+ * @brief set a virtual colmap camera for colmap image 
+ * declaration and bundle adjustment
+ */
+void SetVirtualColmapCamera(colmap::Camera& virtual_camera);
+
+/**
+ * @brief all current 2d points with it's default id, and register 
+ * the corresponded 3d point
+ */
+void SetPoint3dOneImage(colmap::Image& curr_img, 
+                        std::vector<Eigen::Vector3d>& point_3d,
+                        std::unordered_map<int, colmap::Point3D>& global_3d_map,
+                        int& curr_3d_idx);
+
+/**
+ * @brief set options for bundle adjustment
+ * here we aim to fix g.t. poses but only polish 3d points which 
+ * init from depth maps
+ */
+void SetBAOptions(colmap::BundleAdjustmentOptions& ba_options);
+
+/**
+ * @brief retrieve optimized 3d points from a single colmap image
+ */
+void Retrieve3DfromImage(colmap::Image& curr_img, 
+                         std::unordered_map<int, colmap::Point3D>& global_3d_map,
+                         std::vector<Eigen::Vector3d>& point3ds);
 
 #endif // FILE_READER_TUM_RGBD_H_

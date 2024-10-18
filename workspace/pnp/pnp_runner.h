@@ -8,6 +8,7 @@
 #include "pnp/pnp_test_data.h"
 
 #include "estimate/lhm.h"
+#include "file_reader/tum_rgbd.h"
 
 class PnPTestRunner {
 public:

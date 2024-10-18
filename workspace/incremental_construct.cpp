@@ -211,8 +211,8 @@ void IncrementOneImage(std::string image_path, int new_id,
             new_3d.Track().AddElement(new_id, orig_idx2);
             global_3d_map[new_3d_id] = new_3d;
 
-            last_image.SetPoint3DForPoint2D(orig_idx1,new_3d_id);
-            new_cmp_image.SetPoint3DForPoint2D(orig_idx2,new_3d_id);
+            last_image.SetPoint3DForPoint2D(orig_idx1, new_3d_id);
+            new_cmp_image.SetPoint3DForPoint2D(orig_idx2, new_3d_id);
         }
     }
     global_image_map[new_id] = new_cmp_image;

@@ -44,8 +44,8 @@ bool BundleAdjust_::Solver(colmap::Camera& camera,
 
 void BundleAdjust_::SetUp(ceres::LossFunction* loss_function,
                           colmap::Camera& camera,
-                          std::unordered_map<int,colmap::Image>& global_image_map,
-                          std::unordered_map<int,colmap::Point3D>& global_3d_map){
+                          std::unordered_map<int, colmap::Image>& global_image_map,
+                          std::unordered_map<int, colmap::Point3D>& global_3d_map){
     // need call BA config for preprocess;
     // the config_ is the private member of BA,
     // and will be processed within the global_bundle
@@ -65,8 +65,8 @@ void BundleAdjust_::SetUp(ceres::LossFunction* loss_function,
 
 void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
                                       colmap::Camera& camera,
-                                      std::unordered_map<int,colmap::Image>& global_image_map,
-                                      std::unordered_map<int,colmap::Point3D>& global_3d_map,
+                                      std::unordered_map<int, colmap::Image>& global_image_map,
+                                      std::unordered_map<int, colmap::Point3D>& global_3d_map,
                                       ceres::LossFunction* loss_function){
     colmap::Image& image = global_image_map[image_id];
     image.NormalizeQvec();
@@ -102,7 +102,7 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
                     BAConstPoseCostFxn<colmap::SimplePinholeCameraModel>::Create( 
                         image.Qvec(), image.Tvec(), point_2d.XY()); 
             }     
-            else if (dataset_ == Dataset::KittiToColmap) {
+            else {
                 cost_function =                                                    
                     BAConstPoseCostFxn<colmap::SimplePinholeCameraModel>::Create( 
                         image.Qvec(), image.Tvec(), point_2d.XY()); 

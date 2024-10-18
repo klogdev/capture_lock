@@ -22,8 +22,8 @@ class BundleAdjust_{
                       const Dataset data);
 
         bool Solver(colmap::Camera& camera,
-                   std::unordered_map<int,colmap::Image>& global_image_map,
-                   std::unordered_map<int,colmap::Point3D>& global_3d_map);
+                   std::unordered_map<int, colmap::Image>& global_image_map,
+                   std::unordered_map<int, colmap::Point3D>& global_3d_map);
 
         const ceres::Solver::Summary& Summary() const;
 
@@ -34,8 +34,8 @@ class BundleAdjust_{
 
         void AddImageToProblem(const colmap::image_t image_id,
                         colmap::Camera& camera,
-                        std::unordered_map<int,colmap::Image>& global_image_map,
-                        std::unordered_map<int,colmap::Point3D>& global_3d_map,
+                        std::unordered_map<int, colmap::Image>& global_image_map,
+                        std::unordered_map<int, colmap::Point3D>& global_3d_map,
                         ceres::LossFunction* loss_function);
 
         void AddPointToProblem(const colmap::point3D_t point3D_id,

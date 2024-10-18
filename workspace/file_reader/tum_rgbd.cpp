@@ -13,8 +13,18 @@
 
 #include "base/pose.h"
 #include "base/projection.h"
+#include "base/image.h"
+#include "base/point2d.h"
+#include "base/point3d.h"
+#include "base/camera.h"
 
+#include "optim/bundle_adjustment.h"
+
+#include "util_/sift_colmap.h"
 #include "file_reader/tum_rgbd.h"
+#include "file_reader/data_types.h"
+
+#include "global_bundle.h"
 
 void GetSortedFiles(const boost::filesystem::path& directory, std::vector<boost::filesystem::path>& files) {
     // Check if the directory exists and is indeed a directory
@@ -85,6 +95,7 @@ void OnePairDepthRGB(const std::string& image_file, const std::string& depth_fil
             Eigen::Vector3d curr_pt;
             DepthToCameraSpace(u, v, depth_in_meters, curr_pt, paras);
             camera_pts.push_back(curr_pt);
+            // equivalent to K^-1*(u, v, 1)
             normalized_pts.push_back(Eigen::Vector2d(curr_pt.x()/depth_in_meters, curr_pt.y()/depth_in_meters));
         }
     }
@@ -142,10 +153,16 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
     std::vector<Eigen::Vector4d> quats;
     std::vector<Eigen::Vector3d> trans;
 
+    colmap::Camera virtual_cam;
+    SetVirtualColmapCamera(virtual_cam);
+    std::unordered_map<int, colmap::Image> tum_image_map;
+    std::unordered_map<int, colmap::Point3D> tum_3d_map;
+    int global_3d_id = 0;
+
     LoadTUMPoses(gt_pose, quats, trans);
 
     // Process each pair
-    for (size_t i = 0; i < depth_files.size(); i++) {
+    for (size_t i = 0; i < image_files.size(); i++) {
         std::vector<Eigen::Vector2d> normalized_pts;
         std::vector<Eigen::Vector3d> camera_pts;
         std::vector<Eigen::Vector3d> world_pts;
@@ -156,8 +173,70 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
         // Transform camera space points to world space using GT poses
         PairsCameraToWorld(camera_pts, quats[i], trans[i], world_pts);
 
+        // set current colmap image
+        colmap::Image curr_image = SIFTtoCOLMAPImage(i, normalized_pts, virtual_cam);
+        tum_image_map[i] = curr_image;
+        SetPoint3dOneImage(curr_image, world_pts, tum_3d_map, global_3d_id);
+        // set the 2d normalized pts and g.t. poses as usual
         points2D.push_back(normalized_pts);
-        points3D.push_back(world_pts);
         composed_extrinsic.push_back(colmap::ComposeProjectionMatrix(quats[i], trans[i]));
+    }
+
+    colmap::BundleAdjustmentOptions ba_options;
+    SetBAOptions(ba_options); // set extrinsic & intrinsic as constant
+
+    std::vector<int> global_image_opt;
+    for(const auto& [img_id, value]: tum_image_map){
+        global_image_opt.push_back(img_id);
+    }
+    std::vector<int> global_const_pose;
+    bool run_ba = GlobalBundleAdjuster(ba_options, virtual_cam, tum_image_map,
+                                       tum_3d_map, global_image_opt, 
+                                       global_const_pose, Dataset::Any);  
+
+    for(auto& [img_id, value]: tum_image_map) {
+        std::vector<Eigen::Vector3d> curr_3d;
+        Retrieve3DfromImage(value, tum_3d_map, curr_3d);
+        points3D.push_back(curr_3d);
+    }
+}
+
+void SetVirtualColmapCamera(colmap::Camera& virtual_camera) {
+    std::vector<double> intrinsic = {1, 1, 0, 0}; // follow colmap's order fx, fy, cx, cy
+
+    virtual_camera.SetCameraId(1); // only one camera
+    virtual_camera.SetModelId(colmap::SimplePinholeCameraModel::model_id);
+    virtual_camera.SetParams(intrinsic);
+}
+
+void SetPoint3dOneImage(colmap::Image& curr_img, std::vector<Eigen::Vector3d>& point_3d,
+                        std::unordered_map<int, colmap::Point3D>& global_3d_map,
+                        int& curr_3d_idx) {
+    // assume 3d points has identical size as 2d that registered in colmap::Image
+    for(int i = 0; i < point_3d.size(); i++) {
+        curr_img.SetPoint3DForPoint2D(i, curr_3d_idx);
+        colmap::Point3D new_3d;
+        new_3d.SetXYZ(point_3d[i]);
+        new_3d.Track().AddElement(curr_img.ImageId(), i);
+        global_3d_map[curr_3d_idx] = new_3d;
+        curr_3d_idx++;
+    }
+}
+
+void SetBAOptions(colmap::BundleAdjustmentOptions& ba_options) {
+    ba_options.solver_options.num_threads = 1;
+    ba_options.loss_function_type = colmap::BundleAdjustmentOptions::LossFunctionType::SOFT_L1;
+    ba_options.refine_focal_length = false;
+    ba_options.refine_extra_params = false;
+    ba_options.refine_extrinsics = false;
+}
+
+void Retrieve3DfromImage(colmap::Image& curr_img, 
+                         std::unordered_map<int, colmap::Point3D>& global_3d_map,
+                         std::vector<Eigen::Vector3d>& point3ds) {
+    for(const colmap::Point2D& p: curr_img.Points2D()) {
+        colmap::point3D_t global_3d_key = p.Point3DId();
+        Eigen::Vector3d from2d_to3d = global_3d_map.at(global_3d_key).XYZ();
+        point3ds.push_back(from2d_to3d);
     }
 }

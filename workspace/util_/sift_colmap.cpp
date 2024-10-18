@@ -6,7 +6,7 @@
 colmap::Image SIFTtoCOLMAPImage(int image_id, std::vector<Eigen::Vector2d> features,
                                 const colmap::Camera& camera){
     colmap::Image curr_image;
-    curr_image.SetImageId(image_id); //automatic type conversion to the built-in type
+    curr_image.SetImageId(image_id); // automatic type conversion to the built-in type
     curr_image.SetCameraId(camera.CameraId());
     curr_image.SetPoints2D(features);
     return curr_image;

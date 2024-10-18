@@ -7,6 +7,10 @@
 #include "file_reader/tum_rgbd.h"
 #include "util_/file_save.h"
 
+#include "base/image.h"
+#include "base/point3d.h"
+#include "base/camera.h"
+
 
 int main(int argc, char** argv) {
     std::string image_dir = argv[1];

@@ -32,27 +32,15 @@ bool GlobalBundleAdjuster(const colmap::BundleAdjustmentOptions& ba_options,
         }
     }
 
-    // set the constant poses based on input, 0 indexed
-    std::cout << "constant poses id from global bundle with image from " 
-    << image_to_opt[0] << ": " << std::endl;
     for(const int id: const_pose){
       std::cout << id << std::endl;
       ba_config.SetConstantPose(id);
     }
 
-    // debug constant pose
-    colmap::Image first_image = global_image_map[const_pose[0]];
-
-    std::cout << "debug " << const_pose[0] << "'s quat before BA: " << std::endl;
-    std::cout << first_image.Qvec() << std::endl;
-    std::cout << "debug " << const_pose[0] << "'s trans before BA: " << std::endl;
-    std::cout << first_image.Tvec() << std::endl;
-
   // Run bundle adjustment. SetUp is called inside the Solver
   // the bundle_adjuster_ will initialized by input image based on the
   // indices offered by ba_config
   BundleAdjust_ bundle_adjuster(ba_options, ba_config, data);
-  std::cout << "DEBUG: no segfault before local BA w. window" << const_pose[0] << std::endl;
   if (!bundle_adjuster.Solver(camera, global_image_map, global_3d_map)) {
     return false;
   }

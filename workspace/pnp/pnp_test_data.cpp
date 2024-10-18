@@ -198,7 +198,7 @@ void OutliersPercentage::generate(std::vector<std::vector<Eigen::Vector2d>>& poi
 std::string TumRgbd::curr_data = "rgbd_dataset_freiburg1_xyz";
 std::string TumRgbd::image_parent = "/tmp3/dataset/tum_rgbd/" + TumRgbd::curr_data + "/rgb/";
 std::string TumRgbd::depth_parent = "/tmp3/dataset/tum_rgbd/" + TumRgbd::curr_data + "/depth/";
-std::string TumRgbd::align_pose = "/tmp3/dataset/tum_rgbd/" + TumRgbd::curr_data + "/aligned_poses.txt";
+std::string TumRgbd::align_pose = "/tmp3/dataset/tum_rgbd/" + TumRgbd::curr_data + "/interpolated_poses.txt";
 void TumRgbd::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                        std::vector<std::vector<Eigen::Vector3d>>& points3D,
                        std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
