@@ -43,19 +43,19 @@ class BACostFxn{
             residuals[1] -= T(obs_y);
 
             //debugging info if we got NaN value in Parameter blocks
-            if (isnan(residuals[0]) || isnan(residuals[1])){
-                std::cout << "Error: NaN residual value encountered in Cost Fxn." << std::endl;
+            // if (isnan(residuals[0]) || isnan(residuals[1])){
+            //     std::cout << "Error: NaN residual value encountered in Cost Fxn." << std::endl;
                 
-                for(int i = 0; i < 4; i++){
-                    std::cout << "Camera parameters: " << camera_params[i] << std::endl;
-                }
-                for(int i = 0; i < 4; i++){
-                    std::cout << "qvec: " << qvec[i] << std::endl;
-                }
-                for(int i = 0; i < 3; i++){
-                    std::cout << "tvec: " << tvec[i] << std::endl;
-                }
-            }
+            //     for(int i = 0; i < 4; i++){
+            //         std::cout << "Camera parameters: " << camera_params[i] << std::endl;
+            //     }
+            //     for(int i = 0; i < 4; i++){
+            //         std::cout << "qvec: " << qvec[i] << std::endl;
+            //     }
+            //     for(int i = 0; i < 3; i++){
+            //         std::cout << "tvec: " << tvec[i] << std::endl;
+            //     }
+            // }
 
             return true;
         }
@@ -113,8 +113,8 @@ class BAConstPoseCostFxn {
         residuals[0] -= T(obs_x);
         residuals[1] -= T(obs_y);
 
-        if (isnan(residuals[0]) || isnan(residuals[1]))
-                std::cout << "Error: NaN residual value encountered in Const Cost Fxn." << std::endl;
+        // if (isnan(residuals[0]) || isnan(residuals[1]))
+        //         std::cout << "Error: NaN residual value encountered in Const Cost Fxn." << std::endl;
 
         return true;
     }

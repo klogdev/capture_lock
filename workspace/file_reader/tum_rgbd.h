@@ -11,6 +11,8 @@
 
 #include "optim/bundle_adjustment.h"
 
+#include "feature/sift.h"
+
 /**
  * @brief assign precalibrated intrinsic paramaters
  * check https://cvg.cit.tum.de/data/datasets/rgbd-dataset/file_formats
@@ -53,8 +55,10 @@ void DepthToCameraSpace(int u, int v, float depth, Eigen::Vector3d& point,
  */
 void OnePairDepthRGB(const std::string& image_file, 
                      const std::string& depth_file, 
+                     const int curr_idx,
                      std::vector<Eigen::Vector3d>& camera_pts, 
                      std::vector<Eigen::Vector2d>& normalized_pts, 
+                     std::unordered_map<int, std::vector<sift::Keypoint>>& global_keypts_map,
                      TUMIntrinsic& paras);
 
 /**
@@ -98,10 +102,21 @@ void SetVirtualColmapCamera(colmap::Camera& virtual_camera);
  * @brief all current 2d points with it's default id, and register 
  * the corresponded 3d point
  */
-void SetPoint3dOneImage(colmap::Image& curr_img, 
+void SetPoint3dOneImage(std::unordered_map<int, colmap::Image>& global_img_map,
                         std::vector<Eigen::Vector3d>& point_3d,
                         std::unordered_map<int, colmap::Point3D>& global_3d_map,
+                        std::unordered_map<int, std::vector<sift::Keypoint>>& global_keypts_map,
+                        int image_idx,
                         int& curr_3d_idx);
+
+/**
+ * @brief special Bundle Adjustment for TUM RGBD, with fixed poses
+ * only optimize 
+ */
+void TUMBundle(std::unordered_map<int, colmap::Image>& global_img_map,
+               std::unordered_map<int, colmap::Point3D>& global_3d_map,
+               colmap::Camera& camera);
+
 
 /**
  * @brief set options for bundle adjustment
@@ -113,8 +128,9 @@ void SetBAOptions(colmap::BundleAdjustmentOptions& ba_options);
 /**
  * @brief retrieve optimized 3d points from a single colmap image
  */
-void Retrieve3DfromImage(colmap::Image& curr_img, 
+void RetrievePairsfromImage(colmap::Image& curr_img, 
                          std::unordered_map<int, colmap::Point3D>& global_3d_map,
+                         std::vector<Eigen::Vector2d>& point2ds,
                          std::vector<Eigen::Vector3d>& point3ds);
 
 #endif // FILE_READER_TUM_RGBD_H_

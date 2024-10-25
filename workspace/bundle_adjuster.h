@@ -1,3 +1,6 @@
+#ifndef BUNDLE_ADJUSTER_H_
+#define BUNDLE_ADJUSTER_H_
+
 #include <Eigen/Core>
 #include <ceres/ceres.h>
 
@@ -56,3 +59,5 @@ class BundleAdjust_{
         std::unordered_map<colmap::point3D_t, size_t> point3D_num_observations_;
         std::unordered_set<colmap::camera_t> camera_ids_;
 };
+
+#endif // BUNDLE_ADJUSTER_H_

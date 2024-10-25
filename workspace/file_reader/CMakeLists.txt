@@ -19,10 +19,11 @@ tum_rgbd.h
 tum_rgbd.cpp
 )
 target_include_directories(
-  tum PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${OpenCV_INCLUDE_DIRS}" "${COLMAP_INCLUDE_DIRS}")
+  tum PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" 
+  "${OpenCV_INCLUDE_DIRS}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
   tum PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES} ${OpenCV_LIBRARIES} 
-  sift_colmap data_type ba_run)
+  sift_colmap data_type ba_run sift img cost) 
 
 add_library(file_option STATIC
 file_options.h

@@ -21,11 +21,11 @@ BundleAdjust_::BundleAdjust_(const colmap::BundleAdjustmentOptions& options,
     }
 
 bool BundleAdjust_::Solver(colmap::Camera& camera,
-                          std::unordered_map<int,colmap::Image>& global_image_map,
-                          std::unordered_map<int,colmap::Point3D>& global_3d_map){
+                           std::unordered_map<int, colmap::Image>& global_image_map,
+                           std::unordered_map<int, colmap::Point3D>& global_3d_map) {
     // default loss in options_: trivial loss
     ceres::LossFunction* loss_function = options_.CreateLossFunction();
-    // DEBUGGING:
+    // DEBUGGING //
     std::cout << "curr image set: " << std::endl;
     for (const auto& element : config_.Images()) {
         std::cout << element << " ";
@@ -35,9 +35,7 @@ bool BundleAdjust_::Solver(colmap::Camera& camera,
     SetUp(loss_function, camera, global_image_map, global_3d_map);
 
     ceres::Solver::Options solver_options = options_.solver_options;
-    std::cout << "no segfault before BA solver in this set " <<  std::endl;
     ceres::Solve(solver_options, problem_.get(), &summary_);
-    std::cout << "no segfault after BA solver in this set " <<  std::endl;
 
     return true;
 }
@@ -45,7 +43,7 @@ bool BundleAdjust_::Solver(colmap::Camera& camera,
 void BundleAdjust_::SetUp(ceres::LossFunction* loss_function,
                           colmap::Camera& camera,
                           std::unordered_map<int, colmap::Image>& global_image_map,
-                          std::unordered_map<int, colmap::Point3D>& global_3d_map){
+                          std::unordered_map<int, colmap::Point3D>& global_3d_map) {
     // need call BA config for preprocess;
     // the config_ is the private member of BA,
     // and will be processed within the global_bundle
@@ -67,7 +65,7 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
                                       colmap::Camera& camera,
                                       std::unordered_map<int, colmap::Image>& global_image_map,
                                       std::unordered_map<int, colmap::Point3D>& global_3d_map,
-                                      ceres::LossFunction* loss_function){
+                                      ceres::LossFunction* loss_function) {
     colmap::Image& image = global_image_map[image_id];
     image.NormalizeQvec();
 
@@ -79,12 +77,12 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
       !options_.refine_extrinsics || config_.HasConstantPose(image_id);
 
     size_t num_observations = 0;
-    for (const colmap::Point2D& point_2d: image.Points2D()){
-        if (!point_2d.HasPoint3D()){
+    for (const colmap::Point2D& point_2d: image.Points2D()) {
+        if (!point_2d.HasPoint3D()) {
             continue;
         }
         num_observations += 1;
-        point3D_num_observations_[point_2d.Point3DId()] += 1;
+        // point3D_num_observations_[point_2d.Point3DId()] += 1;
 
         colmap::Point3D& curr_3d = global_3d_map[point_2d.Point3DId()];
         assert(curr_3d.Track().Length() > 1); // must have more than 1 obs, to have enough DoF
@@ -110,6 +108,8 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
 
             problem_->AddResidualBlock(cost_function, loss_function,
                                        curr_3d.XYZ().data(), camera_params_data);
+            
+            // std::cout << "check 3d block with id " << point_2d.Point3DId() << " is: " << problem_->HasParameterBlock(curr_3d.XYZ().data()) << std::endl;
         } 
 
         else{ 
@@ -119,7 +119,7 @@ void BundleAdjust_::AddImageToProblem(const colmap::image_t image_id,
             else if (dataset_ == Dataset::Kitti) {
                 cost_function = BACostFxn<colmap::SimplePinholeCameraModel>::Create(point_2d.XY()); 
             }
-            else if (dataset_ == Dataset::KittiToColmap) {
+            else {
                 cost_function = BACostFxn<colmap::SimplePinholeCameraModel>::Create(point_2d.XY()); 
             }
            
@@ -141,7 +141,7 @@ void BundleAdjust_::AddPointToProblem(const colmap::point3D_t point3D_id,
                                       colmap::Camera& camera,
                                       std::unordered_map<int,colmap::Image>& global_image_map,
                                       std::unordered_map<int,colmap::Point3D>& global_3d_map,
-                                      ceres::LossFunction* loss_function){
+                                      ceres::LossFunction* loss_function) {
     colmap::Point3D& curr_3d = global_3d_map[point3D_id];
 
     // all obs already processed
@@ -149,10 +149,10 @@ void BundleAdjust_::AddPointToProblem(const colmap::point3D_t point3D_id,
         return;
 
     for (const auto& track_el: curr_3d.Track().Elements()){
-        // skip the obs if already added
-        if (config_.HasImage(track_el.image_id)) {
-            continue;
-        }
+        // if (config_.HasImage(track_el.image_id)) {
+        //     continue;
+        // }
+
         point3D_num_observations_[point3D_id] += 1;
 
         colmap::Image& track_image = global_image_map[track_el.image_id];
@@ -160,31 +160,35 @@ void BundleAdjust_::AddPointToProblem(const colmap::point3D_t point3D_id,
 
         ceres::CostFunction* cost_function = nullptr;
 
+        // for 3D points' variable blocks, we use constant poses by default
         if (dataset_ == Dataset::Colmap) {
             cost_function = BAConstPoseCostFxn<colmap::SimpleRadialCameraModel>::Create(track_image.Qvec(), track_image.Tvec(), track_point_2d.XY());                 
         }   
         else if (dataset_ == Dataset::Kitti) {
             cost_function = BAConstPoseCostFxn<colmap::SimplePinholeCameraModel>::Create(track_image.Qvec(), track_image.Tvec(), track_point_2d.XY()); 
         }
-        else if (dataset_ == Dataset::KittiToColmap) {
+        else {
             cost_function = BAConstPoseCostFxn<colmap::SimplePinholeCameraModel>::Create(track_image.Qvec(), track_image.Tvec(), track_point_2d.XY()); 
         }
         problem_->AddResidualBlock(cost_function, loss_function,
-                               curr_3d.XYZ().data(), camera.ParamsData());
+                                   curr_3d.XYZ().data(), camera.ParamsData());
+        // std::cout << "check 3d block with id " << point3D_id << " is: " << problem_->HasParameterBlock(curr_3d.XYZ().data()) << std::endl;
     }
 }
 
 void BundleAdjust_::ParameterizePoints(
-                    std::unordered_map<int,colmap::Point3D>& global_point3d_map){
-    for (const auto elem: point3D_num_observations_){
+                    std::unordered_map<int, colmap::Point3D>& global_point3d_map) {
+    for (const auto elem: point3D_num_observations_) {
         colmap::Point3D& curr_3d = global_point3d_map[elem.first];
-        if (curr_3d.Track().Length() > elem.second){
+        if (curr_3d.Track().Length() > elem.second) {
+            std::cout << "setting point 3d " << elem.first << " as constant" << std::endl;
             problem_->SetParameterBlockConstant(curr_3d.XYZ().data());
         }
+        // std::cout << "check whether 3d pt with id " << elem.first << " is constant: " << problem_->IsParameterBlockConstant(curr_3d.XYZ().data()) << std::endl;
     }
 }
 
-void BundleAdjust_::ParameterizeCameras(colmap::Camera& camera){
+void BundleAdjust_::ParameterizeCameras(colmap::Camera& camera) {
     const bool constant_camera = !options_.refine_focal_length &&
                                  !options_.refine_principal_point &&
                                  !options_.refine_extra_params;

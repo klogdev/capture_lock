@@ -23,6 +23,7 @@ void PnPTestRunner::run_test() {
     std::vector<std::vector<Eigen::Vector2d>> points2D;
     std::vector<std::vector<Eigen::Vector3d>> points3D;
     std::vector<Eigen::Matrix3x4d> gt_extrinsic;
+
     data_generator_->generate(points2D, points3D, gt_extrinsic);
 
     // initialize vectors to save metrics

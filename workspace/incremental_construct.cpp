@@ -27,10 +27,10 @@
 
 void IncrementOneImage(std::string image_path, int new_id,
                        int last_id, colmap::Camera& camera,
-                       std::unordered_map<int,colmap::Image>& global_image_map,
-                       std::unordered_map<int,std::vector<sift::Keypoint>>& global_keypts_map,
-                       std::unordered_map<int,colmap::Point3D>& global_3d_map,
-                       std::map<int, std::pair<Eigen::Vector4d,Eigen::Vector3d>> gt_map,
+                       std::unordered_map<int, colmap::Image>& global_image_map,
+                       std::unordered_map<int, std::vector<sift::Keypoint>>& global_keypts_map,
+                       std::unordered_map<int, colmap::Point3D>& global_3d_map,
+                       std::map<int, std::pair<Eigen::Vector4d, Eigen::Vector3d>> gt_map,
                        int resize_w, int resize_h) {
                             
     Image new_image(image_path, resize_w, resize_h);
@@ -194,13 +194,13 @@ void IncrementOneImage(std::string image_path, int new_id,
         }
         int orig_idx1 = vec2d1_idx_map[i];
         int orig_idx2 = vec2d2_idx_map[i];
-        if (last_image.Point2D(orig_idx1).HasPoint3D()){
+        if (last_image.Point2D(orig_idx1).HasPoint3D()) {
             colmap::point3D_t curr3d_id = last_image.Point2D(orig_idx1).Point3DId();// type conversion??
             // overlap the 3d point coord by the updated one
             colmap::Point3D& curr_3d = global_3d_map[curr3d_id];
             curr_3d.SetXYZ(triangulate_3d[i]);
             curr_3d.Track().AddElement(new_id, orig_idx2);
-            new_cmp_image.SetPoint3DForPoint2D(orig_idx2,curr3d_id);
+            new_cmp_image.SetPoint3DForPoint2D(orig_idx2, curr3d_id);
         }
         else {
             int new_3d_id = curr_3d_len; // the id is 0-indexed
