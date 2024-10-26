@@ -79,6 +79,7 @@ void PairsCameraToWorld(const std::vector<Eigen::Vector3d>& camera_pts,
                         const Eigen::Vector3d& trans,
                         std::vector<Eigen::Vector3d>& world_pts);
 
+
 /**
  * covert all pairs of depth maps and g.t. poses to world space points
  * @arg depth_files: a list of directory to depth map files
@@ -102,18 +103,18 @@ void SetVirtualColmapCamera(colmap::Camera& virtual_camera);
  * @brief all current 2d points with it's default id, and register 
  * the corresponded 3d point
  */
-void SetPoint3dOneImage(std::unordered_map<int, colmap::Image>& global_img_map,
+void SetPoint3dOneImage(colmap::Image* curr_img,
+                        colmap::Image* last_img,
                         std::vector<Eigen::Vector3d>& point_3d,
                         std::unordered_map<int, colmap::Point3D>& global_3d_map,
                         std::unordered_map<int, std::vector<sift::Keypoint>>& global_keypts_map,
-                        int image_idx,
                         int& curr_3d_idx);
 
 /**
  * @brief special Bundle Adjustment for TUM RGBD, with fixed poses
  * only optimize 
  */
-void TUMBundle(std::unordered_map<int, colmap::Image>& global_img_map,
+void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
                std::unordered_map<int, colmap::Point3D>& global_3d_map,
                colmap::Camera& camera);
 

@@ -158,7 +158,7 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
 
     colmap::Camera virtual_cam;
     SetVirtualColmapCamera(virtual_cam);
-    std::unordered_map<int, colmap::Image> tum_image_map;
+    std::unordered_map<int, colmap::Image*> tum_image_map;
     std::unordered_map<int, colmap::Point3D> tum_3d_map;
     std::unordered_map<int, std::vector<sift::Keypoint>> global_keypts_map;
     int global_3d_id = 0;
@@ -179,51 +179,55 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
         PairsCameraToWorld(camera_pts, quats[i], trans[i], world_pts);
 
         // set current colmap image
-        colmap::Image curr_image = SIFTtoCOLMAPImage(i, normalized_pts, virtual_cam);
-        curr_image.SetQvec(quats[i]);
-        curr_image.SetTvec(trans[i]);
+        colmap::Image* curr_image = new colmap::Image(SIFTtoCOLMAPImage(i, normalized_pts, virtual_cam));
+        curr_image->SetQvec(quats[i]);
+        curr_image->SetTvec(trans[i]);
+
         tum_image_map[i] = curr_image;
+        
+        colmap::Image* last_image = (i > 0) ? tum_image_map[i - 1] : nullptr;
+        // if(i == 1) {
+        //     std::cout << "image 0 has 2d points " << tum_image_map[0].NumPoints2D() << std::endl;
+        //     for (int i = 0; i < tum_image_map[0].NumPoints2D(); ++i) {
+        //         std::cout << "image " << 0 << " 's 2D point " << i << " -> 3D ID: " << tum_image_map[0].Point2D(i).Point3DId() << std::endl;
+        //     }
+        // }
         // world_pts: 3d points from current depth map
-        SetPoint3dOneImage(tum_image_map, world_pts, tum_3d_map, global_keypts_map, 
-                           i, global_3d_id);
+        SetPoint3dOneImage(curr_image, last_image, world_pts, 
+                           tum_3d_map, 
+                           global_keypts_map, global_3d_id);
+    }
 
-        for(const colmap::Point2D& p: curr_image.Points2D()) {
-            std::cout << "image " << i << " 's 2d point has id: " << p.Point3DId() << std::endl;
-        }
-
-        CheckTUMResidual(curr_image, virtual_cam, tum_3d_map);
+    for(int i = 0; i < 20; i += 5) {
+        std::cout << "3d point " << i << " before BA is: " << std::endl;
+        std::cout << tum_3d_map[i].XYZ() << std::endl;
     }
 
 
-    // for(int i = 0; i < 20; i += 3) {
-    //     std::cout << "3d point " << i << " before BA is: " << std::endl;
-    //     std::cout << tum_3d_map[i].XYZ() << std::endl;
-    // }
-
-
     // std::cout << "quat 1 befor BA is: " << std::endl;
-    // std::cout << tum_image_map[1].Qvec() << std::endl;
-
+    // std::cout << tum_image_map[1]->Qvec() << std::endl;
 
     TUMBundle(tum_image_map, tum_3d_map, virtual_cam);
 
-    // for(int i = 0; i < 20; i += 3) {
-    //     std::cout << "3d point " << i << " after BA is: " << std::endl;
-    //     std::cout << tum_3d_map[i].XYZ() << std::endl;
-    // }
-    // std::cout << "quat 1 after BA is: " << std::endl;
-    // std::cout << tum_image_map[1].Qvec() << std::endl;
+    // CheckTUMResidual(tum_image_map[0], virtual_cam, tum_3d_map);
 
-    std::cout << "check virtual intrinsic after BA: " << std::endl;
-    std::cout << virtual_cam.CalibrationMatrix() << std::endl;
+    for(int i = 0; i < 20; i += 5) {
+        std::cout << "3d point " << i << " after BA is: " << std::endl;
+        std::cout << tum_3d_map[i].XYZ() << std::endl;
+    }
+    // std::cout << "quat 1 after BA is: " << std::endl;
+    // std::cout << tum_image_map[1]->Qvec() << std::endl;
+
+    // std::cout << "check virtual intrinsic after BA: " << std::endl;
+    // std::cout << virtual_cam.CalibrationMatrix() << std::endl;
 
     for(auto& [img_id, value]: tum_image_map) {
         std::vector<Eigen::Vector3d> curr_3d;
         std::vector<Eigen::Vector2d> curr_2d;
-        RetrievePairsfromImage(value, tum_3d_map, curr_2d, curr_3d);
+        RetrievePairsfromImage(*value, tum_3d_map, curr_2d, curr_3d);
         points3D.push_back(curr_3d);
         points2D.push_back(curr_2d);
-        composed_extrinsic.push_back(colmap::ComposeProjectionMatrix(value.Qvec(), value.Tvec()));
+        composed_extrinsic.push_back(colmap::ComposeProjectionMatrix(value->Qvec(), value->Tvec()));
     }
 }
 
@@ -235,79 +239,91 @@ void SetVirtualColmapCamera(colmap::Camera& virtual_camera) {
     virtual_camera.SetParams(intrinsic);
 }
 
-void SetPoint3dOneImage(std::unordered_map<int, colmap::Image>& global_img_map,
+void SetPoint3dOneImage(colmap::Image* curr_img,
+                        colmap::Image* last_img,  // Pointer to last image, can be nullptr for the first frame
                         std::vector<Eigen::Vector3d>& point_3d,
                         std::unordered_map<int, colmap::Point3D>& global_3d_map,
                         std::unordered_map<int, std::vector<sift::Keypoint>>& global_keypts_map,
-                        int image_idx, int& curr_3d_idx) {
-    // Ensure we are modifying the original image object
-    colmap::Image& curr_img = global_img_map[image_idx];
-    colmap::Image* last_img = nullptr;
-    if (image_idx != 0) last_img = &global_img_map[image_idx - 1];
+                        int& curr_3d_idx) {
 
-    // Find matches with the previous image
-    std::vector<std::pair<int, int>> matches;
-    if (image_idx != 0) {
-        std::vector<sift::Keypoint> last_key_points = global_keypts_map[image_idx - 1];
-        std::vector<sift::Keypoint> curr_key_points = global_keypts_map[image_idx];
-        matches = sift::find_keypoint_matches(last_key_points, curr_key_points);
-    }
-
-    // Create an index map for matched points
     std::unordered_map<int, int> match_idx;
-    if (!matches.empty()) {
+    if (last_img != nullptr) {  // Check if there's a valid last image
+        std::vector<sift::Keypoint> last_key_points = global_keypts_map[last_img->ImageId()];
+        std::vector<sift::Keypoint> curr_key_points = global_keypts_map[curr_img->ImageId()];
+        auto matches = sift::find_keypoint_matches(last_key_points, curr_key_points);
+
         for (const auto& m : matches) {
             if (m.second < point_3d.size() && m.first < point_3d.size()) {
-                match_idx[m.second] = m.first; // Map current image's index to the previous
+                match_idx[m.second] = m.first; // map current images' idx to the last
             }
         }
     }
 
     for (int i = 0; i < point_3d.size(); i++) {
         if (match_idx.empty() || match_idx.find(i) == match_idx.end()) {
-            // Assign a new 3D ID for unmatched points
-            curr_img.SetPoint3DForPoint2D(i, curr_3d_idx);
+            curr_img->SetPoint3DForPoint2D(i, curr_3d_idx);
             colmap::Point3D new_3d;
             new_3d.SetXYZ(point_3d[i]);
-            new_3d.Track().AddElement(curr_img.ImageId(), i); 
+            new_3d.Track().AddElement(curr_img->ImageId(), i);
             global_3d_map[curr_3d_idx] = new_3d;
+            // std::cout << "Assigned 3D ID " << curr_3d_idx << " to 2D point " << i << " in image " << curr_img.ImageId() << std::endl;
+
             curr_3d_idx++;
         } else {
-            // For matched points, link to the existing 3D point
             int idx_last = match_idx[i];
             if (last_img && idx_last >= last_img->NumPoints2D()) {
                 continue;  // Avoid out-of-bounds access
             }
             int last_3d_id = last_img->Point2D(idx_last).Point3DId();
-            if (last_3d_id == -1 || global_3d_map.find(last_3d_id) == global_3d_map.end()) {
+            if (global_3d_map.find(last_3d_id) == global_3d_map.end()) {
                 continue; // Ensure we have a valid 3D point reference
             }
+
             colmap::Point3D& old_point3d = global_3d_map[last_3d_id];
-            old_point3d.SetXYZ((point_3d[i] + old_point3d.XYZ()) / 2); // Update the 3D point
-            old_point3d.Track().AddElement(curr_img.ImageId(), i);
-            curr_img.SetPoint3DForPoint2D(i, last_3d_id);
+            old_point3d.SetXYZ((point_3d[i] + old_point3d.XYZ()) / 2);
+            old_point3d.Track().AddElement(curr_img->ImageId(), i);
+            curr_img->SetPoint3DForPoint2D(i, last_3d_id);
         }
     }
-
-    global_img_map[image_idx] = curr_img;
-
 }
 
+// Function to check and print residuals before/after optimization
+void PrintLargeResiduals(ceres::Problem& problem, double threshold = 1.0) {
+    std::vector<double> residuals;
+    ceres::Problem::EvaluateOptions options;
+    problem.Evaluate(options, nullptr, &residuals, nullptr, nullptr);
 
-void TUMBundle(std::unordered_map<int, colmap::Image>& global_img_map,
+    std::cout << "Residuals larger than " << threshold << ":" << std::endl;
+    for (size_t i = 0; i < residuals.size(); i += 2) {
+        double magnitude = std::sqrt(residuals[i] * residuals[i] + residuals[i + 1] * residuals[i + 1]);
+        if (magnitude > threshold) {
+            std::cout << "Residual Block " << i / 2 << " Magnitude: " << magnitude 
+                      << " (Residuals: [" << residuals[i] << ", " << residuals[i + 1] << "])" << std::endl;
+        }
+    }
+}
+
+void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
                std::unordered_map<int, colmap::Point3D>& global_3d_map,
                colmap::Camera& camera) {
     ceres::Problem problem;
 
     for (auto& [point3D_id, point3D] : global_3d_map) {
+        if (!std::isfinite(point3D.XYZ().norm())) {
+            std::cerr << "Error: 3D point ID " << point3D_id << " has invalid coordinates: "
+                    << point3D.XYZ().transpose() << std::endl;
+        }
+
         problem.AddParameterBlock(point3D.XYZ().data(), 3);  // 3D points have 3 parameters (x, y, z)
     }
 
     for (auto& [image_id, image] : global_img_map) {
-        const Eigen::Vector4d qvec = image.Qvec();  // Camera rotation (quaternion)
-        const Eigen::Vector3d tvec = image.Tvec();  // Camera translation
+        const Eigen::Vector4d qvec = image->Qvec();  // Camera rotation (quaternion)
+        const Eigen::Vector3d tvec = image->Tvec();  // Camera translation
 
-        for (const auto& point2D : image.Points2D()) {
+        ceres::LossFunction* loss_function = new ceres::HuberLoss(1.0);
+
+        for (const auto& point2D : image->Points2D()) {
             if (!point2D.HasPoint3D()) continue;
 
             const int point3D_id = point2D.Point3DId();
@@ -318,21 +334,27 @@ void TUMBundle(std::unordered_map<int, colmap::Image>& global_img_map,
                 qvec, tvec, point2D.XY());  // Assume pinhole model; change if necessary
 
             // Add the residual block.
-            problem.AddResidualBlock(cost_function, nullptr, point3D.XYZ().data(), camera.ParamsData());
+            problem.AddResidualBlock(cost_function, loss_function, point3D.XYZ().data(), camera.ParamsData());
         }
     }
 
     problem.SetParameterBlockConstant(camera.ParamsData());
 
-
     ceres::Solver::Options options;
-    options.max_num_iterations = 200;  // You can adjust as needed
-    options.linear_solver_type = ceres::DENSE_SCHUR;  // Suitable for BA problems
+    options.minimizer_progress_to_stdout = true;
+    options.logging_type = ceres::PER_MINIMIZER_ITERATION;
+    options.max_num_iterations = 200;
+    options.linear_solver_type = ceres::SPARSE_SCHUR;
+    options.trust_region_strategy_type = ceres::DOGLEG;  // Can try 'LEVENBERG_MARQUARDT' if needed
+
+    std::cout << "Residuals before optimization:" << std::endl;
+    PrintLargeResiduals(problem);
 
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);
 
-    // std::cout << summary.FullReport() << std::endl;
+    std::cout << "Residuals after optimization:" << std::endl;
+    PrintLargeResiduals(problem);
 }
 
 void SetBAOptions(colmap::BundleAdjustmentOptions& ba_options) {
