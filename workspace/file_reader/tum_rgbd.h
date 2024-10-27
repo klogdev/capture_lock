@@ -110,6 +110,8 @@ void SetPoint3dOneImage(colmap::Image* curr_img,
                         std::unordered_map<int, std::vector<sift::Keypoint>>& global_keypts_map,
                         int& curr_3d_idx);
 
+void PrintParameterBlocks(ceres::Problem& problem);
+
 /**
  * @brief special Bundle Adjustment for TUM RGBD, with fixed poses
  * only optimize 

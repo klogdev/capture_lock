@@ -301,6 +301,25 @@ void PrintLargeResiduals(ceres::Problem& problem, double threshold = 1.0) {
     }
 }
 
+void PrintParameterBlocks(ceres::Problem& problem) {
+    // Retrieve all parameter blocks from the problem
+    std::vector<double*> parameter_blocks;
+    problem.GetParameterBlocks(&parameter_blocks);
+
+    std::cout << "Total Parameter Blocks: " << parameter_blocks.size() << std::endl;
+
+    for (size_t i = 0; i < parameter_blocks.size(); ++i) {
+        int block_size = problem.ParameterBlockSize(parameter_blocks[i]);
+        std::cout << "Parameter Block " << i << " (size " << block_size << "): ";
+        
+        // Print each value in the parameter block
+        for (int j = 0; j < block_size; ++j) {
+            std::cout << parameter_blocks[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+
 void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
                std::unordered_map<int, colmap::Point3D>& global_3d_map,
                colmap::Camera& camera) {
@@ -386,13 +405,14 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
     // Jacobian size is approximately: num_residuals x num_parameters
     std::cout << "Jacobian size: " << num_residuals << " x " << num_parameters << std::endl;
 
-    // for (int i = 0; i < jacobian.rows.size(); i++) {
-    //     std::cout << "Jacobian row " << i << ": ";
-    //     for (int j = jacobian.rows[i]; j < jacobian.rows[i + 1]; j++) {
-    //         std::cout << jacobian.values[j] << " ";
-    //     }
-    //     std::cout << std::endl;
-    // }
+    for (int i = 0; i < jacobian.rows.size(); i++) {
+        std::cout << "Jacobian row " << i << ": ";
+        for (int j = jacobian.rows[i]; j < jacobian.rows[i + 1]; j++) {
+            std::cout << jacobian.values[j] << " ";
+        }
+        std::cout << std::endl;
+    }
+    PrintParameterBlocks(problem);
 }
 
 void SetBAOptions(colmap::BundleAdjustmentOptions& ba_options) {
