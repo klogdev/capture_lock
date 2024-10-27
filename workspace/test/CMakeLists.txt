@@ -15,6 +15,14 @@ target_include_directories(
 target_link_libraries(
   tum_test PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
 
+add_executable(tum_bundle_test tum_bundle_test.cpp)
+  target_include_directories(
+    tum_bundle_test PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+  target_link_libraries(
+    tum_bundle_test PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES}
+  tum)
+  
+
 add_library(test_util STATIC
 test_util.h
 test_util.cpp

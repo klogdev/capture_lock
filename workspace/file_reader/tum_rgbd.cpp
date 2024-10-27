@@ -169,7 +169,7 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
     LoadTUMPoses(gt_pose, quats, trans);
 
     // Process each pair
-    for (size_t i = 0; i < 2; i++) {
+    for (size_t i = 0; i < image_files.size(); i++) {
         std::vector<Eigen::Vector2d> normalized_pts;
         std::vector<Eigen::Vector3d> camera_pts;
         std::vector<Eigen::Vector3d> world_pts;
@@ -306,6 +306,9 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
                colmap::Camera& camera) {
     ceres::Problem problem;
 
+    std::unordered_set<int> added_points; // Track unique parameter blocks for 3D points
+
+
     std::cout << "we have num of 3d points: " << global_3d_map.size() << std::endl;
     for (auto& [point3D_id, point3D] : global_3d_map) {
     // Ensure each 3D point parameter is added only once
@@ -314,7 +317,13 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
         } else {
             std::cerr << "Warning: Duplicate parameter block for 3D point ID: " << point3D_id << std::endl;
         }
+        added_points.insert(point3D_id);
+        std::cout << "Added parameter block for 3D point ID: " << point3D_id << std::endl;
     }
+
+    int num_residuals = 0;
+    int num_parameters = 0;
+    int num_blocks = 0;
 
     int residual_count = 0;
     for (auto& [image_id, image] : global_img_map) {
@@ -332,18 +341,23 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
 
             problem.AddResidualBlock(cost_function, nullptr, point3D.XYZ().data(), camera.ParamsData());
             residual_count += 2; // Each observation has two residuals (x and y)
+            num_residuals += cost_function->num_residuals();
+            for (int i = 0; i < cost_function->parameter_block_sizes().size(); ++i) {
+                num_parameters += cost_function->parameter_block_sizes()[i];
+            }
+
             
             // Confirm adding each residual block
-            if (problem.HasParameterBlock(point3D.XYZ().data()) && camera.ParamsData()) {
-                problem.AddResidualBlock(cost_function, nullptr, point3D.XYZ().data(), camera.ParamsData());
-                residual_count += 2; // Each observation has two residuals (x and y)
-            } else {
-                std::cerr << "Error adding residual for 3D point ID: " << point3D_id << " in image ID: " << image_id << std::endl;
-            }
+            std::cout << "Added residual for 2D-3D correspondence in image ID: " << image_id
+                      << ", 2D point index: " << &point2D - &image->Points2D()[0]
+                      << ", associated 3D point ID: " << point3D_id << std::endl;
+
+            num_blocks += problem.ParameterBlockSize(point3D.XYZ().data());
         }
     }
 
     std::cout << "Total residuals added: " << residual_count << std::endl;
+    std::cout << "Total params added: " << num_blocks << std::endl;
 
     problem.SetParameterBlockConstant(camera.ParamsData());
 
@@ -354,20 +368,24 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
     options.linear_solver_type = ceres::SPARSE_SCHUR;
     options.trust_region_strategy_type = ceres::DOGLEG;  // Can try 'LEVENBERG_MARQUARDT' if needed
 
-    std::cout << "Residuals before optimization:" << std::endl;
-    PrintLargeResiduals(problem);
+    // std::cout << "Residuals before optimization:" << std::endl;
+    // PrintLargeResiduals(problem);
 
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);
 
-    std::cout << "Residuals after optimization:" << std::endl;
-    PrintLargeResiduals(problem);
+    // std::cout << "Residuals after optimization:" << std::endl;
+    // PrintLargeResiduals(problem);
 
     ceres::CRSMatrix jacobian;
     problem.Evaluate(ceres::Problem::EvaluateOptions(), nullptr, nullptr, nullptr, &jacobian);
 
     std::cout << "number of Jacobian col: " << jacobian.cols.size() <<std::endl;
     std::cout << "number of Jacobian row: " << jacobian.rows.size() <<std::endl;
+
+    // Jacobian size is approximately: num_residuals x num_parameters
+    std::cout << "Jacobian size: " << num_residuals << " x " << num_parameters << std::endl;
+
     // for (int i = 0; i < jacobian.rows.size(); i++) {
     //     std::cout << "Jacobian row " << i << ": ";
     //     for (int j = jacobian.rows[i]; j < jacobian.rows[i + 1]; j++) {
@@ -375,7 +393,6 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
     //     }
     //     std::cout << std::endl;
     // }
-
 }
 
 void SetBAOptions(colmap::BundleAdjustmentOptions& ba_options) {
