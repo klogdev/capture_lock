@@ -20,6 +20,9 @@
 
 #include "cost_fxn.h"
 
+#include <ceres/iteration_callback.h>
+#include <ceres/problem.h>
+
 #include "util_/sift_colmap.h"
 #include "feature/sift.h"
 #include "feature/image_sift.h"
@@ -166,7 +169,7 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
     LoadTUMPoses(gt_pose, quats, trans);
 
     // Process each pair
-    for (size_t i = 0; i < image_files.size(); i++) {
+    for (size_t i = 0; i < 2; i++) {
         std::vector<Eigen::Vector2d> normalized_pts;
         std::vector<Eigen::Vector3d> camera_pts;
         std::vector<Eigen::Vector3d> world_pts;
@@ -186,12 +189,7 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
         tum_image_map[i] = curr_image;
         
         colmap::Image* last_image = (i > 0) ? tum_image_map[i - 1] : nullptr;
-        // if(i == 1) {
-        //     std::cout << "image 0 has 2d points " << tum_image_map[0].NumPoints2D() << std::endl;
-        //     for (int i = 0; i < tum_image_map[0].NumPoints2D(); ++i) {
-        //         std::cout << "image " << 0 << " 's 2D point " << i << " -> 3D ID: " << tum_image_map[0].Point2D(i).Point3DId() << std::endl;
-        //     }
-        // }
+        
         // world_pts: 3d points from current depth map
         SetPoint3dOneImage(curr_image, last_image, world_pts, 
                            tum_3d_map, 
@@ -308,20 +306,20 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
                colmap::Camera& camera) {
     ceres::Problem problem;
 
+    std::cout << "we have num of 3d points: " << global_3d_map.size() << std::endl;
     for (auto& [point3D_id, point3D] : global_3d_map) {
-        if (!std::isfinite(point3D.XYZ().norm())) {
-            std::cerr << "Error: 3D point ID " << point3D_id << " has invalid coordinates: "
-                    << point3D.XYZ().transpose() << std::endl;
+    // Ensure each 3D point parameter is added only once
+        if (!problem.HasParameterBlock(point3D.XYZ().data())) {
+            problem.AddParameterBlock(point3D.XYZ().data(), 3);
+        } else {
+            std::cerr << "Warning: Duplicate parameter block for 3D point ID: " << point3D_id << std::endl;
         }
-
-        problem.AddParameterBlock(point3D.XYZ().data(), 3);  // 3D points have 3 parameters (x, y, z)
     }
 
+    int residual_count = 0;
     for (auto& [image_id, image] : global_img_map) {
         const Eigen::Vector4d qvec = image->Qvec();  // Camera rotation (quaternion)
         const Eigen::Vector3d tvec = image->Tvec();  // Camera translation
-
-        ceres::LossFunction* loss_function = new ceres::HuberLoss(1.0);
 
         for (const auto& point2D : image->Points2D()) {
             if (!point2D.HasPoint3D()) continue;
@@ -329,20 +327,29 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
             const int point3D_id = point2D.Point3DId();
             colmap::Point3D& point3D = global_3d_map.at(point3D_id);
 
-            // Create a cost function for the reprojection error.
             ceres::CostFunction* cost_function = BAConstPoseCostFxn<colmap::SimplePinholeCameraModel>::Create(
-                qvec, tvec, point2D.XY());  // Assume pinhole model; change if necessary
+                qvec, tvec, point2D.XY());
 
-            // Add the residual block.
-            problem.AddResidualBlock(cost_function, loss_function, point3D.XYZ().data(), camera.ParamsData());
+            problem.AddResidualBlock(cost_function, nullptr, point3D.XYZ().data(), camera.ParamsData());
+            residual_count += 2; // Each observation has two residuals (x and y)
+            
+            // Confirm adding each residual block
+            if (problem.HasParameterBlock(point3D.XYZ().data()) && camera.ParamsData()) {
+                problem.AddResidualBlock(cost_function, nullptr, point3D.XYZ().data(), camera.ParamsData());
+                residual_count += 2; // Each observation has two residuals (x and y)
+            } else {
+                std::cerr << "Error adding residual for 3D point ID: " << point3D_id << " in image ID: " << image_id << std::endl;
+            }
         }
     }
+
+    std::cout << "Total residuals added: " << residual_count << std::endl;
 
     problem.SetParameterBlockConstant(camera.ParamsData());
 
     ceres::Solver::Options options;
-    options.minimizer_progress_to_stdout = true;
-    options.logging_type = ceres::PER_MINIMIZER_ITERATION;
+    // options.minimizer_progress_to_stdout = true;
+    // options.logging_type = ceres::PER_MINIMIZER_ITERATION;
     options.max_num_iterations = 200;
     options.linear_solver_type = ceres::SPARSE_SCHUR;
     options.trust_region_strategy_type = ceres::DOGLEG;  // Can try 'LEVENBERG_MARQUARDT' if needed
@@ -355,6 +362,20 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
 
     std::cout << "Residuals after optimization:" << std::endl;
     PrintLargeResiduals(problem);
+
+    ceres::CRSMatrix jacobian;
+    problem.Evaluate(ceres::Problem::EvaluateOptions(), nullptr, nullptr, nullptr, &jacobian);
+
+    std::cout << "number of Jacobian col: " << jacobian.cols.size() <<std::endl;
+    std::cout << "number of Jacobian row: " << jacobian.rows.size() <<std::endl;
+    // for (int i = 0; i < jacobian.rows.size(); i++) {
+    //     std::cout << "Jacobian row " << i << ": ";
+    //     for (int j = jacobian.rows[i]; j < jacobian.rows[i + 1]; j++) {
+    //         std::cout << jacobian.values[j] << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
+
 }
 
 void SetBAOptions(colmap::BundleAdjustmentOptions& ba_options) {
