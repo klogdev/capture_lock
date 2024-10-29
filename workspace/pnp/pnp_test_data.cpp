@@ -23,6 +23,7 @@
 #include "pnp/pnp_test_data.h"
 #include "pnp/pnp_helper.h"
 #include "file_reader/tum_rgbd.h"
+#include "file_reader/colmap_pairs.h"
 
 std::unique_ptr<DataGenerator> 
 DataGenerator::createDataGenerator(const GeneratorType type) {
@@ -37,6 +38,8 @@ DataGenerator::createDataGenerator(const GeneratorType type) {
             return std::make_unique<BoxCornerPlanarSanity>(BoxCornerPlanarSanity());
         case GeneratorType::TUM:
             return std::make_unique<TumRgbd>(TumRgbd());
+        case GeneratorType::COLMAP:
+            return std::make_unique<ColmapPair>(ColmapPair());
         case GeneratorType::EPnPSimNoise:
             return std::make_unique<EPnPSimulatorNoise>(EPnPSimulatorNoise());
         case GeneratorType::EPnPSimNum:
@@ -218,6 +221,15 @@ void TumRgbd::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
 
     TUMIntrinsic tum_para = TUMIntrinsic();
     ProcessAllPairs(image_strings, depth_strings, TumRgbd::align_pose, tum_para, points2D, points3D, composed_extrinsic);
+}
+
+std::string ColmapPair::processed_colmap = "/tmp2/processed_pair.txt";
+void ColmapPair::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                          std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                          std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
+    // std::cout << "no seg fault when call generator" << std::endl;
+    LoadColmapPairs(ColmapPair::processed_colmap, points2D,
+                    points3D, composed_extrinsic);
 }
 
 double EPnPSimulatorNoise::sigma_s = 1.0;

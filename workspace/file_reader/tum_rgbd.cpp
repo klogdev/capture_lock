@@ -201,7 +201,6 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
         std::cout << tum_3d_map[i].XYZ() << std::endl;
     }
 
-
     // std::cout << "quat 1 befor BA is: " << std::endl;
     // std::cout << tum_image_map[1]->Qvec() << std::endl;
 

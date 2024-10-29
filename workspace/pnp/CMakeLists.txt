@@ -30,7 +30,8 @@ pnp_test_data.cpp
 target_include_directories(
   pnp_data PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  pnp_data PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} lhm math_help tum pnp_help)
+  pnp_data PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} lhm math_help 
+  tum colmap_pair pnp_help)
 
 add_library(pnp_runner STATIC
 pnp_runner.h

@@ -6,6 +6,13 @@ link_directories("../estimate")
 link_directories("../")
 include_directories(${WORKSPACE_DIR})
 
+add_executable(col_pair_test colmap_pair_test.cpp)
+  target_include_directories(
+    col_pair_test PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+  target_link_libraries(
+    col_pair_test PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES}
+    colmap_pair)
+
 add_library(tum_test STATIC
 tum_rgbd_test.h
 tum_rgbd_test.cpp
