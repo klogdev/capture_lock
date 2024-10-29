@@ -3,6 +3,8 @@
 
 using Matrix3x4d = Eigen::Matrix<double, 3, 4>;
 
+std::string Trim(const std::string& str);
+
 void LoadColmapPairs(const std::string& filename,
                      std::vector<std::vector<Eigen::Vector2d>>& points2D,
                      std::vector<std::vector<Eigen::Vector3d>>& points3D,
