@@ -129,6 +129,11 @@ class LHMEstimator {
          */
         static std::vector<double> rel_quats;
 
+        /**
+         * @brief cosine difference during iteration
+         */
+        static std::vector<double> cos_diffs;
+
         static int num_iters;
 
         /**
@@ -136,6 +141,12 @@ class LHMEstimator {
          * the static container
          */
         static void addRelQuats(const double rel_quat);
+
+        /**
+         * @brief append current cosine difference to the static
+         * container
+         */
+        static void addCosDiff(const double cos_diff);
 
         /**
          * @brief append current object space error to 
@@ -152,6 +163,11 @@ class LHMEstimator {
          * @brief clear the vector after each round of iteration
          */
         static void clearRelQuats();
+
+        /**
+         * @brief clear the vector after each round of iteration
+         */
+        static void clearCosDiff();
 
         /**
          * @brief estimate the absolute pose via LHM from corresponded 

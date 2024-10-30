@@ -24,6 +24,7 @@ double LHMEstimator::first_estimated_rela_quat = 0;
 int LHMEstimator::num_iterations = 0;
 std::vector<double> LHMEstimator::obj_errs = {};
 std::vector<double> LHMEstimator::rel_quats = {};
+std::vector<double> LHMEstimator::cos_diffs = {};
 
 std::vector<LHMEstimator::M_t> LHMEstimator::Estimate(
     const std::vector<X_t>& points2D, const std::vector<Y_t>& points3D) {
@@ -122,6 +123,7 @@ int LHMEstimator::IterationLHM(const std::vector<Eigen::Vector3d>& points3D,
     double curr_err = std::numeric_limits<double>::max();
     double old_err = -1.0; // dummy old error to start the while loop
     double curr_rel_quat;
+    double curr_cos_diff;
 
     std::vector<Eigen::Vector3d> temp_rotated; // update 3D points iteratively
     temp_rotated.resize(n_points);
@@ -138,10 +140,11 @@ int LHMEstimator::IterationLHM(const std::vector<Eigen::Vector3d>& points3D,
         LHMEstimator::addObjErrs(curr_err);
         Eigen::Vector4d curr_init = colmap::RotationMatrixToQuaternion(init_rot);
         Eigen::Vector4d curr_gt = colmap::RotationMatrixToQuaternion(gt_pose_->block<3, 3>(0, 0));
-        curr_rel_quat = RelativeQuatErr(curr_init, curr_gt);
+        curr_rel_quat = RelativeQuatErr(curr_gt, curr_init);
+        curr_cos_diff = CosineDifference(curr_gt, curr_init);
         LHMEstimator::addRelQuats(curr_rel_quat);
+        LHMEstimator::addCosDiff(curr_cos_diff);
         
-
         for (int i = 0; i < n_points; ++i) {
             temp_rotated[i] = V[i] * temp_rotated[i]; // further polish the points by line of sight projection
         }
@@ -398,10 +401,18 @@ void LHMEstimator::addObjErrs(const double obj_err) {
     LHMEstimator::obj_errs.push_back(obj_err);
 }
 
+void LHMEstimator::addCosDiff(const double cos_diff) {
+    LHMEstimator::cos_diffs.push_back(cos_diff);
+}
+
 void LHMEstimator::clearObjErrs() {
     LHMEstimator::obj_errs.clear();
 }
 
 void LHMEstimator::clearRelQuats() {
     LHMEstimator::rel_quats.clear();
+}
+
+void LHMEstimator::clearCosDiff() {
+    LHMEstimator::cos_diffs.clear();
 }

@@ -223,7 +223,7 @@ void TumRgbd::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
     ProcessAllPairs(image_strings, depth_strings, TumRgbd::align_pose, tum_para, points2D, points3D, composed_extrinsic);
 }
 
-std::string ColmapPair::processed_colmap = "/tmp2/processed_pair.txt";
+std::string ColmapPair::processed_colmap = "/tmp3/gerrard-hall_COLMAP/processed_pair.txt";
 void ColmapPair::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                           std::vector<std::vector<Eigen::Vector3d>>& points3D,
                           std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {

@@ -38,6 +38,7 @@ void PnPTestRunner::run_test() {
     // time series of obj error/relative quaternion error on the fly
     std::vector<std::vector<double>> obj_err_series;
     std::vector<std::vector<double>> quat_err_series;
+    std::vector<std::vector<double>> cos_diff_series;
 
     // Step 2: Estimate parameters using the generated data
     for(int i = 0; i < gt_extrinsic.size(); i++) {
@@ -59,10 +60,13 @@ void PnPTestRunner::run_test() {
         if(lhm_type_) {
             std::vector<double> curr_rel_quat = LHMEstimator::obj_errs;
             std::vector<double> curr_obj_err = LHMEstimator::rel_quats;
+            std::vector<double> curr_cos_diff = LHMEstimator::cos_diffs;
             LHMEstimator::clearObjErrs();
             LHMEstimator::clearRelQuats();
+            LHMEstimator::clearCosDiff();
             obj_err_series.push_back(curr_obj_err);
             quat_err_series.push_back(curr_rel_quat);
+            cos_diff_series.push_back(curr_cos_diff);
         }
         
         int iters = LHMEstimator::num_iterations;
@@ -122,4 +126,6 @@ void PnPTestRunner::run_test() {
         save2DdoubleVec(obj_err_series, output_path_ + "_obj_space_err_" + curr_sigma + "_.txt");
     if(quat_err_series.size() != 0)
         save2DdoubleVec(quat_err_series, output_path_ + "_rela_quat_err_" + curr_sigma + "_.txt");
+    if(cos_diff_series.size() != 0)
+        save2DdoubleVec(cos_diff_series, output_path_ + "_cos_diff_" + curr_sigma + "_.txt");
 }
