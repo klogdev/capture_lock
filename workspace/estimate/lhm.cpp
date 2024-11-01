@@ -99,7 +99,7 @@ bool LHMEstimator::ComputeLHMPose(const std::vector<Eigen::Vector2d>& points2D,
     else {
         const Eigen::Matrix3d rot_copy = init_rot;
         Eigen::Vector4d quat_ = colmap::RotationMatrixToQuaternion(rot_copy);
-        opt_result = LeastSquareSolver(points2D, points3D, quat_, init_trans, options_.lhm_iter);
+        opt_result = CollinearitySolver(V, points3D, quat_, init_trans, options_.lhm_iter);
         const Eigen::Vector4d quat_copy = quat_;
         init_rot = colmap::QuaternionToRotationMatrix(quat_copy);
     }

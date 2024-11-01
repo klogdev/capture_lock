@@ -16,11 +16,12 @@ using Y_t = Eigen::Vector3d;
 using M_t = Eigen::Matrix3x4d;
 
 
-enum class EstimatorType {EPnP, DLS, LHM, DRaM_LHM, EPnP_Colmap};
+enum class EstimatorType {EPnP, DLS, LHM, DRaM_LHM, DRaM_GN, EPnP_Colmap};
 
 inline EstimatorType getEstimatorFromName(const std::string& name) {
     static const std::unordered_map<std::string, EstimatorType> estimatorMap = {
         {"dram_lhm", EstimatorType::DRaM_LHM},
+        {"dram_gn", EstimatorType::DRaM_GN},
         {"epnp", EstimatorType::EPnP},
         {"lhm", EstimatorType::LHM},
         {"dls", EstimatorType::DLS},

@@ -77,6 +77,17 @@ bool EstimatorWrapper::runStandalone(const std::vector<Eigen::Vector2d>& points2
             }
             break;
         }
+        case EstimatorType::DRaM_GN: {
+            LHMEstimator::options_.rot_init_est = "dram";
+            LHMEstimator::options_.optim_option = "gn";
+
+            LHMEstimator estimator;
+            estimated_extrinsic = estimator.Estimate(points2D, points3D);
+            if (residuals) {
+                estimator.Residuals(points2D, points3D, estimated_extrinsic[0], residuals);
+            }
+            break;
+        }
         // Handle unsupported types
         default:
             std::cerr << "unsupported type of PnP estimator!" << std::endl;
