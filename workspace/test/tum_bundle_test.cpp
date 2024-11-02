@@ -48,28 +48,30 @@ void TestTUMBundle() {
     std::unordered_map<int, colmap::Point3D> global_3d_map;
 
     // Assign the 3D points to the 3D point map
-    for (int i = 0; i <= 3 ; i++) {
+    for (int i = 0; i <= 4; i++) {
         colmap::Point3D point3D;
-        point3D.SetXYZ(box_corners[i]);
+        point3D.SetXYZ(Eigen::Vector3d(RandomGaussian(box_corners[i][0], 0.2), 
+                                       RandomGaussian(box_corners[i][1], 0.2),
+                                       RandomGaussian(box_corners[i][2], 0.2)));
         global_3d_map[i] = point3D;
     }
 
     // Assign feature observations to the images, with shared 3D points
     std::vector<Eigen::Vector2d> img0_2ds;
     for(int i = 0; i <= 3; i++) {
-        Eigen::Vector2d curr_2d = Eigen::Vector2d(RandomGaussian(box_corners[i][0]/box_corners[i][2], 0.01), 
-                                    RandomGaussian(box_corners[i][1]/box_corners[i][2], 0.01));
+        Eigen::Vector2d curr_2d = Eigen::Vector2d(RandomGaussian(box_corners[i][0]/box_corners[i][2], 0.00), 
+                                    RandomGaussian(box_corners[i][1]/box_corners[i][2], 0.00));
         img0_2ds.push_back(curr_2d);
+        global_3d_map[i].Track().AddElement(0, i);
     }
     global_img_map[0]->SetPoints2D(img0_2ds);
 
     std::vector<Eigen::Vector2d> img1_2ds;
-    for(int i = 0; i <= 3; i++) {
+    for(int i = 1; i <= 4; i++) {
         Eigen::Vector3d curr_3d = rotation * box_corners[i] + translation;
-        // std::cout << "image 1's camera point " << i << ": " << curr_3d.transpose() << "\n";
-        Eigen::Vector2d curr_2d = Eigen::Vector2d(RandomGaussian(curr_3d.x()/curr_3d.z(), 0.01), RandomGaussian(curr_3d.y()/curr_3d.z(), 0.01));
+        Eigen::Vector2d curr_2d = Eigen::Vector2d(RandomGaussian(curr_3d.x()/curr_3d.z(), 0.00), RandomGaussian(curr_3d.y()/curr_3d.z(), 0.00));
         img1_2ds.push_back(curr_2d);
-        // std::cout << "image 1's 2D point " << i << ": " << curr_2d.transpose() << "\n";
+        global_3d_map[i].Track().AddElement(1, i-1);
     }
     global_img_map[1]->SetPoints2D(img1_2ds);
 
@@ -79,17 +81,17 @@ void TestTUMBundle() {
     global_img_map[0]->SetPoint3DForPoint2D(2, 2); // Image 0, 2D point 2 -> 3D point 2
     global_img_map[0]->SetPoint3DForPoint2D(3, 3);
 
-    // global_img_map[1]->SetPoint3DForPoint2D(0, 1); // Image 1, 2D point 0 -> 3D point 0
-    // global_img_map[1]->SetPoint3DForPoint2D(1, 2); // Image 1, 2D point 1 -> 3D point 3
-    // global_img_map[1]->SetPoint3DForPoint2D(2, 3); // Image 1, 2D point 2 -> 3D point 2
-    // global_img_map[1]->SetPoint3DForPoint2D(3, 4);
-    global_img_map[1]->SetPoint3DForPoint2D(0, 0); // Image 0, 2D point 0 -> 3D point 0
-    global_img_map[1]->SetPoint3DForPoint2D(1, 1); // Image 0, 2D point 1 -> 3D point 1
-    global_img_map[1]->SetPoint3DForPoint2D(2, 2); // Image 0, 2D point 2 -> 3D point 2
-    global_img_map[1]->SetPoint3DForPoint2D(3, 3);
+    global_img_map[1]->SetPoint3DForPoint2D(0, 1); // Image 1, 2D point 0 -> 3D point 0
+    global_img_map[1]->SetPoint3DForPoint2D(1, 2); // Image 1, 2D point 1 -> 3D point 3
+    global_img_map[1]->SetPoint3DForPoint2D(2, 3); // Image 1, 2D point 2 -> 3D point 2
+    global_img_map[1]->SetPoint3DForPoint2D(3, 4);
+    // global_img_map[1]->SetPoint3DForPoint2D(0, 0); // Image 0, 2D point 0 -> 3D point 0
+    // global_img_map[1]->SetPoint3DForPoint2D(1, 1); // Image 0, 2D point 1 -> 3D point 1
+    // global_img_map[1]->SetPoint3DForPoint2D(2, 2); // Image 0, 2D point 2 -> 3D point 2
+    // global_img_map[1]->SetPoint3DForPoint2D(3, 3);
 
-    CheckTUMResidual(global_img_map[0], camera, global_3d_map); 
-    CheckTUMResidual(global_img_map[1], camera, global_3d_map);
+    // CheckTUMResidual(global_img_map[0], camera, global_3d_map); 
+    // CheckTUMResidual(global_img_map[1], camera, global_3d_map);
 
     // Print initial setup to verify correctness
     std::cout << "Initial 3D points:\n";
@@ -104,6 +106,16 @@ void TestTUMBundle() {
     std::cout << "Adjusted 3D points:\n";
     for (const auto& [id, point3D] : global_3d_map) {
         std::cout << "3D point " << id << ": " << point3D.XYZ().transpose() << "\n";
+    }
+
+    std::vector<Eigen::Vector2d> point2ds;
+    std::vector<Eigen::Vector3d> point3ds;
+
+    RetrievePairsfromImage(global_img_map[0], global_3d_map, 
+                           point2ds, point3ds);
+    for(int i = 0; i < point3ds.size(); i++) {
+        std::cout << "retrieve image 0's 3d point" << std::endl;
+        std::cout << point3ds[i] << std::endl; 
     }
 }
 

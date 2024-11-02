@@ -196,24 +196,15 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
                            global_keypts_map, global_3d_id);
     }
 
-    for(int i = 0; i < 20; i += 5) {
-        std::cout << "3d point " << i << " before BA is: " << std::endl;
-        std::cout << tum_3d_map[i].XYZ() << std::endl;
+    for(auto& [id, pt_3d]: tum_3d_map) {
+        if(pt_3d.Track().Length() > 1) {
+            pt_3d.SetXYZ(pt_3d.XYZ() / pt_3d.Track().Length());
+        }
     }
 
-    // std::cout << "quat 1 befor BA is: " << std::endl;
-    // std::cout << tum_image_map[1]->Qvec() << std::endl;
-
-    TUMBundle(tum_image_map, tum_3d_map, virtual_cam);
+    // TUMBundle(tum_image_map, tum_3d_map, virtual_cam);
 
     // CheckTUMResidual(tum_image_map[0], virtual_cam, tum_3d_map);
-
-    for(int i = 0; i < 20; i += 5) {
-        std::cout << "3d point " << i << " after BA is: " << std::endl;
-        std::cout << tum_3d_map[i].XYZ() << std::endl;
-    }
-    // std::cout << "quat 1 after BA is: " << std::endl;
-    // std::cout << tum_image_map[1]->Qvec() << std::endl;
 
     // std::cout << "check virtual intrinsic after BA: " << std::endl;
     // std::cout << virtual_cam.CalibrationMatrix() << std::endl;
@@ -221,7 +212,7 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
     for(auto& [img_id, value]: tum_image_map) {
         std::vector<Eigen::Vector3d> curr_3d;
         std::vector<Eigen::Vector2d> curr_2d;
-        RetrievePairsfromImage(*value, tum_3d_map, curr_2d, curr_3d);
+        RetrievePairsfromImage(value, tum_3d_map, curr_2d, curr_3d);
         points3D.push_back(curr_3d);
         points2D.push_back(curr_2d);
         composed_extrinsic.push_back(colmap::ComposeProjectionMatrix(value->Qvec(), value->Tvec()));
@@ -264,7 +255,6 @@ void SetPoint3dOneImage(colmap::Image* curr_img,
             new_3d.Track().AddElement(curr_img->ImageId(), i);
             global_3d_map[curr_3d_idx] = new_3d;
             // std::cout << "Assigned 3D ID " << curr_3d_idx << " to 2D point " << i << " in image " << curr_img.ImageId() << std::endl;
-
             curr_3d_idx++;
         } else {
             int idx_last = match_idx[i];
@@ -277,7 +267,7 @@ void SetPoint3dOneImage(colmap::Image* curr_img,
             }
 
             colmap::Point3D& old_point3d = global_3d_map[last_3d_id];
-            old_point3d.SetXYZ((point_3d[i] + old_point3d.XYZ()) / 2);
+            old_point3d.SetXYZ((point_3d[i] + old_point3d.XYZ()));
             old_point3d.Track().AddElement(curr_img->ImageId(), i);
             curr_img->SetPoint3DForPoint2D(i, last_3d_id);
         }
@@ -324,20 +314,16 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
                colmap::Camera& camera) {
     ceres::Problem problem;
 
-    std::unordered_set<int> added_points; // Track unique parameter blocks for 3D points
-
-
     std::cout << "we have num of 3d points: " << global_3d_map.size() << std::endl;
-    for (auto& [point3D_id, point3D] : global_3d_map) {
-    // Ensure each 3D point parameter is added only once
-        if (!problem.HasParameterBlock(point3D.XYZ().data())) {
-            problem.AddParameterBlock(point3D.XYZ().data(), 3);
-        } else {
-            std::cerr << "Warning: Duplicate parameter block for 3D point ID: " << point3D_id << std::endl;
-        }
-        added_points.insert(point3D_id);
-        std::cout << "Added parameter block for 3D point ID: " << point3D_id << std::endl;
-    }
+    // for (auto& [point3D_id, point3D] : global_3d_map) {
+    // // Ensure each 3D point parameter is added only once
+    //     if (point3D.Track().Length() < 2) {
+    //         continue;
+    //     }
+
+    //     problem.AddParameterBlock(point3D.XYZ().data(), 3);
+    //     std::cout << "Added parameter block for 3D point ID: " << point3D_id << std::endl;
+    // }
 
     int num_residuals = 0;
     int num_parameters = 0;
@@ -353,6 +339,7 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
 
             const int point3D_id = point2D.Point3DId();
             colmap::Point3D& point3D = global_3d_map.at(point3D_id);
+            if(point3D.Track().Length() < 5) continue;
 
             ceres::CostFunction* cost_function = BAConstPoseCostFxn<colmap::SimplePinholeCameraModel>::Create(
                 qvec, tvec, point2D.XY());
@@ -398,19 +385,19 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
     ceres::CRSMatrix jacobian;
     problem.Evaluate(ceres::Problem::EvaluateOptions(), nullptr, nullptr, nullptr, &jacobian);
 
-    std::cout << "number of Jacobian col: " << jacobian.cols.size() <<std::endl;
-    std::cout << "number of Jacobian row: " << jacobian.rows.size() <<std::endl;
+    // std::cout << "number of Jacobian col: " << jacobian.cols.size() <<std::endl;
+    // std::cout << "number of Jacobian row: " << jacobian.rows.size() <<std::endl;
 
     // Jacobian size is approximately: num_residuals x num_parameters
     std::cout << "Jacobian size: " << num_residuals << " x " << num_parameters << std::endl;
 
-    for (int i = 0; i < jacobian.rows.size(); i++) {
-        std::cout << "Jacobian row " << i << ": ";
-        for (int j = jacobian.rows[i]; j < jacobian.rows[i + 1]; j++) {
-            std::cout << jacobian.values[j] << " ";
-        }
-        std::cout << std::endl;
-    }
+    // for (int i = 0; i < jacobian.rows.size(); i++) {
+    //     std::cout << "Jacobian row " << i << ": ";
+    //     for (int j = jacobian.rows[i]; j < jacobian.rows[i + 1]; j++) {
+    //         std::cout << jacobian.values[j] << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
     PrintParameterBlocks(problem);
 }
 
@@ -422,14 +409,16 @@ void SetBAOptions(colmap::BundleAdjustmentOptions& ba_options) {
     ba_options.refine_extrinsics = false;
 }
 
-void RetrievePairsfromImage(colmap::Image& curr_img, 
+void RetrievePairsfromImage(colmap::Image* curr_img, 
                             std::unordered_map<int, colmap::Point3D>& global_3d_map,
                             std::vector<Eigen::Vector2d>& point2ds,
                             std::vector<Eigen::Vector3d>& point3ds) {
     int cnt_2d = 0;
-    for(const colmap::Point2D& p: curr_img.Points2D()) {
-        point2ds.push_back(p.XY());
+    for(const colmap::Point2D& p: curr_img->Points2D()) {
         colmap::point3D_t global_3d_key = p.Point3DId();
+        if(global_3d_map[global_3d_key].Track().Length() < 5) continue;
+
+        point2ds.push_back(p.XY());
         Eigen::Vector3d from2d_to3d = global_3d_map.at(global_3d_key).XYZ();
         point3ds.push_back(from2d_to3d);
         cnt_2d++;

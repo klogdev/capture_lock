@@ -131,9 +131,9 @@ void SetBAOptions(colmap::BundleAdjustmentOptions& ba_options);
 /**
  * @brief retrieve optimized 3d points from a single colmap image
  */
-void RetrievePairsfromImage(colmap::Image& curr_img, 
-                         std::unordered_map<int, colmap::Point3D>& global_3d_map,
-                         std::vector<Eigen::Vector2d>& point2ds,
-                         std::vector<Eigen::Vector3d>& point3ds);
+void RetrievePairsfromImage(colmap::Image* curr_img, 
+                           std::unordered_map<int, colmap::Point3D>& global_3d_map,
+                           std::vector<Eigen::Vector2d>& point2ds,
+                           std::vector<Eigen::Vector3d>& point3ds);
 
 #endif // FILE_READER_TUM_RGBD_H_
