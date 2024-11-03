@@ -218,6 +218,7 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
         std::vector<Eigen::Vector3d> curr_3d;
         std::vector<Eigen::Vector2d> curr_2d;
         RetrievePairsfromImage(value, tum_3d_map, curr_2d, curr_3d);
+        if(curr_3d.size() < 4 || curr_2d.size() < 4) continue;
         points3D.push_back(curr_3d);
         points2D.push_back(curr_2d);
         composed_extrinsic.push_back(colmap::ComposeProjectionMatrix(value->Qvec(), value->Tvec()));
