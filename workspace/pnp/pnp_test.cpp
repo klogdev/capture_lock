@@ -34,12 +34,13 @@ int main(int argc, char** argv) {
             BoxCornerEPnPTestDataDy::sigma = sigma;
     }
 
-    if(generator_opt == "tum_rgbd") {
-        if(argc >= 5)
+    if (generator_opt == "tum_rgbd") {
+        if (argc >= 5) {
             std::string tum_file = argv[4];
             TumRgbd::curr_data = tum_file;
+        }
     }
-
+    
     bool lhm_type = false;
     if(estimator_opt == "lhm" || estimator_opt == "dram_lhm") {
         lhm_type = true;
