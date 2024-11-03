@@ -90,10 +90,15 @@ void OnePairDepthRGB(const std::string& image_file, const std::string& depth_fil
     Image new_image(image_file, 640, 480);
     std::vector<sift::Keypoint> keypoints = GetKeyPoints(new_image);
     std::vector<sift::Keypoint> selected_key;
+    // cv::Ptr<cv::ORB> orb = cv::ORB::create();
+    // std::vector<cv::KeyPoint> keypoints;
+    // cv::Mat descriptors;
+    // orb->detectAndCompute(rgb_image, cv::noArray(), keypoints, descriptors);
+    // std::vector<cv::Mat> selected_key;
 
-    for (const auto& kp : keypoints) {
-        int u = static_cast<int>(kp.i); // x-coordinate in RGB image
-        int v = static_cast<int>(kp.j); // y-coordinate in RGB image
+    for (int i = 0; i < keypoints.size(); i++) {
+        int u = static_cast<int>(keypoints[i].i); // x-coordinate in RGB image
+        int v = static_cast<int>(keypoints[i].j); // y-coordinate in RGB image
         
         uint16_t depth_value = depth_image.at<uint16_t>(v, u);  // Assuming depth image is 16-bit
         if (depth_value > 0) {  // Check for valid depth
@@ -103,7 +108,7 @@ void OnePairDepthRGB(const std::string& image_file, const std::string& depth_fil
             camera_pts.push_back(curr_pt);
             // equivalent to K^-1*(u, v, 1)
             normalized_pts.push_back(Eigen::Vector2d(curr_pt.x()/depth_in_meters, curr_pt.y()/depth_in_meters));
-            selected_key.push_back(kp);
+            selected_key.push_back(keypoints[i]);
         }
     }
     global_keypts_map[curr_idx] = selected_key;
@@ -202,7 +207,7 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
         }
     }
 
-    // TUMBundle(tum_image_map, tum_3d_map, virtual_cam);
+    TUMBundle(tum_image_map, tum_3d_map, virtual_cam);
 
     // CheckTUMResidual(tum_image_map[0], virtual_cam, tum_3d_map);
 
@@ -240,6 +245,15 @@ void SetPoint3dOneImage(colmap::Image* curr_img,
         std::vector<sift::Keypoint> curr_key_points = global_keypts_map[curr_img->ImageId()];
         auto matches = sift::find_keypoint_matches(last_key_points, curr_key_points);
 
+        // cv::Mat last_desc, curr_desc;
+        // cv::vconcat(last_key_points, last_desc);
+        // cv::vconcat(curr_key_points, curr_desc);
+
+
+        // cv::BFMatcher bf(cv::NORM_HAMMING, true);
+        // std::vector<cv::DMatch> matches;
+        // bf.match(last_desc, curr_desc, matches);
+
         for (const auto& m : matches) {
             if (m.second < point_3d.size() && m.first < point_3d.size()) {
                 match_idx[m.second] = m.first; // map current images' idx to the last
@@ -254,7 +268,6 @@ void SetPoint3dOneImage(colmap::Image* curr_img,
             new_3d.SetXYZ(point_3d[i]);
             new_3d.Track().AddElement(curr_img->ImageId(), i);
             global_3d_map[curr_3d_idx] = new_3d;
-            // std::cout << "Assigned 3D ID " << curr_3d_idx << " to 2D point " << i << " in image " << curr_img.ImageId() << std::endl;
             curr_3d_idx++;
         } else {
             int idx_last = match_idx[i];
@@ -311,19 +324,20 @@ void PrintParameterBlocks(ceres::Problem& problem) {
 
 void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
                std::unordered_map<int, colmap::Point3D>& global_3d_map,
-               colmap::Camera& camera) {
+               colmap::Camera& camera, double anchor_weight) {
     ceres::Problem problem;
 
     std::cout << "we have num of 3d points: " << global_3d_map.size() << std::endl;
-    // for (auto& [point3D_id, point3D] : global_3d_map) {
-    // // Ensure each 3D point parameter is added only once
-    //     if (point3D.Track().Length() < 2) {
-    //         continue;
-    //     }
+    for (auto& [point3D_id, point3D] : global_3d_map) {
+        if(point3D.Track().Length() < 5) continue;
+        // Add 3D point as a parameter block
+        problem.AddParameterBlock(point3D.XYZ().data(), 3);
 
-    //     problem.AddParameterBlock(point3D.XYZ().data(), 3);
-    //     std::cout << "Added parameter block for 3D point ID: " << point3D_id << std::endl;
-    // }
+        // Add anchor residual for 3D point stabilization
+        ceres::CostFunction* anchor_cost_function = 
+            AnchorCostFxn::Create(point3D.XYZ(), anchor_weight);
+        problem.AddResidualBlock(anchor_cost_function, nullptr, point3D.XYZ().data());
+    }
 
     int num_residuals = 0;
     int num_parameters = 0;
@@ -413,7 +427,6 @@ void RetrievePairsfromImage(colmap::Image* curr_img,
                             std::unordered_map<int, colmap::Point3D>& global_3d_map,
                             std::vector<Eigen::Vector2d>& point2ds,
                             std::vector<Eigen::Vector3d>& point3ds) {
-    int cnt_2d = 0;
     for(const colmap::Point2D& p: curr_img->Points2D()) {
         colmap::point3D_t global_3d_key = p.Point3DId();
         if(global_3d_map[global_3d_key].Track().Length() < 5) continue;
@@ -421,6 +434,5 @@ void RetrievePairsfromImage(colmap::Image* curr_img,
         point2ds.push_back(p.XY());
         Eigen::Vector3d from2d_to3d = global_3d_map.at(global_3d_key).XYZ();
         point3ds.push_back(from2d_to3d);
-        cnt_2d++;
     }
 }

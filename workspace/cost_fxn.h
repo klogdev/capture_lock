@@ -130,3 +130,29 @@ class BAConstPoseCostFxn {
     const double obs_x;
     const double obs_y;
 };
+
+struct AnchorCostFxn {
+    AnchorCostFxn(const Eigen::Vector3d& init_point_3d, double anchor_weight)
+        : init_x(init_point_3d.x()), 
+          init_y(init_point_3d.y()), 
+          init_z(init_point_3d.z()), 
+          weight(anchor_weight) {}
+
+    template <typename T>
+    bool operator()(const T* const point_3d, T* residuals) const {
+        // Residuals are proportional to the distance from the initial 3D point
+        residuals[0] = T(weight) * (point_3d[0] - T(init_x));
+        residuals[1] = T(weight) * (point_3d[1] - T(init_y));
+        residuals[2] = T(weight) * (point_3d[2] - T(init_z));
+        return true;
+    }
+
+    static ceres::CostFunction* Create(const Eigen::Vector3d& init_point_3d, double anchor_weight) {
+        return (new ceres::AutoDiffCostFunction<AnchorCostFxn, 3, 3>(
+            new AnchorCostFxn(init_point_3d, anchor_weight)));
+    }
+
+ private:
+    const double init_x, init_y, init_z;
+    const double weight;
+};

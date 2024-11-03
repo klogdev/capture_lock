@@ -52,6 +52,7 @@ void DepthToCameraSpace(int u, int v, float depth, Eigen::Vector3d& point,
  * @brief process one pair of rgb and depth file, with 
  * outputting point cloud inside the camera space
  * @arg normalized_pts: normalized pts from depth map that has non-zero depth
+ * @note when using SIFT, switch cv::Mat to sift::Keypoint
  */
 void OnePairDepthRGB(const std::string& image_file, 
                      const std::string& depth_file, 
@@ -118,7 +119,7 @@ void PrintParameterBlocks(ceres::Problem& problem);
  */
 void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
                std::unordered_map<int, colmap::Point3D>& global_3d_map,
-               colmap::Camera& camera);
+               colmap::Camera& camera, double anchor_weight = 0.2);
 
 
 /**
