@@ -24,21 +24,12 @@ int main(int argc, char** argv) {
     // so we set it as -1 as a dummy value
     double sigma = -1.0;
 
-    std::cout << argv[5] << std::endl;
-
     if(argc >= 5) {
         sigma = std::stod(argv[4]);
         if(generator_opt == "epnp_dz")
             BoxCornerEPnPTestDataDz::sigma = sigma;
         else if(generator_opt == "epnp_dy")
             BoxCornerEPnPTestDataDy::sigma = sigma;
-    }
-
-    if (generator_opt == "tum_rgbd") {
-        if (argc >= 5) {
-            std::string tum_file = argv[4];
-            TumRgbd::curr_data = tum_file;
-        }
     }
     
     bool lhm_type = false;
