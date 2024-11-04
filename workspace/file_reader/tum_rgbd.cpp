@@ -174,7 +174,7 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
     LoadTUMPoses(gt_pose, quats, trans);
 
     // Process each pair
-    for (size_t i = 0; i < std::min(static_cast<size_t>(200), image_files.size()); i++) {
+    for (size_t i = 0; i < std::min(static_cast<size_t>(100), image_files.size()); i++) {
         std::vector<Eigen::Vector2d> normalized_pts;
         std::vector<Eigen::Vector3d> camera_pts;
         std::vector<Eigen::Vector3d> world_pts;
@@ -203,6 +203,10 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
 
     for(auto& [id, pt_3d]: tum_3d_map) {
         if(pt_3d.Track().Length() > 1) {
+            std::cout << "curr accumulated coord is: " << std::endl;
+            std::cout << pt_3d.XYZ() << std::endl;
+            std::cout << "it's average with len " << pt_3d.Track().Length() << std::endl;
+            std::cout << pt_3d.XYZ() / pt_3d.Track().Length() << std::endl;
             pt_3d.SetXYZ(pt_3d.XYZ() / pt_3d.Track().Length());
         }
     }
