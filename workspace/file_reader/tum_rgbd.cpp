@@ -168,7 +168,7 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
     LoadTUMPoses(gt_pose, quats, trans);
 
     // Process each pair
-    for (size_t i = 0; i < std::min(static_cast<size_t>(100), image_files.size()); i++) {
+    for (size_t i = 0; i < std::min(static_cast<size_t>(200), image_files.size()); i++) {
         std::vector<Eigen::Vector2d> normalized_pts;
         std::vector<Eigen::Vector3d> camera_pts;
         std::vector<Eigen::Vector3d> world_pts;
