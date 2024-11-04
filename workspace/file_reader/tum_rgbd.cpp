@@ -203,10 +203,10 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
 
     for(auto& [id, pt_3d]: tum_3d_map) {
         if(pt_3d.Track().Length() > 1) {
-            std::cout << "curr accumulated coord is: " << std::endl;
-            std::cout << pt_3d.XYZ() << std::endl;
-            std::cout << "it's average with len " << pt_3d.Track().Length() << std::endl;
-            std::cout << pt_3d.XYZ() / pt_3d.Track().Length() << std::endl;
+            // std::cout << "curr accumulated coord is: " << std::endl;
+            // std::cout << pt_3d.XYZ() << std::endl;
+            // std::cout << "it's average with len " << pt_3d.Track().Length() << std::endl;
+            // std::cout << pt_3d.XYZ() / pt_3d.Track().Length() << std::endl;
             pt_3d.SetXYZ(pt_3d.XYZ() / pt_3d.Track().Length());
         }
     }
@@ -436,8 +436,23 @@ void RetrievePairsfromImage(colmap::Image* curr_img,
         colmap::point3D_t global_3d_key = p.Point3DId();
         if(global_3d_map[global_3d_key].Track().Length() < 4) continue;
 
-        point2ds.push_back(p.XY());
         Eigen::Vector3d from2d_to3d = global_3d_map.at(global_3d_key).XYZ();
+        
+        // Check for NaN, Inf, or extreme values
+        if (!from2d_to3d.allFinite()) {
+            std::cerr << "Warning: Non-finite 3D coordinates detected for point ID " << global_3d_key << std::endl;
+            continue; // Skip this point
+        }
+
+        if (from2d_to3d.norm() > 1e5) { // Example threshold
+            std::cerr << "Warning: 3D point with excessively large norm detected for point ID " << global_3d_key << std::endl;
+            continue; // Skip this point
+        }
+
+        // Optionally check individual components against expected bounds
+        // if (abs(from2d_to3d.x()) > max_allowed_x || ...) { ... }
+
+        point2ds.push_back(p.XY());
         point3ds.push_back(from2d_to3d);
     }
 }
