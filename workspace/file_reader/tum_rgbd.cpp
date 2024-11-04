@@ -227,12 +227,9 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
         }
     }
 
-    // TUMBundle(tum_image_map, tum_3d_map, virtual_cam);
+    TUMBundle(tum_image_map, tum_3d_map, virtual_cam);
 
     // CheckTUMResidual(tum_image_map[0], virtual_cam, tum_3d_map);
-
-    // std::cout << "check virtual intrinsic after BA: " << std::endl;
-    // std::cout << virtual_cam.CalibrationMatrix() << std::endl;
 
     for(auto& [img_id, value]: tum_image_map) {
         std::vector<Eigen::Vector3d> curr_3d;
