@@ -214,10 +214,15 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
             double curr_res = colmap::CalculateSquaredReprojectionError(point2D.XY(),
                                                                         point3D.XYZ(),
                                                                         qvec, tvec, virtual_cam);
-            
+
             if(curr_res == std::numeric_limits<double>::max()) {
                 point2D.SetPoint3DId(colmap::kInvalidPoint3DId);
+                std::cout << "3d pt " << point3D_id << " track " << point3D.Track().Length() << " before delete" << std::endl;
                 point3D.Track().DeleteElement(id, i);
+                std::cout << "Invalid reprojection detected: Point ID " << point3D_id 
+                      << " Reprojection Error: " << curr_res << std::endl;
+                std::cout << "point 2d " << i << " now has 3d " << point2D.HasPoint3D() << std::endl;
+                std::cout << "3d pt " << point3D_id << " track " << point3D.Track().Length() << " after delete" << std::endl;
             }
         }
     }
@@ -389,6 +394,8 @@ void RetrievePairsfromImage(colmap::Image* curr_img,
                             std::vector<Eigen::Vector2d>& point2ds,
                             std::vector<Eigen::Vector3d>& point3ds) {
     for(const colmap::Point2D& p: curr_img->Points2D()) {
+        if (!p.HasPoint3D()) continue;
+
         colmap::point3D_t global_3d_key = p.Point3DId();
         if(global_3d_map[global_3d_key].Track().Length() < 4) continue;
 
