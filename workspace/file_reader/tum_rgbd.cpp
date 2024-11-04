@@ -207,7 +207,7 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
         }
     }
 
-    TUMBundle(tum_image_map, tum_3d_map, virtual_cam);
+    // TUMBundle(tum_image_map, tum_3d_map, virtual_cam);
 
     // CheckTUMResidual(tum_image_map[0], virtual_cam, tum_3d_map);
 
@@ -330,7 +330,7 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
 
     std::cout << "we have num of 3d points: " << global_3d_map.size() << std::endl;
     for (auto& [point3D_id, point3D] : global_3d_map) {
-        if(point3D.Track().Length() < 5) continue;
+        if(point3D.Track().Length() < 4) continue;
         // Add 3D point as a parameter block
         problem.AddParameterBlock(point3D.XYZ().data(), 3);
 
@@ -430,7 +430,7 @@ void RetrievePairsfromImage(colmap::Image* curr_img,
                             std::vector<Eigen::Vector3d>& point3ds) {
     for(const colmap::Point2D& p: curr_img->Points2D()) {
         colmap::point3D_t global_3d_key = p.Point3DId();
-        if(global_3d_map[global_3d_key].Track().Length() < 5) continue;
+        if(global_3d_map[global_3d_key].Track().Length() < 4) continue;
 
         point2ds.push_back(p.XY());
         Eigen::Vector3d from2d_to3d = global_3d_map.at(global_3d_key).XYZ();
