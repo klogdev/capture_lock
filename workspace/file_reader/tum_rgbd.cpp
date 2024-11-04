@@ -20,7 +20,6 @@
 
 #include "cost_fxn.h"
 
-#include <ceres/iteration_callback.h>
 #include <ceres/problem.h>
 
 #include "util_/sift_colmap.h"
@@ -90,11 +89,6 @@ void OnePairDepthRGB(const std::string& image_file, const std::string& depth_fil
     Image new_image(image_file, 640, 480);
     std::vector<sift::Keypoint> keypoints = GetKeyPoints(new_image);
     std::vector<sift::Keypoint> selected_key;
-    // cv::Ptr<cv::ORB> orb = cv::ORB::create();
-    // std::vector<cv::KeyPoint> keypoints;
-    // cv::Mat descriptors;
-    // orb->detectAndCompute(rgb_image, cv::noArray(), keypoints, descriptors);
-    // std::vector<cv::Mat> selected_key;
 
     for (int i = 0; i < keypoints.size(); i++) {
         int u = static_cast<int>(keypoints[i].i); // x-coordinate in RGB image
@@ -203,11 +197,28 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
 
     for(auto& [id, pt_3d]: tum_3d_map) {
         if(pt_3d.Track().Length() > 1) {
-            // std::cout << "curr accumulated coord is: " << std::endl;
-            // std::cout << pt_3d.XYZ() << std::endl;
-            // std::cout << "it's average with len " << pt_3d.Track().Length() << std::endl;
-            // std::cout << pt_3d.XYZ() / pt_3d.Track().Length() << std::endl;
             pt_3d.SetXYZ(pt_3d.XYZ() / pt_3d.Track().Length());
+        }
+    }
+
+    for(auto& [id, image]: tum_image_map) {
+        const Eigen::Vector4d qvec = image->Qvec();  // Camera rotation (quaternion)
+        const Eigen::Vector3d tvec = image->Tvec();  // Camera translation
+
+        for (int i = 0; i < image->Points2D().size(); i++) {
+            colmap::Point2D& point2D = image->Point2D(i);
+            if (!point2D.HasPoint3D()) continue;
+
+            const int point3D_id = point2D.Point3DId();
+            colmap::Point3D& point3D = tum_3d_map.at(point3D_id);
+            double curr_res = colmap::CalculateSquaredReprojectionError(point2D.XY(),
+                                                                        point3D.XYZ(),
+                                                                        qvec, tvec, virtual_cam);
+            
+            if(curr_res == std::numeric_limits<double>::max()) {
+                point2D.SetPoint3DId(colmap::kInvalidPoint3DId);
+                point3D.Track().DeleteElement(id, i);
+            }
         }
     }
 
@@ -250,15 +261,6 @@ void SetPoint3dOneImage(colmap::Image* curr_img,
         std::vector<sift::Keypoint> curr_key_points = global_keypts_map[curr_img->ImageId()];
         auto matches = sift::find_keypoint_matches(last_key_points, curr_key_points);
 
-        // cv::Mat last_desc, curr_desc;
-        // cv::vconcat(last_key_points, last_desc);
-        // cv::vconcat(curr_key_points, curr_desc);
-
-
-        // cv::BFMatcher bf(cv::NORM_HAMMING, true);
-        // std::vector<cv::DMatch> matches;
-        // bf.match(last_desc, curr_desc, matches);
-
         for (const auto& m : matches) {
             if (m.second < point_3d.size() && m.first < point_3d.size()) {
                 match_idx[m.second] = m.first; // map current images' idx to the last
@@ -292,40 +294,6 @@ void SetPoint3dOneImage(colmap::Image* curr_img,
     }
 }
 
-// Function to check and print residuals before/after optimization
-void PrintLargeResiduals(ceres::Problem& problem, double threshold = 1.0) {
-    std::vector<double> residuals;
-    ceres::Problem::EvaluateOptions options;
-    problem.Evaluate(options, nullptr, &residuals, nullptr, nullptr);
-
-    std::cout << "Residuals larger than " << threshold << ":" << std::endl;
-    for (size_t i = 0; i < residuals.size(); i += 2) {
-        double magnitude = std::sqrt(residuals[i] * residuals[i] + residuals[i + 1] * residuals[i + 1]);
-        if (magnitude > threshold) {
-            std::cout << "Residual Block " << i / 2 << " Magnitude: " << magnitude 
-                      << " (Residuals: [" << residuals[i] << ", " << residuals[i + 1] << "])" << std::endl;
-        }
-    }
-}
-
-void PrintParameterBlocks(ceres::Problem& problem) {
-    // Retrieve all parameter blocks from the problem
-    std::vector<double*> parameter_blocks;
-    problem.GetParameterBlocks(&parameter_blocks);
-
-    std::cout << "Total Parameter Blocks: " << parameter_blocks.size() << std::endl;
-
-    for (size_t i = 0; i < parameter_blocks.size(); ++i) {
-        int block_size = problem.ParameterBlockSize(parameter_blocks[i]);
-        std::cout << "Parameter Block " << i << " (size " << block_size << "): ";
-        
-        // Print each value in the parameter block
-        for (int j = 0; j < block_size; ++j) {
-            std::cout << parameter_blocks[i][j] << " ";
-        }
-        std::cout << std::endl;
-    }
-}
 
 void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
                std::unordered_map<int, colmap::Point3D>& global_3d_map,
@@ -398,9 +366,6 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);
 
-    // std::cout << "Residuals after optimization:" << std::endl;
-    // PrintLargeResiduals(problem);
-
     ceres::CRSMatrix jacobian;
     problem.Evaluate(ceres::Problem::EvaluateOptions(), nullptr, nullptr, nullptr, &jacobian);
 
@@ -409,15 +374,6 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
 
     // Jacobian size is approximately: num_residuals x num_parameters
     std::cout << "Jacobian size: " << num_residuals << " x " << num_parameters << std::endl;
-
-    // for (int i = 0; i < jacobian.rows.size(); i++) {
-    //     std::cout << "Jacobian row " << i << ": ";
-    //     for (int j = jacobian.rows[i]; j < jacobian.rows[i + 1]; j++) {
-    //         std::cout << jacobian.values[j] << " ";
-    //     }
-    //     std::cout << std::endl;
-    // }
-    PrintParameterBlocks(problem);
 }
 
 void SetBAOptions(colmap::BundleAdjustmentOptions& ba_options) {
