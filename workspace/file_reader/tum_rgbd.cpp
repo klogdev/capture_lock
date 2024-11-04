@@ -297,8 +297,11 @@ void SetPoint3dOneImage(colmap::Image* curr_img,
             std::cout << "last frame's 3d: " << (old_point3d.XYZ()/old_point3d.Track().Length()).transpose() << std::endl; 
             std::cout << "curr frame's 3d: " << point_3d[i].transpose() << std::endl; 
 
-            if((point_3d[i] - (old_point3d.XYZ()/old_point3d.Track().Length())).norm() > 2) continue;
-
+            double norm = (point_3d[i] - (old_point3d.XYZ()/old_point3d.Track().Length())).norm();
+            if(norm > 2) {
+                std::cout << "point w/ " << norm << " and " <<  point_3d[i].transpose() << " rejected" << std::endl;
+                continue;
+            }
             old_point3d.SetXYZ((point_3d[i] + old_point3d.XYZ()));
             old_point3d.Track().AddElement(curr_img->ImageId(), i);
             curr_img->SetPoint3DForPoint2D(i, last_3d_id);
