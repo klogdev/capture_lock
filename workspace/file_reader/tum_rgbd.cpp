@@ -140,7 +140,9 @@ void PairsCameraToWorld(const std::vector<Eigen::Vector3d>& camera_pts,
     Eigen::Matrix3d R = colmap::QuaternionToRotationMatrix(quat);
 
     for (const auto& pt : camera_pts) {
-        Eigen::Vector3d world_pt = R.transpose() * pt - R.transpose() * trans;
+        Eigen::Vector3d world_pt = R.transpose()*pt + R.transpose()*trans;
+        // Eigen::Vector3d world_pt = R*pt + R*trans;
+
         world_pts.push_back(world_pt);
     }
 }
@@ -168,7 +170,7 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
     LoadTUMPoses(gt_pose, quats, trans);
 
     // Process each pair
-    for (size_t i = 0; i < std::min(static_cast<size_t>(200), image_files.size()); i++) {
+    for (size_t i = 0; i < std::min(static_cast<size_t>(100), image_files.size()); i++) {
         std::vector<Eigen::Vector2d> normalized_pts;
         std::vector<Eigen::Vector3d> camera_pts;
         std::vector<Eigen::Vector3d> world_pts;
@@ -182,8 +184,11 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
 
         // set current colmap image
         colmap::Image* curr_image = new colmap::Image(SIFTtoCOLMAPImage(i, normalized_pts, virtual_cam));
+        Eigen::Matrix3d curr_rot = colmap::QuaternionToRotationMatrix(quats[i]);
+        // curr_image->SetQvec(colmap::RotationMatrixToQuaternion(curr_rot.transpose()));
         curr_image->SetQvec(quats[i]);
-        curr_image->SetTvec(trans[i]);
+
+        curr_image->SetTvec(-trans[i]);
 
         tum_image_map[i] = curr_image;
         
@@ -217,12 +222,12 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
 
             if(curr_res == std::numeric_limits<double>::max()) {
                 point2D.SetPoint3DId(colmap::kInvalidPoint3DId);
-                std::cout << "3d pt " << point3D_id << " track " << point3D.Track().Length() << " before delete" << std::endl;
+                // std::cout << "3d pt " << point3D_id << " track " << point3D.Track().Length() << " before delete" << std::endl;
                 point3D.Track().DeleteElement(id, i);
-                std::cout << "Invalid reprojection detected: Point ID " << point3D_id 
-                      << " Reprojection Error: " << curr_res << std::endl;
-                std::cout << "point 2d " << i << " now has 3d " << point2D.HasPoint3D() << std::endl;
-                std::cout << "3d pt " << point3D_id << " track " << point3D.Track().Length() << " after delete" << std::endl;
+                // std::cout << "Invalid reprojection detected: Point ID " << point3D_id 
+                //       << " Reprojection Error: " << curr_res << std::endl;
+                // std::cout << "point 2d " << i << " now has 3d " << point2D.HasPoint3D() << std::endl;
+                // std::cout << "3d pt " << point3D_id << " track " << point3D.Track().Length() << " after delete" << std::endl;
             }
         }
     }
@@ -289,6 +294,9 @@ void SetPoint3dOneImage(colmap::Image* curr_img,
             }
 
             colmap::Point3D& old_point3d = global_3d_map[last_3d_id];
+            std::cout << "last frame's 3d: " << (old_point3d.XYZ()/old_point3d.Track().Length()).transpose() << std::endl; 
+            std::cout << "curr frame's 3d: " << point_3d[i].transpose() << std::endl; 
+
             old_point3d.SetXYZ((point_3d[i] + old_point3d.XYZ()));
             old_point3d.Track().AddElement(curr_img->ImageId(), i);
             curr_img->SetPoint3DForPoint2D(i, last_3d_id);
@@ -342,9 +350,9 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
 
             
             // Confirm adding each residual block
-            std::cout << "Added residual for 2D-3D correspondence in image ID: " << image_id
-                      << ", 2D point index: " << &point2D - &image->Points2D()[0]
-                      << ", associated 3D point ID: " << point3D_id << std::endl;
+            // std::cout << "Added residual for 2D-3D correspondence in image ID: " << image_id
+            //           << ", 2D point index: " << &point2D - &image->Points2D()[0]
+            //           << ", associated 3D point ID: " << point3D_id << std::endl;
 
             num_blocks += problem.ParameterBlockSize(point3D.XYZ().data());
         }
