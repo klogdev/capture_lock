@@ -170,7 +170,7 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
     LoadTUMPoses(gt_pose, quats, trans);
 
     // Process each pair
-    for (size_t i = 0; i < std::min(static_cast<size_t>(100), image_files.size()); i++) {
+    for (size_t i = 0; i < std::min(static_cast<size_t>(200), image_files.size()); i++) {
         std::vector<Eigen::Vector2d> normalized_pts;
         std::vector<Eigen::Vector3d> camera_pts;
         std::vector<Eigen::Vector3d> world_pts;
@@ -296,6 +296,8 @@ void SetPoint3dOneImage(colmap::Image* curr_img,
             colmap::Point3D& old_point3d = global_3d_map[last_3d_id];
             std::cout << "last frame's 3d: " << (old_point3d.XYZ()/old_point3d.Track().Length()).transpose() << std::endl; 
             std::cout << "curr frame's 3d: " << point_3d[i].transpose() << std::endl; 
+
+            if((point_3d[i] - (old_point3d.XYZ()/old_point3d.Track().Length())).norm() > 2) continue;
 
             old_point3d.SetXYZ((point_3d[i] + old_point3d.XYZ()));
             old_point3d.Track().AddElement(curr_img->ImageId(), i);
