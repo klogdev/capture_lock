@@ -298,7 +298,7 @@ void SetPoint3dOneImage(colmap::Image* curr_img,
             std::cout << "curr frame's 3d: " << point_3d[i].transpose() << std::endl; 
 
             double norm = (point_3d[i] - (old_point3d.XYZ()/old_point3d.Track().Length())).norm();
-            if(norm > 0.1) {
+            if(norm > 0.3) {
                 std::cout << "point w/ " << norm << " and " <<  point_3d[i].transpose() << " rejected" << std::endl;
                 continue;
             }
