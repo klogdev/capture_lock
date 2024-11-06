@@ -119,7 +119,7 @@ void PrintParameterBlocks(ceres::Problem& problem);
  */
 void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
                std::unordered_map<int, colmap::Point3D>& global_3d_map,
-               colmap::Camera& camera, double anchor_weight = 0.2);
+               colmap::Camera& camera, double anchor_weight = 0.0);
 
 
 /**

@@ -129,9 +129,9 @@ class ColmapPair: public DataGenerator {
  * in this case we add noise directly to the 3D points
  * @arg option: the option to test planar or box corners
  */
-class BoxCornerPlanarSanity: public DataGenerator {
+class PlanarCase: public DataGenerator {
 public:
-    BoxCornerPlanarSanity() {};
+    PlanarCase() {};
 
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<std::vector<Eigen::Vector3d>>& points3D,
@@ -139,7 +139,7 @@ public:
 
     static double sigma_s;
     static double sigma_e;
-    static std::string option;
+    static bool tilt;
 };
 
 class EPnPSimulatorNoise: public DataGenerator {

@@ -140,7 +140,7 @@ void PairsCameraToWorld(const std::vector<Eigen::Vector3d>& camera_pts,
     Eigen::Matrix3d R = colmap::QuaternionToRotationMatrix(quat);
 
     for (const auto& pt : camera_pts) {
-        Eigen::Vector3d world_pt = R.transpose()*pt + R.transpose()*trans;
+        Eigen::Vector3d world_pt = R.transpose()*pt - trans; //R.transpose()*trans;
         // Eigen::Vector3d world_pt = R*pt + R*trans;
 
         world_pts.push_back(world_pt);
@@ -170,7 +170,7 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
     LoadTUMPoses(gt_pose, quats, trans);
 
     // Process each pair
-    for (size_t i = 0; i < std::min(static_cast<size_t>(100), image_files.size()); i++) {
+    for (size_t i = 0; i < std::min(static_cast<size_t>(200), image_files.size()); i++) {
         std::vector<Eigen::Vector2d> normalized_pts;
         std::vector<Eigen::Vector3d> camera_pts;
         std::vector<Eigen::Vector3d> world_pts;
@@ -188,7 +188,7 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
         // curr_image->SetQvec(colmap::RotationMatrixToQuaternion(curr_rot.transpose()));
         curr_image->SetQvec(quats[i]);
 
-        curr_image->SetTvec(-trans[i]);
+        curr_image->SetTvec(curr_rot*trans[i]);
 
         tum_image_map[i] = curr_image;
         
@@ -298,7 +298,7 @@ void SetPoint3dOneImage(colmap::Image* curr_img,
             std::cout << "curr frame's 3d: " << point_3d[i].transpose() << std::endl; 
 
             double norm = (point_3d[i] - (old_point3d.XYZ()/old_point3d.Track().Length())).norm();
-            if(norm > 0.5) {
+            if(norm > 1.0) {
                 std::cout << "point w/ " << norm << " and " <<  point_3d[i].transpose() << " rejected" << std::endl;
                 continue;
             }
@@ -318,6 +318,7 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
     std::cout << "we have num of 3d points: " << global_3d_map.size() << std::endl;
     for (auto& [point3D_id, point3D] : global_3d_map) {
         if(point3D.Track().Length() < 4) continue;
+        std::cout << "curr covisible is " << point3D.Track().Length() << std::endl;
         // Add 3D point as a parameter block
         problem.AddParameterBlock(point3D.XYZ().data(), 3);
 
@@ -341,7 +342,7 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
 
             const int point3D_id = point2D.Point3DId();
             colmap::Point3D& point3D = global_3d_map.at(point3D_id);
-            if(point3D.Track().Length() < 5) continue;
+            if(point3D.Track().Length() < 4) continue;
 
             ceres::CostFunction* cost_function = BAConstPoseCostFxn<colmap::SimplePinholeCameraModel>::Create(
                 qvec, tvec, point2D.XY());

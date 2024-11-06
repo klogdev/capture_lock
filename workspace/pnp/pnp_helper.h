@@ -40,6 +40,18 @@ void EPnPInsideRand(std::vector<Eigen::Vector3d>& camera_space_points,
                     int num_pts);
 
 /**
+ * @brief preprocessing of the EPnP random data generation
+ * inside the box [-2,2]x[-2,2]x[4,8] w/ fixed z = 6
+*/
+void EPnPPlanarRand(std::vector<Eigen::Vector3d>& camera_space_points,
+                    int num_pts);
+
+/**
+ * @brief tilt the horizontal plane with 30 degree by default
+ */
+void PlanarTilt(std::vector<Eigen::Vector3d>& camera_space_points);
+
+/**
  * @brief generate a random rotation matrix and pass by reference
 */
 void EPnPRandomRot(Eigen::Matrix3d& rot);

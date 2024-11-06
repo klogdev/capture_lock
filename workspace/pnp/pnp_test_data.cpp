@@ -35,7 +35,7 @@ DataGenerator::createDataGenerator(const GeneratorType type) {
         case GeneratorType::Outlier:
             return std::make_unique<OutliersPercentage>(OutliersPercentage());
         case GeneratorType::PlanarChk:
-            return std::make_unique<BoxCornerPlanarSanity>(BoxCornerPlanarSanity());
+            return std::make_unique<PlanarCase>(PlanarCase());
         case GeneratorType::TUM:
             return std::make_unique<TumRgbd>(TumRgbd());
         case GeneratorType::COLMAP:
@@ -377,44 +377,41 @@ void EPnPSimulatorOutliers::generate(std::vector<std::vector<Eigen::Vector2d>>& 
     }
 }
 
-double BoxCornerPlanarSanity::sigma_s = 0.05;
-double BoxCornerPlanarSanity::sigma_e = 0.65;
-std::string BoxCornerPlanarSanity::option = "planar";
-void BoxCornerPlanarSanity::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
-                                     std::vector<std::vector<Eigen::Vector3d>>& points3D,
-                                     std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
+double PlanarCase::sigma_s = 0;
+double PlanarCase::sigma_e = 15;
+bool PlanarCase::tilt = false;
+void PlanarCase::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                          std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                          std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
     Eigen::Matrix3d k;
     GetIntrinsic(k);
     Eigen::Matrix3d k_inv = k.inverse();
 
     int num_sample = 500;
-    for(double i = BoxCornerPlanarSanity::sigma_s; i <= BoxCornerPlanarSanity::sigma_e; i += 0.1) {
+    for(int i = PlanarCase::sigma_s; i <= PlanarCase::sigma_e; i++) {
         for(int j = 0; j < num_sample; j++) {
-            // generate one set of camera space points
             std::vector<Eigen::Vector3d> curr_camera_space;
-            if(BoxCornerPlanarSanity::option == "box") {
-                EPnPBoxCorner(curr_camera_space);
-            }
-            else {
-                EPnPPlanar(curr_camera_space);
-            }
-            
-            Perturbation3D(curr_camera_space, i);
-
-            // generate noised 2d points from camera space points
+            EPnPPlanarRand(curr_camera_space, 10);
+            if(PlanarCase::tilt) PlanarTilt(curr_camera_space);
+            // obtain the projected points as usual
             std::vector<Eigen::Vector2d> curr_points2d;
-            GenOneSetNoise2D(curr_camera_space, curr_points2d, k, 0.5);
+            GenOneSetNoise2D(curr_camera_space, curr_points2d, k, i);
+            // shift the cloud to (0,0,0) via regarding CoM of cloud
+            // as the world's origin
+            Eigen::Vector3d curr_trans;
+            CalculateCoM(curr_camera_space, curr_trans);
+            std::vector<Eigen::Vector3d> shifted_camera;
+            CameraSpaceShift(curr_camera_space, -curr_trans, shifted_camera);
 
             Eigen::Matrix3d curr_rot;
-            Eigen::Vector3d curr_trans(5, 5, 15);
             EPnPRandomRot(curr_rot);
 
             std::vector<Eigen::Vector3d> curr_points3d;
-            const colmap::SimilarityTransform3 orig_tform(1, colmap::RotationMatrixToQuaternion(curr_rot),
-                                                curr_trans);
+            const colmap::SimilarityTransform3 orig_tform(1, colmap::RotationMatrixToQuaternion(curr_rot.transpose()),
+                                                Eigen::Vector3d(0,0,0));
             // generate scene points
-            for (size_t i = 0; i < curr_camera_space.size(); i++) {
-                Eigen::Vector3d point3D_world = curr_camera_space[i];
+            for (size_t i = 0; i < shifted_camera.size(); i++) {
+                Eigen::Vector3d point3D_world = shifted_camera[i];
                 orig_tform.TransformPoint(&point3D_world);
                 curr_points3d.push_back(point3D_world);
             }
@@ -422,9 +419,9 @@ void BoxCornerPlanarSanity::generate(std::vector<std::vector<Eigen::Vector2d>>& 
             points2D.push_back(curr_points2d);
             points3D.push_back(curr_points3d);
             Eigen::Matrix3x4d curr_gt;
-            curr_gt.block<3, 3>(0, 0) = curr_rot.transpose(); 
-            curr_gt.col(3) = -curr_rot.transpose()*curr_trans; 
-            composed_extrinsic.push_back(curr_gt);
+            curr_gt.block<3, 3>(0, 0) = curr_rot; 
+            curr_gt.col(3) = curr_trans; 
+            composed_extrinsic.push_back(curr_gt);            
         }
     }
 }

@@ -43,6 +43,16 @@ target_include_directories(
 target_link_libraries(
   epnp PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${OpenCV_LIBRARIES})
 
+add_library(upnp STATIC
+upnp.h
+upnp.cpp
+)
+target_include_directories(
+  upnp PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}" 
+  "${OpenCV_INCLUDE_DIRS}")
+target_link_libraries(
+  upnp PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${OpenCV_LIBRARIES})
+
 add_library(adj_quat STATIC
 adj_quat.h
 adj_quat.cpp
