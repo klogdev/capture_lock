@@ -10,19 +10,23 @@
 #include "util/random.h"
 
 #include "estimate/lhm.h"
+#include "estimate/dls.h"
+#include "estimate/upnp.h"
+#include "estimate/epnp.h"
 
 using X_t = Eigen::Vector2d;
 using Y_t = Eigen::Vector3d;
 using M_t = Eigen::Matrix3x4d;
 
 
-enum class EstimatorType {EPnP, DLS, LHM, DRaM_LHM, DRaM_GN, EPnP_Colmap};
+enum class EstimatorType {EPnP, DLS, UPnP, LHM, DRaM_LHM, DRaM_GN, EPnP_Colmap};
 
 inline EstimatorType getEstimatorFromName(const std::string& name) {
     static const std::unordered_map<std::string, EstimatorType> estimatorMap = {
         {"dram_lhm", EstimatorType::DRaM_LHM},
         {"dram_gn", EstimatorType::DRaM_GN},
         {"epnp", EstimatorType::EPnP},
+        {"upnp", EstimatorType::UPnP},
         {"lhm", EstimatorType::LHM},
         {"dls", EstimatorType::DLS},
         {"epnp_colmap", EstimatorType::EPnP_Colmap}

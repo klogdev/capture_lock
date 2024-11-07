@@ -379,7 +379,7 @@ void EPnPSimulatorOutliers::generate(std::vector<std::vector<Eigen::Vector2d>>& 
 
 double PlanarCase::sigma_s = 0;
 double PlanarCase::sigma_e = 15;
-bool PlanarCase::tilt = false;
+bool PlanarCase::tilt = true;
 void PlanarCase::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                           std::vector<std::vector<Eigen::Vector3d>>& points3D,
                           std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
@@ -387,7 +387,7 @@ void PlanarCase::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
     GetIntrinsic(k);
     Eigen::Matrix3d k_inv = k.inverse();
 
-    int num_sample = 500;
+    int num_sample = 50;
     for(int i = PlanarCase::sigma_s; i <= PlanarCase::sigma_e; i++) {
         for(int j = 0; j < num_sample; j++) {
             std::vector<Eigen::Vector3d> curr_camera_space;

@@ -159,6 +159,23 @@ void EPnPPlanarRand(std::vector<Eigen::Vector3d>& camera_space_points,
     }
 }
 
+void PlanarTilt(std::vector<Eigen::Vector3d>& camera_space_points) {
+    // Convert the tilt angle from degrees to radians
+    double theta = M_PI / 6;
+
+    // Define the rotation matrix for tilting around the x-axis
+    Eigen::Matrix3d rotation_matrix;
+    rotation_matrix << 1, 0, 0,
+                       0, cos(theta), -sin(theta),
+                       0, sin(theta), cos(theta);
+
+    // Apply the rotation to each point in the camera space
+    for (Eigen::Vector3d& point : camera_space_points) {
+        point = rotation_matrix * point; // Transform the point using the rotation matrix
+    }
+}
+
+
 void EPnPRandomRot(Eigen::Matrix3d& rot) {
     double alpha = RandomUniform(0, 45);
     double beta = RandomUniform(0, 45);

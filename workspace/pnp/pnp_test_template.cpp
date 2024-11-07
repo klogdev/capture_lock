@@ -13,6 +13,7 @@
 
 #include "estimate/lhm.h"
 #include "estimate/dls.h"
+#include "estimate/upnp.h"
 #include "estimate/epnp.h"
 
 #include "pnp/pnp_test_template.h"
@@ -49,6 +50,14 @@ bool EstimatorWrapper::runStandalone(const std::vector<Eigen::Vector2d>& points2
         }
         case EstimatorType::DLS: {
             DLSEstimator estimator;
+            estimated_extrinsic = estimator.Estimate(points2D, points3D);
+            if(residuals) {
+                estimator.Residuals(points2D, points3D, estimated_extrinsic[0], residuals);
+            }
+            break;
+        }
+        case EstimatorType::UPnP: {
+            UPnPEstimator estimator;
             estimated_extrinsic = estimator.Estimate(points2D, points3D);
             if(residuals) {
                 estimator.Residuals(points2D, points3D, estimated_extrinsic[0], residuals);
