@@ -4,12 +4,12 @@
 
 #include <vector>
 #include <string>
+#include <map>
 #include <algorithm>
 #include <boost/filesystem.hpp>
 #include <Eigen/Core>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp> // For imread
-#include <opencv2/features2d.hpp>
 
 #include "base/pose.h"
 #include "base/projection.h"
@@ -21,6 +21,8 @@
 #include "cost_fxn.h"
 
 #include <ceres/problem.h>
+
+#include "estimate/relative_pose.h"
 
 #include "util_/sift_colmap.h"
 #include "feature/sift.h"
@@ -140,7 +142,7 @@ void PairsCameraToWorld(const std::vector<Eigen::Vector3d>& camera_pts,
     Eigen::Matrix3d R = colmap::QuaternionToRotationMatrix(quat);
 
     for (const auto& pt : camera_pts) {
-        Eigen::Vector3d world_pt = R.transpose()*pt - trans; //R.transpose()*trans;
+        Eigen::Vector3d world_pt = R.transpose()*pt + trans; // R.transpose()*trans;
         // Eigen::Vector3d world_pt = R*pt + R*trans;
 
         world_pts.push_back(world_pt);
@@ -187,16 +189,15 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
         Eigen::Matrix3d curr_rot = colmap::QuaternionToRotationMatrix(quats[i]);
         // curr_image->SetQvec(colmap::RotationMatrixToQuaternion(curr_rot.transpose()));
         curr_image->SetQvec(quats[i]);
-
-        curr_image->SetTvec(curr_rot*trans[i]);
+        curr_image->SetTvec(-curr_rot*trans[i]);
 
         tum_image_map[i] = curr_image;
         
         colmap::Image* last_image = (i > 0) ? tum_image_map[i - 1] : nullptr;
         
         // world_pts: 3d points from current depth map
-        SetPoint3dOneImage(curr_image, last_image, world_pts, 
-                           tum_3d_map, 
+        SetPoint3dOneImage(curr_image, last_image, virtual_cam,
+                           world_pts, tum_3d_map, 
                            global_keypts_map, global_3d_id);
     }
 
@@ -222,12 +223,7 @@ void ProcessAllPairs(const std::vector<std::string>& image_files,
 
             if(curr_res == std::numeric_limits<double>::max()) {
                 point2D.SetPoint3DId(colmap::kInvalidPoint3DId);
-                // std::cout << "3d pt " << point3D_id << " track " << point3D.Track().Length() << " before delete" << std::endl;
                 point3D.Track().DeleteElement(id, i);
-                // std::cout << "Invalid reprojection detected: Point ID " << point3D_id 
-                //       << " Reprojection Error: " << curr_res << std::endl;
-                // std::cout << "point 2d " << i << " now has 3d " << point2D.HasPoint3D() << std::endl;
-                // std::cout << "3d pt " << point3D_id << " track " << point3D.Track().Length() << " after delete" << std::endl;
             }
         }
     }
@@ -256,21 +252,50 @@ void SetVirtualColmapCamera(colmap::Camera& virtual_camera) {
 }
 
 void SetPoint3dOneImage(colmap::Image* curr_img,
-                        colmap::Image* last_img,  // Pointer to last image, can be nullptr for the first frame
+                        colmap::Image* last_img,  
+                        colmap::Camera& camera,
                         std::vector<Eigen::Vector3d>& point_3d,
                         std::unordered_map<int, colmap::Point3D>& global_3d_map,
                         std::unordered_map<int, std::vector<sift::Keypoint>>& global_keypts_map,
                         int& curr_3d_idx) {
 
-    std::unordered_map<int, int> match_idx;
+    std::map<int, std::pair<int, char>> match_idx;
+    std::vector<char> inlier_mask;
+
     if (last_img != nullptr) {  // Check if there's a valid last image
         std::vector<sift::Keypoint> last_key_points = global_keypts_map[last_img->ImageId()];
         std::vector<sift::Keypoint> curr_key_points = global_keypts_map[curr_img->ImageId()];
         auto matches = sift::find_keypoint_matches(last_key_points, curr_key_points);
 
+        std::vector<Eigen::Vector2d> matched1, matched2;
         for (const auto& m : matches) {
             if (m.second < point_3d.size() && m.first < point_3d.size()) {
-                match_idx[m.second] = m.first; // map current images' idx to the last
+                match_idx[m.second] = std::make_pair(m.first, '0'); // map current images' idx to the last
+                matched1.push_back(last_img->Point2D(m.first).XY());
+                matched2.push_back(curr_img->Point2D(m.second).XY());
+            }
+        }
+
+        // start relative pose estimation w/ RANSAC for a pre-filtering
+        colmap::RANSACOptions ransac_options = colmap::RANSACOptions();
+        ransac_options.max_error = 0.05;
+        Eigen::Vector4d qvec_rel = Eigen::Vector4d(0, 0, 0, 1); // init relative pose
+        Eigen::Vector3d tvec_rel = Eigen::Vector3d::Zero();     // w/ 0 rot and trans
+        std::vector<Eigen::Vector3d> point_rel;
+        // use customized relative pose estimator w/ inlier masks
+        size_t num_inliers = 
+            RelativePoseWMask(ransac_options, camera, matched1, matched2, 
+                                        &qvec_rel, &tvec_rel, &inlier_mask, &point_rel);
+    }
+
+    int cnt = 0;
+    if(match_idx.size() != 0) {
+        for(auto& m : match_idx) {
+        if (cnt < inlier_mask.size()) {
+            m.second.second = inlier_mask[cnt];  // Update the value at the current key in the map
+            cnt++;
+        } else {
+                break; // Avoid going out of bounds if inlier_mask has fewer elements than match_idx
             }
         }
     }
@@ -284,7 +309,9 @@ void SetPoint3dOneImage(colmap::Image* curr_img,
             global_3d_map[curr_3d_idx] = new_3d;
             curr_3d_idx++;
         } else {
-            int idx_last = match_idx[i];
+            int idx_last = match_idx[i].first;
+            if(match_idx[i].second == '0') continue;
+
             if (last_img && idx_last >= last_img->NumPoints2D()) {
                 continue;  // Avoid out-of-bounds access
             }
@@ -294,12 +321,12 @@ void SetPoint3dOneImage(colmap::Image* curr_img,
             }
 
             colmap::Point3D& old_point3d = global_3d_map[last_3d_id];
-            std::cout << "last frame's 3d: " << (old_point3d.XYZ()/old_point3d.Track().Length()).transpose() << std::endl; 
-            std::cout << "curr frame's 3d: " << point_3d[i].transpose() << std::endl; 
+            // std::cout << "last frame's 3d: " << (old_point3d.XYZ()/old_point3d.Track().Length()).transpose() << std::endl; 
+            // std::cout << "curr frame's 3d: " << point_3d[i].transpose() << std::endl; 
 
             double norm = (point_3d[i] - (old_point3d.XYZ()/old_point3d.Track().Length())).norm();
             if(norm > 1.0) {
-                std::cout << "point w/ " << norm << " and " <<  point_3d[i].transpose() << " rejected" << std::endl;
+                // std::cout << "point w/ " << norm << " and " <<  point_3d[i].transpose() << " rejected" << std::endl;
                 continue;
             }
             old_point3d.SetXYZ((point_3d[i] + old_point3d.XYZ()));
@@ -309,7 +336,6 @@ void SetPoint3dOneImage(colmap::Image* curr_img,
     }
 }
 
-
 void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
                std::unordered_map<int, colmap::Point3D>& global_3d_map,
                colmap::Camera& camera, double anchor_weight) {
@@ -317,7 +343,7 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
 
     std::cout << "we have num of 3d points: " << global_3d_map.size() << std::endl;
     for (auto& [point3D_id, point3D] : global_3d_map) {
-        if(point3D.Track().Length() < 4) continue;
+        if(point3D.Track().Length() < 5) continue;
         std::cout << "curr covisible is " << point3D.Track().Length() << std::endl;
         // Add 3D point as a parameter block
         problem.AddParameterBlock(point3D.XYZ().data(), 3);
@@ -342,7 +368,7 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
 
             const int point3D_id = point2D.Point3DId();
             colmap::Point3D& point3D = global_3d_map.at(point3D_id);
-            if(point3D.Track().Length() < 4) continue;
+            if(point3D.Track().Length() < 5) continue;
 
             ceres::CostFunction* cost_function = BAConstPoseCostFxn<colmap::SimplePinholeCameraModel>::Create(
                 qvec, tvec, point2D.XY());
@@ -353,7 +379,6 @@ void TUMBundle(std::unordered_map<int, colmap::Image*>& global_img_map,
             for (int i = 0; i < cost_function->parameter_block_sizes().size(); ++i) {
                 num_parameters += cost_function->parameter_block_sizes()[i];
             }
-
             
             // Confirm adding each residual block
             // std::cout << "Added residual for 2D-3D correspondence in image ID: " << image_id
@@ -408,7 +433,7 @@ void RetrievePairsfromImage(colmap::Image* curr_img,
         if (!p.HasPoint3D()) continue;
 
         colmap::point3D_t global_3d_key = p.Point3DId();
-        if(global_3d_map[global_3d_key].Track().Length() < 4) continue;
+        if(global_3d_map[global_3d_key].Track().Length() < 5) continue;
 
         Eigen::Vector3d from2d_to3d = global_3d_map.at(global_3d_key).XYZ();
         

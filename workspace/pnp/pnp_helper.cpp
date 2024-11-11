@@ -147,7 +147,7 @@ void EPnPPlanarRand(std::vector<Eigen::Vector3d>& camera_space_points,
     while (count < num_pts) {
         double curr_x = RandomUniform(-2, 2);
         double curr_y = RandomUniform(-2, 2);
-        double curr_z = 6;
+        double curr_z = 50;
         Eigen::Vector3d curr_trial = Eigen::Vector3d(curr_x, curr_y, curr_z);
         double u = curr_x*800/curr_z + 320; // default intrinsic from EPnP simulator
         double v = curr_y*800/curr_z + 240;

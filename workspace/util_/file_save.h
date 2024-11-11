@@ -43,6 +43,11 @@ void save1DVec(const std::vector<T>& data_vec, std::string out_path) {
 }
 
 /**
+ * @brief trim the empty line with ghost empty space
+ */
+std::string Trim(const std::string& str);
+
+/**
  * @brief save the 2D vector to a text file
  * can be applied to list of residuals
 */

@@ -22,7 +22,19 @@ target_include_directories(
   colmap_pair PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" 
   "${OpenCV_INCLUDE_DIRS}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  colmap_pair PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES} ${OpenCV_LIBRARIES}) 
+  colmap_pair PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES} 
+  ${OpenCV_LIBRARIES} file_save) 
+
+add_library(orb_load STATIC
+orb_loaded.h
+orb_loaded.cpp
+)
+target_include_directories(
+  orb_load PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" 
+  "${OpenCV_INCLUDE_DIRS}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  orb_load PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES} 
+  ${OpenCV_LIBRARIES} file_save tum) 
 
 add_library(tum STATIC
 tum_rgbd.h
@@ -33,7 +45,7 @@ target_include_directories(
   "${OpenCV_INCLUDE_DIRS}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
   tum PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES} ${OpenCV_LIBRARIES} 
-  sift_colmap data_type ba_run sift img cost tum_test) 
+  sift_colmap data_type ba_run sift img cost tum_test relative_pose) 
 
 add_library(file_option STATIC
 file_options.h

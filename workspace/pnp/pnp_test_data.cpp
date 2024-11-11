@@ -24,6 +24,7 @@
 #include "pnp/pnp_helper.h"
 #include "file_reader/tum_rgbd.h"
 #include "file_reader/colmap_pairs.h"
+#include "file_reader/orb_loaded.h"
 
 std::unique_ptr<DataGenerator> 
 DataGenerator::createDataGenerator(const GeneratorType type) {
@@ -40,6 +41,8 @@ DataGenerator::createDataGenerator(const GeneratorType type) {
             return std::make_unique<TumRgbd>(TumRgbd());
         case GeneratorType::COLMAP:
             return std::make_unique<ColmapPair>(ColmapPair());
+        case GeneratorType::ORB:
+            return std::make_unique<OrbGenerate>(OrbGenerate());
         case GeneratorType::EPnPSimNoise:
             return std::make_unique<EPnPSimulatorNoise>(EPnPSimulatorNoise());
         case GeneratorType::EPnPSimNum:
@@ -198,7 +201,7 @@ void OutliersPercentage::generate(std::vector<std::vector<Eigen::Vector2d>>& poi
     }
 }
 
-std::string TumRgbd::curr_data = "rgbd_dataset_freiburg1_room";
+std::string TumRgbd::curr_data = "rgbd_dataset_freiburg2_rpy";
 std::string TumRgbd::image_parent = "/tmp3/dataset/tum_rgbd/" + TumRgbd::curr_data + "/rgb/";
 std::string TumRgbd::depth_parent = "/tmp3/dataset/tum_rgbd/" + TumRgbd::curr_data + "/depth/";
 std::string TumRgbd::align_pose = "/tmp3/dataset/tum_rgbd/" + TumRgbd::curr_data + "/aligned_poses.txt";
@@ -223,11 +226,18 @@ void TumRgbd::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
     ProcessAllPairs(image_strings, depth_strings, TumRgbd::align_pose, tum_para, points2D, points3D, composed_extrinsic);
 }
 
+std::string OrbGenerate::processed_orb = "/tmp3/dataset/tum_rgbd/rgbd_dataset_freiburg1_room/AllPairs.txt";
+void OrbGenerate::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                           std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                           std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
+    LoadOrbLoaded(OrbGenerate::processed_orb, points2D,
+                  points3D, composed_extrinsic);
+}
+
 std::string ColmapPair::processed_colmap = "/tmp3/gerrard-hall_COLMAP/processed_pair.txt";
 void ColmapPair::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                           std::vector<std::vector<Eigen::Vector3d>>& points3D,
                           std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
-    // std::cout << "no seg fault when call generator" << std::endl;
     LoadColmapPairs(ColmapPair::processed_colmap, points2D,
                     points3D, composed_extrinsic);
 }

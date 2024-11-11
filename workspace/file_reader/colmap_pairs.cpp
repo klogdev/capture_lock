@@ -7,13 +7,7 @@
 #include <algorithm>
 
 #include "base/pose.h"
-
-std::string Trim(const std::string& str) {
-    auto start = str.find_first_not_of(" \t\n\r");
-    auto end = str.find_last_not_of(" \t\n\r");
-    return start == std::string::npos ? "" : str.substr(start, end - start + 1);
-}
-
+#include "util_/file_save.h"
 
 void LoadColmapPairs(const std::string& filename,
                      std::vector<std::vector<Eigen::Vector2d>>& points2D,

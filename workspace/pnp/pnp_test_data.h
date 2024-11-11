@@ -16,7 +16,7 @@
 #include "file_reader/tum_rgbd.h"
 
 enum class GeneratorType {
-    EPnPdZ, EPnPdY, Outlier, PlanarChk, TUM, COLMAP,
+    EPnPdZ, EPnPdY, Outlier, PlanarChk, TUM, COLMAP, ORB,
     EPnPSimNoise, EPnPSimNum, EPnPSimOutlier
 };
 
@@ -28,6 +28,7 @@ inline GeneratorType getGeneratorFromName(const std::string& name) {
         {"planar_chk", GeneratorType::PlanarChk},
         {"tum_rgbd", GeneratorType::TUM},
         {"colmap_pair", GeneratorType::COLMAP},
+        {"orb_gen", GeneratorType::ORB},
         {"epnp_sim_noise", GeneratorType::EPnPSimNoise},
         {"epnp_sim_num", GeneratorType::EPnPSimNum},
         {"epnp_sim_outlier", GeneratorType::EPnPSimOutlier}
@@ -113,6 +114,20 @@ public:
     static std::string depth_parent;
     static std::string align_pose;
     static std::string curr_data;
+};
+
+/**
+ * @brief interface class to load ORB-SLAM pricessed TUM-RGBD data
+ */
+class OrbGenerate: public DataGenerator {
+public:
+    OrbGenerate() {};
+
+    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
+    
+    static std::string processed_orb;
 };
 
 class ColmapPair: public DataGenerator {

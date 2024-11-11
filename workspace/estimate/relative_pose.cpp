@@ -18,6 +18,7 @@ size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
                          std::vector<char>* inlier_mask,
                          std::vector<Eigen::Vector3d>* points3D) {
     // first convert the feature/pixel points to homogeneaous points
+
     std::vector<Eigen::Vector2d> homo1;
     std::vector<Eigen::Vector2d> homo2;
 
@@ -26,12 +27,12 @@ size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
         homo2.push_back(camera.ImageToWorld(points2[i]));
     }
 
-    std::cout << "check image to world points" << std::endl;
-    for(int i = 0; i < 10; i++) {
-        std::cout << i << "th homo pair is" << std::endl;
-        std::cout << homo1[i] << std::endl;
-        std::cout << homo2[i] << std::endl; 
-    }
+    // std::cout << "check image to world points" << std::endl;
+    // for(int i = 0; i < 10; i++) {
+    //     std::cout << i << "th homo pair is" << std::endl;
+    //     std::cout << homo1[i] << std::endl;
+    //     std::cout << homo2[i] << std::endl; 
+    // }
 
     colmap::RANSAC<colmap::EssentialMatrixFivePointEstimator> ransac(ransac_options);
     const auto report = ransac.Estimate(homo1, homo2);
@@ -40,10 +41,17 @@ size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
     std::vector<double> residuals;
     colmap::EssentialMatrixFivePointEstimator::Residuals(homo1, homo2, report.model,
                                                &residuals);
-    std::cout << "check 5 points estimated averaged residuals" << std::endl;
+    // std::cout << "check 5 points estimated averaged residuals" << std::endl;
     
-    double avg_residual = std::accumulate(residuals.begin(), residuals.end(), 0.0) / residuals.size();
-    std::cout << avg_residual << std::endl;
+    // double avg_residual = std::accumulate(residuals.begin(), residuals.end(), 0.0) / residuals.size();
+    // std::cout << avg_residual << std::endl;
+    std::cout << "check 5 points estimated residuals" << std::endl;
+
+    for(int i = 0; i < residuals.size(); i++) {
+        if(residuals[i] > 0.1) {
+            std::cout << "large 5-point res: " << residuals[i] << std::endl;
+        }
+    }
 
     if (!report.success) {
         return 0;
@@ -67,13 +75,13 @@ size_t RelativePoseWMask(const colmap::RANSACOptions& ransac_options,
 
     colmap::PoseFromEssentialMatrix(report.model, inliers1, inliers2, &R, tvec,
                             points3D);
-    std::cout << "check the triangulated points from 5-points" << std::endl;
-    const std::vector<Eigen::Vector3d>& vec = *points3D;  // Dereference the pointer to get the vector
+    // std::cout << "check the triangulated points from 5-points" << std::endl;
+    // const std::vector<Eigen::Vector3d>& vec = *points3D;  // Dereference the pointer to get the vector
 
-    for(int i = 0; i < 10; i++) {
-        std::cout << i << "th triangulated point" << std::endl;
-        std::cout << vec[i] << std::endl;
-    }
+    // for(int i = 0; i < 10; i++) {
+    //     std::cout << i << "th triangulated point" << std::endl;
+    //     std::cout << vec[i] << std::endl;
+    // }
 
     *qvec = colmap::RotationMatrixToQuaternion(R);
 

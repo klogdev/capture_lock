@@ -18,10 +18,10 @@
  * check https://cvg.cit.tum.de/data/datasets/rgbd-dataset/file_formats
  */
 struct TUMIntrinsic {
-    double fx = 525.0;  // Focal length in x
-    double fy = 525.0;  
-    double cx = 319.5;  // Optical center x
-    double cy = 239.5; 
+    double fx = 517.3;  // Focal length in x
+    double fy = 516.5;  
+    double cx = 318.6;  // Optical center x
+    double cy = 255.3; 
     double scale = 5000.0; // scale constant for scale
 };
 
@@ -106,6 +106,7 @@ void SetVirtualColmapCamera(colmap::Camera& virtual_camera);
  */
 void SetPoint3dOneImage(colmap::Image* curr_img,
                         colmap::Image* last_img,
+                        colmap::Camera& camera,
                         std::vector<Eigen::Vector3d>& point_3d,
                         std::unordered_map<int, colmap::Point3D>& global_3d_map,
                         std::unordered_map<int, std::vector<sift::Keypoint>>& global_keypts_map,

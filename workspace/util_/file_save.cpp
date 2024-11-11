@@ -4,6 +4,11 @@
 #include <string>
 #include <filesystem>
 
+std::string Trim(const std::string& str) {
+    auto start = str.find_first_not_of(" \t\n\r");
+    auto end = str.find_last_not_of(" \t\n\r");
+    return start == std::string::npos ? "" : str.substr(start, end - start + 1);
+}
 
 void save2DdoubleVec(const std::vector<std::vector<double>>& data_vec, std::string out_path) {
     std::filesystem::path path(out_path);

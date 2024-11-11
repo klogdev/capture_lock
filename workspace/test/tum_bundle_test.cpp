@@ -31,6 +31,9 @@ void TestTUMBundle() {
     Eigen::Matrix3d rotation = Eigen::AngleAxisd(0.1, Eigen::Vector3d::UnitY()).toRotationMatrix();
     Eigen::Vector3d translation(0.5, -0.5, 0.1);
 
+    Eigen::Matrix3d rotation_2 = Eigen::AngleAxisd(0.2, Eigen::Vector3d::UnitY()).toRotationMatrix();
+    Eigen::Vector3d translation_2(1.5, -1.5, 0.5);
+
     // Create two images with arbitrary extrinsics (rotation and translation)
     std::unordered_map<int, colmap::Image*> global_img_map;
     auto* image0 = new colmap::Image();
@@ -43,6 +46,11 @@ void TestTUMBundle() {
     image1->SetQvec(colmap::RotationMatrixToQuaternion(rotation)); // Identity quaternion
     image1->SetTvec(translation);     // Simple translation shift
     global_img_map[1] = image1;
+    auto* image2 = new colmap::Image();
+    image2->SetImageId(2);
+    image2->SetQvec(colmap::RotationMatrixToQuaternion(rotation_2)); // Identity quaternion
+    image2->SetTvec(translation_2);     // Simple translation shift
+    global_img_map[2] = image2;
     
     // Define a map for 3D points
     std::unordered_map<int, colmap::Point3D> global_3d_map;
@@ -50,9 +58,9 @@ void TestTUMBundle() {
     // Assign the 3D points to the 3D point map
     for (int i = 0; i <= 4; i++) {
         colmap::Point3D point3D;
-        point3D.SetXYZ(Eigen::Vector3d(RandomGaussian(box_corners[i][0], 0.2), 
-                                       RandomGaussian(box_corners[i][1], 0.2),
-                                       RandomGaussian(box_corners[i][2], 0.2)));
+        point3D.SetXYZ(Eigen::Vector3d(RandomGaussian(box_corners[i][0], 0.5), 
+                                       RandomGaussian(box_corners[i][1], 0.5),
+                                       RandomGaussian(box_corners[i][2], 0.5)));
         global_3d_map[i] = point3D;
     }
 
@@ -67,13 +75,22 @@ void TestTUMBundle() {
     global_img_map[0]->SetPoints2D(img0_2ds);
 
     std::vector<Eigen::Vector2d> img1_2ds;
-    for(int i = 1; i <= 4; i++) {
+    for(int i = 0; i <= 3; i++) {
         Eigen::Vector3d curr_3d = rotation * box_corners[i] + translation;
         Eigen::Vector2d curr_2d = Eigen::Vector2d(RandomGaussian(curr_3d.x()/curr_3d.z(), 0.00), RandomGaussian(curr_3d.y()/curr_3d.z(), 0.00));
         img1_2ds.push_back(curr_2d);
-        global_3d_map[i].Track().AddElement(1, i-1);
+        global_3d_map[i].Track().AddElement(1, i);
     }
     global_img_map[1]->SetPoints2D(img1_2ds);
+
+    std::vector<Eigen::Vector2d> img2_2ds;
+    for(int i = 0; i <= 3; i++) {
+        Eigen::Vector3d curr_3d = rotation_2 * box_corners[i] + translation_2;
+        Eigen::Vector2d curr_2d = Eigen::Vector2d(RandomGaussian(curr_3d.x()/curr_3d.z(), 0.00), RandomGaussian(curr_3d.y()/curr_3d.z(), 0.00));
+        img2_2ds.push_back(curr_2d);
+        global_3d_map[i].Track().AddElement(2, i);
+    }
+    global_img_map[2]->SetPoints2D(img2_2ds);
 
     // Set the 3D point IDs for the observations
     global_img_map[0]->SetPoint3DForPoint2D(0, 0); // Image 0, 2D point 0 -> 3D point 0
@@ -81,14 +98,19 @@ void TestTUMBundle() {
     global_img_map[0]->SetPoint3DForPoint2D(2, 2); // Image 0, 2D point 2 -> 3D point 2
     global_img_map[0]->SetPoint3DForPoint2D(3, 3);
 
-    global_img_map[1]->SetPoint3DForPoint2D(0, 1); // Image 1, 2D point 0 -> 3D point 0
-    global_img_map[1]->SetPoint3DForPoint2D(1, 2); // Image 1, 2D point 1 -> 3D point 3
-    global_img_map[1]->SetPoint3DForPoint2D(2, 3); // Image 1, 2D point 2 -> 3D point 2
-    global_img_map[1]->SetPoint3DForPoint2D(3, 4);
-    // global_img_map[1]->SetPoint3DForPoint2D(0, 0); // Image 0, 2D point 0 -> 3D point 0
-    // global_img_map[1]->SetPoint3DForPoint2D(1, 1); // Image 0, 2D point 1 -> 3D point 1
-    // global_img_map[1]->SetPoint3DForPoint2D(2, 2); // Image 0, 2D point 2 -> 3D point 2
-    // global_img_map[1]->SetPoint3DForPoint2D(3, 3);
+    // global_img_map[1]->SetPoint3DForPoint2D(0, 1); // Image 1, 2D point 0 -> 3D point 0
+    // global_img_map[1]->SetPoint3DForPoint2D(1, 2); // Image 1, 2D point 1 -> 3D point 3
+    // global_img_map[1]->SetPoint3DForPoint2D(2, 3); // Image 1, 2D point 2 -> 3D point 2
+    // global_img_map[1]->SetPoint3DForPoint2D(3, 4);
+    global_img_map[1]->SetPoint3DForPoint2D(0, 0); // Image 0, 2D point 0 -> 3D point 0
+    global_img_map[1]->SetPoint3DForPoint2D(1, 1); // Image 0, 2D point 1 -> 3D point 1
+    global_img_map[1]->SetPoint3DForPoint2D(2, 2); // Image 0, 2D point 2 -> 3D point 2
+    global_img_map[1]->SetPoint3DForPoint2D(3, 3);
+
+    global_img_map[2]->SetPoint3DForPoint2D(0, 0); // Image 0, 2D point 0 -> 3D point 0
+    global_img_map[2]->SetPoint3DForPoint2D(1, 1); // Image 0, 2D point 1 -> 3D point 1
+    global_img_map[2]->SetPoint3DForPoint2D(2, 2); // Image 0, 2D point 2 -> 3D point 2
+    global_img_map[2]->SetPoint3DForPoint2D(3, 3);
 
     // CheckTUMResidual(global_img_map[0], camera, global_3d_map); 
     // CheckTUMResidual(global_img_map[1], camera, global_3d_map);
