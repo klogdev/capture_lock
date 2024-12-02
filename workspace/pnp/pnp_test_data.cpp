@@ -226,7 +226,7 @@ void TumRgbd::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
     ProcessAllPairs(image_strings, depth_strings, TumRgbd::align_pose, tum_para, points2D, points3D, composed_extrinsic);
 }
 
-std::string OrbGenerate::processed_orb = "/tmp3/dataset/tum_rgbd/rgbd_dataset_freiburg1_room/AllPairs.txt";
+std::string OrbGenerate::processed_orb = "/tmp3/dataset/tum_rgbd/rgbd_dataset_freiburg1_teddy/AllPairs.txt";
 void OrbGenerate::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                            std::vector<std::vector<Eigen::Vector3d>>& points3D,
                            std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
