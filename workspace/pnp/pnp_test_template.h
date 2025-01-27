@@ -19,7 +19,8 @@ using Y_t = Eigen::Vector3d;
 using M_t = Eigen::Matrix3x4d;
 
 
-enum class EstimatorType {EPnP, DLS, UPnP, LHM, DRaM_LHM, DRaM_GN, EPnP_Colmap};
+enum class EstimatorType {EPnP, DLS, UPnP, LHM, DRaM_LHM, DRaM_GN, 
+                POSIT, SQPnP, EPnP_Colmap};
 
 inline EstimatorType getEstimatorFromName(const std::string& name) {
     static const std::unordered_map<std::string, EstimatorType> estimatorMap = {
@@ -27,6 +28,8 @@ inline EstimatorType getEstimatorFromName(const std::string& name) {
         {"dram_gn", EstimatorType::DRaM_GN},
         {"epnp", EstimatorType::EPnP},
         {"upnp", EstimatorType::UPnP},
+        {"sqpnp", EstimatorType::SQPnP},
+        {"posit", EstimatorType::POSIT},
         {"lhm", EstimatorType::LHM},
         {"dls", EstimatorType::DLS},
         {"epnp_colmap", EstimatorType::EPnP_Colmap}

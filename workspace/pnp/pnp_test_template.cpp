@@ -15,6 +15,8 @@
 #include "estimate/dls.h"
 #include "estimate/upnp.h"
 #include "estimate/epnp.h"
+#include "estimate/sqpnp.h"
+#include "estimate/posit.h"
 
 #include "pnp/pnp_test_template.h"
 
@@ -64,6 +66,14 @@ bool EstimatorWrapper::runStandalone(const std::vector<Eigen::Vector2d>& points2
             }
             break;
         }
+        case EstimatorType::SQPnP: {
+            SQPnPEstimator estimator;
+            estimated_extrinsic = estimator.Estimate(points2D, points3D);
+            if(residuals) {
+                estimator.Residuals(points2D, points3D, estimated_extrinsic[0], residuals);
+            }
+            break;
+        }
         case EstimatorType::LHM: {
             LHMEstimator::options_.rot_init_est = "horn"; // Set global LHM options
             std::cout << "current ransac option inside estimator is: " << options_.use_ransac << std::endl;
@@ -93,6 +103,14 @@ bool EstimatorWrapper::runStandalone(const std::vector<Eigen::Vector2d>& points2
             LHMEstimator estimator;
             estimated_extrinsic = estimator.Estimate(points2D, points3D);
             if (residuals) {
+                estimator.Residuals(points2D, points3D, estimated_extrinsic[0], residuals);
+            }
+            break;
+        }
+        case EstimatorType::POSIT: {
+            POSITEstimator estimator;
+            estimated_extrinsic = estimator.Estimate(points2D, points3D);
+            if(residuals) {
                 estimator.Residuals(points2D, points3D, estimated_extrinsic[0], residuals);
             }
             break;

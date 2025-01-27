@@ -11,7 +11,7 @@ pnp_test_template.cpp
 target_include_directories(
   pnp_template PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  pnp_template PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} lhm lsq dls epnp upnp)
+  pnp_template PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} lhm lsq dls epnp upnp sqpnp posit)
 
 add_library(pnp_help STATIC
 pnp_helper.h

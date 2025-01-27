@@ -1,4 +1,6 @@
 #include <opencv2/opencv.hpp>
+#include <opencv2/calib3d.hpp>
+
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <vector>
