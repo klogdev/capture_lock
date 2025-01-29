@@ -33,6 +33,14 @@ class SQPnPEstimator {
         static void Residuals(const std::vector<X_t>& points2D,
                               const std::vector<Y_t>& points3D,
                               const M_t& proj_matrix, std::vector<double>* residuals);
+
+        /**
+         * implement SQPnP's pose estimation by adapting interface from
+         * https://github.com/terzakig/sqpnp.git
+         */
+        bool ComputeSQPnPPose(const std::vector<Eigen::Vector2d>& points2D,
+                              const std::vector<Eigen::Vector3d>& points3D,
+                              Eigen::Matrix3x4d* proj_matrix);
 };
 
 #endif  // ESTIMATE_SQPNP_H_

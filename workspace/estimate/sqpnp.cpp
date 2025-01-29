@@ -8,6 +8,8 @@
 
 #include "estimators/utils.h"
 #include "estimate/sqpnp.h"
+#include "estimate/seq_quad.h"
+#include "estimate/sq_types.h"
 
 std::vector<SQPnPEstimator::M_t> SQPnPEstimator::Estimate(
     const std::vector<X_t>& points2D, const std::vector<Y_t>& points3D) {
@@ -17,35 +19,56 @@ std::vector<SQPnPEstimator::M_t> SQPnPEstimator::Estimate(
         return models;
     }
 
-    // convert points to OpenCV's type
-    std::vector<cv::Point3f> objectPoints;
-    std::vector<cv::Point2f> imagePoints;
+    SQPnPEstimator sqpnp;
+    M_t proj_matrix;
 
-    for(size_t i = 0; i < points2D.size(); i++) {
-        objectPoints.emplace_back(points3D[i].x(), points3D[i].y(), points3D[i].z());
-        imagePoints.emplace_back(points2D[i].x(), points2D[i].y());
+    if (!sqpnp.ComputeSQPnPPose(points2D, points3D, &proj_matrix)) {
+        return std::vector<SQPnPEstimator::M_t>({});
     }
 
-    // Provide an identity matrix for the camera matrix
-    cv::Mat cameraMatrix = cv::Mat::eye(3, 3, CV_64F);
-    cv::Mat distCoeffs;  // Empty distortion coefficients (no distortion assumed)
+    return std::vector<SQPnPEstimator::M_t>({proj_matrix});
+}
 
-    cv::Mat rvec, tvec;
-
-    bool success = cv::solvePnP(objectPoints, imagePoints, cameraMatrix, distCoeffs, rvec, tvec, false, cv::SOLVEPNP_SQPNP);
-
-    if(success) {
-        cv::Mat R;
-        cv::Rodrigues(rvec, R);
-
-        M_t model;
-        model.block<3, 3>(0, 0) = Eigen::Map<Eigen::Matrix<double, 3, 3, Eigen::RowMajor>>(R.ptr<double>());
-        model.col(3) = Eigen::Map<Eigen::Vector3d>(tvec.ptr<double>());
-
-        models.push_back(model);
+bool SQPnPEstimator::ComputeSQPnPPose(const std::vector<Eigen::Vector2d>& points2D,
+                           const std::vector<Eigen::Vector3d>& points3D,
+                           Eigen::Matrix3x4d* proj_matrix) {
+    
+    if (points2D.size() != points3D.size() || points2D.size() < 3) {
+        return false;
     }
 
-    return models;
+    // Convert to solver's internal types
+    std::vector<_Point> points;
+    std::vector<_Projection> projections;
+    
+    points.reserve(points3D.size());
+    projections.reserve(points2D.size());
+    
+    for (size_t i = 0; i < points3D.size(); i++) {
+        // Direct assignment using Eigen - no conversion needed
+        points.emplace_back()._Point::operator=(points3D[i]);
+        projections.emplace_back()._Projection::operator=(points2D[i]);
+    }
+
+    // Create and run solver
+    SQPnPSolver solver(points, projections);
+    
+    if (solver.IsValid()) {
+        solver.Solve();
+        
+        if (solver.NumberOfSolutions() > 0) {
+            const SQPSolution* solution = solver.SolutionPtr(0);
+            
+            // Convert to 3x4 projection matrix
+            // First 3x3 is rotation
+            proj_matrix->block<3,3>(0,0) = Eigen::Map<const Eigen::Matrix3d>(solution->r_hat.data());
+            // Last column is translation
+            proj_matrix->block<3,1>(0,3) = solution->t;
+            
+            return true;
+        }
+    }
+    return false;
 }
 
 void SQPnPEstimator::Residuals(const std::vector<X_t>& points2D,

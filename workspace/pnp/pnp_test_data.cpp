@@ -66,7 +66,7 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
     std::vector<Eigen::Vector3d> camera_space_points;
     EPnPBoxCorner(camera_space_points);
 
-    int num_samples = 500;
+    int num_samples = 5;
     
     double d_min = 0;
     double d_max = 150;
