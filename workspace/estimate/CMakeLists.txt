@@ -43,6 +43,16 @@ target_include_directories(
 target_link_libraries(
   sqpnp PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${OpenCV_LIBRARIES} seq_quad)
 
+# add_library(opnp STATIC
+# opnp.h
+# opnp.cpp
+# )
+# target_include_directories(
+#   opnp PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}" 
+#   "${OpenCV_INCLUDE_DIRS}")
+# target_link_libraries(
+#   opnp PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${OpenCV_LIBRARIES})
+
 add_library(posit STATIC
 posit.h
 posit.cpp

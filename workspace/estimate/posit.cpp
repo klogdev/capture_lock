@@ -60,8 +60,12 @@ bool POSITEstimator::ComputePOSITPose(const std::vector<Eigen::Vector2d>& points
     double delta = 0.0;
     const double threshold = 0.01;
     int iteration = 0;
+    const int max_iterations = 100;  // Add maximum iterations
 
-    while (!converged) {
+
+    std::cout << "Starting POSIT iterations..." << std::endl;
+
+    while (!converged && iteration < max_iterations) {
         iteration++;
 
         // Calculate rotation assuming objectMatrix is defined
@@ -81,9 +85,16 @@ bool POSITEstimator::ComputePOSITPose(const std::vector<Eigen::Vector2d>& points
 
         // Check for convergence
         delta = (rotation * objectVectors[0] + translation - firstImagePoint).norm();
+
+        std::cout << "Iteration " << iteration << ": delta = " << delta << std::endl;
+
         if (delta < threshold) {
             converged = true;
         }
+    }
+
+    if(!converged) {
+        std::cout << "POSIT estimation failed to converge." << std::endl;
     }
 
     // Compose final pose
