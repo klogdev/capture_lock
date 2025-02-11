@@ -16,6 +16,7 @@
 #include "estimate/upnp.h"
 #include "estimate/epnp.h"
 #include "estimate/sqpnp.h"
+#include "estimate/reppnp.h"
 #include "estimate/posit.h"
 
 #include "pnp/pnp_test_template.h"
@@ -68,6 +69,14 @@ bool EstimatorWrapper::runStandalone(const std::vector<Eigen::Vector2d>& points2
         }
         case EstimatorType::SQPnP: {
             SQPnPEstimator estimator;
+            estimated_extrinsic = estimator.Estimate(points2D, points3D);
+            if(residuals) {
+                estimator.Residuals(points2D, points3D, estimated_extrinsic[0], residuals);
+            }
+            break;
+        }
+        case EstimatorType::REPPnP: {
+            REPPnPEstimator estimator;
             estimated_extrinsic = estimator.Estimate(points2D, points3D);
             if(residuals) {
                 estimator.Residuals(points2D, points3D, estimated_extrinsic[0], residuals);
