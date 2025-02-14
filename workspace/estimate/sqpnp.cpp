@@ -60,8 +60,14 @@ bool SQPnPEstimator::ComputeSQPnPPose(const std::vector<Eigen::Vector2d>& points
             const SQPSolution* solution = solver.SolutionPtr(0);
             
             // Convert to 3x4 projection matrix
-            // First 3x3 is rotation
-            proj_matrix->block<3,3>(0,0) = Eigen::Map<const Eigen::Matrix3d>(solution->r_hat.data());
+            // First 3x3 is rotation - ensure column-major ordering
+            Eigen::Matrix3d R;
+            for (int i = 0; i < 3; ++i) {
+                for (int j = 0; j < 3; ++j) {
+                    R(i,j) = solution->r_hat[i*3 + j];
+                }
+            }
+            proj_matrix->block<3,3>(0,0) = R;
             // Last column is translation
             proj_matrix->block<3,1>(0,3) = solution->t;
             

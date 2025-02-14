@@ -50,19 +50,25 @@ bool REPPnPEstimator::ComputeREPPnPPose(
     Eigen::MatrixXd alphas;
     Eigen::MatrixXd M;
     PrepareData(alphas, control_points_prep, M, points3D, points2D);
+
+    Eigen::MatrixXd M_working = M;
     
     // Robust kernel estimation
     Eigen::MatrixXd Km;
     std::vector<int> inliers;
     int robust_iters;
-    RobustKernelEstimation(Km, inliers, robust_iters, M, dims, min_error);
+    RobustKernelEstimation(Km, inliers, robust_iters, M_working, dims, min_error);
+    
+    // Create working copies before pose computation
+    Eigen::MatrixXd Km_working = Km;
+    std::vector<int> inliers_working = inliers;
     
     // Compute pose using kernel (needs 3x4 control points)
     Eigen::Matrix3d R;
     Eigen::Vector3d t;
     double error;
     Eigen::Matrix<double, 3, 4> control_points = control_points_prep.transpose();
-    bool success = ComputePoseFromKernel(R, t, error, control_points, Km, dims, sol_iter);
+    bool success = ComputePoseFromKernel(R, t, error, control_points, Km_working, dims, sol_iter);
     
     // Form projection matrix [R|t]
     if (success) {
@@ -83,19 +89,27 @@ void REPPnPEstimator::PrepareData(
     // Define control points (always, since we can't check for nullptr with references)
     DefineControlPoints(control_points);
     
+    Eigen::Matrix<double, 4, 3> control_points_working = control_points;
+
+    // Create a working copy of points3D, similar to MATLAB's Xw = Pts'
+    std::vector<Eigen::Vector3d> points3D_working = points3D;
+
     // Compute alphas
-    ComputeAlphas(alphas, points3D, control_points);
-    
-    // Get all 2D points into a single vector
-    // In MATLAB: U(:)
-    Eigen::VectorXd U(points2D.size() * 2);
+    ComputeAlphas(alphas, points3D_working, control_points_working);
+
+    Eigen::MatrixXd alphas_working = alphas;
+
+    // Convert points2D to matrix form (similar to MATLAB's U = impts)
+    Eigen::MatrixXd U(2, points2D.size());
     for (size_t i = 0; i < points2D.size(); ++i) {
-        U(2*i) = points2D[i].x();
-        U(2*i + 1) = points2D[i].y();
+        U.col(i) = points2D[i];
     }
     
+    // Now flatten to match MATLAB's U(:)
+    Eigen::VectorXd U_flat = Eigen::Map<Eigen::VectorXd>(U.data(), U.size());
+    
     // Compute M matrix
-    ComputeM(M, U, alphas);
+    ComputeM(M, U_flat, alphas);
 }
 
 void REPPnPEstimator::RobustKernelEstimation(
@@ -137,41 +151,40 @@ void REPPnPEstimator::RobustKernelEstimation(
             error22(j) = M.row(2*j+1) * v.col(v.cols()-1);
         }
         Eigen::VectorXd error2 = (error21.array().square() + error22.array().square()).sqrt();
-        
-        // Sort errors and get indices
+
+        // [sv, tidx] = sort(error2)
         std::vector<size_t> tidx(error2.size());
-        std::iota(tidx.begin(), tidx.end(), 0);
+        std::iota(tidx.begin(), tidx.end(), 0);  // Fill with 0,1,2,...
         std::sort(tidx.begin(), tidx.end(),
                  [&error2](size_t i1, size_t i2) { return error2(i1) < error2(i2); });
         
-        // Create sorted values array (equivalent to sv in MATLAB)
         Eigen::VectorXd sv(error2.size());
         for (size_t i = 0; i < error2.size(); ++i) {
             sv(i) = error2(tidx[i]);
         }
-
+        
         // Compute median and number of inliers
         double med = sv(m/8);  // Using floor(m/8) from MATLAB
         int ninliers = (sv.array() < std::max(med, min_error)).count();
-
+        
         // Check if we should stop
         if (med >= prev_sv) {
             break;
         }
-        
-        // Update best solution
-        prev_sv = med;
-        resv = v;
-        residx.clear();
-        for (int j = 0; j < ninliers; ++j) {
-            residx.push_back(tidx[j]);
+        else {
+            prev_sv = med;
+            resv = v;
+
+            residx.clear();
+            for (int j = 0; j < ninliers; ++j) {
+                residx.push_back(tidx[j]);
+            }
         }
-        
-        // Update indices for next iteration
+        // Update indices for next iteration (matching MATLAB's ordering)
         idx.clear();
         for (int j = 0; j < ninliers; ++j) {
-            idx.push_back(2 * tidx[j]);
-            idx.push_back(2 * tidx[j] + 1);
+            idx.push_back(2 * tidx[j] - 1);  // odd indices first
+            idx.push_back(2 * tidx[j]);      // even indices second
         }
         
         robust_iters = i + 1;  // Store number of iterations
@@ -207,8 +220,9 @@ void REPPnPEstimator::ComputeM(
     
     // Modify columns 3,6,9,12 (0-based: 2,5,8,11)
     // In MATLAB: M(:,[3,6,9,12]) = M(:,[3,6,9,12]) .* (U * ones(1,4))
+    Eigen::MatrixXd U_repeated = U.replicate(1, 4);  // Each U value repeated 4 times
     for (int j = 0; j < 4; ++j) {
-        M.col(3*j + 2).array() *= U.array();
+        M.col(3*j + 2).array() *= U_repeated.col(j).array();
     }
 }
 
@@ -252,21 +266,19 @@ bool REPPnPEstimator::ComputePoseFromKernel(
     int dims,
     bool sol_iter) {
     
-    // Reshape last column of Km to 3×dims matrix
-    Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>> vK(
-        Km.col(Km.cols()-1).data(), 3, dims);
+    // Reshape last column of Km to 3×dims matrix (with hard copy)
+    Eigen::VectorXd last_col = Km.col(Km.cols()-1);
+    Eigen::MatrixXd vK = Eigen::Map<Eigen::MatrixXd>(last_col.data(), 3, dims);
     
-    // Setup X structure for Procrustes
-
-    Eigen::Matrix<double, 3, Eigen::Dynamic> P;     // Original points
-    Eigen::Vector3d mP;                             // Mean of points
-    Eigen::Matrix<double, 3, Eigen::Dynamic> cP;    // Centered points
-    double norm;                                    // Norm of centered points
-    Eigen::Matrix<double, 3, Eigen::Dynamic> nP;    // Normalized points
+    Eigen::Matrix<double, 3, 4> P;     // Original points (fixed size 3x4)
+    Eigen::Vector3d mP;                // Mean of points
+    Eigen::Matrix<double, 3, 4> cP;    // Centered points (fixed size 3x4)
+    double norm;                       // Norm of centered points
+    Eigen::Matrix<double, 3, 4> nP;    // Normalized points
 
     P = control_points;
     mP = P.rowwise().mean();
-    cP = P - mP * Eigen::RowVectorXd::Ones(P.cols());
+    cP = P - mP * Eigen::Matrix<double, 1, 4>::Ones();  // Fixed size 1x4 ones vector
     norm = cP.norm();
     nP = cP / norm;
     
@@ -279,39 +291,46 @@ bool REPPnPEstimator::ComputePoseFromKernel(
     // Initial Procrustes solution
     double b;
     Eigen::Matrix<double, 3, Eigen::Dynamic> mc;
-    MyProcrustes(P, mP, nP, norm, vK_signed, R, b, mc); 
+    Eigen::Matrix3d R_init;
+    MyProcrustes(P, mP, nP, norm, vK_signed, R_init, b, mc); 
     
     Eigen::Matrix<double, 3, Eigen::Dynamic> solV = b * vK_signed;
-    Eigen::Matrix3d solR = R;
+    Eigen::Matrix3d solR = R_init;
     Eigen::Matrix<double, 3, Eigen::Dynamic> solmc = mc;
     
     // Iterative optimization if requested
     if (sol_iter) {
         error = std::numeric_limits<double>::infinity();
         const int n_iterations = 10;
+
+        Eigen::Matrix<double, 3, Eigen::Dynamic> solV_iter = b * vK_signed;
+        Eigen::Matrix3d solR_iter = R_init;
+        Eigen::Matrix<double, 3, Eigen::Dynamic> solmc_iter = mc;
         
         for (int iter = 0; iter < n_iterations; ++iter) {
             // Project previous solution into null space
-            Eigen::Matrix<double, 3, Eigen::Dynamic> A = R * (-mc + P);
+            Eigen::Matrix<double, 3, Eigen::Dynamic> A = solR_iter * (-solmc_iter + P);
             Eigen::VectorXd abcd = Km.colPivHouseholderQr().solve(Eigen::Map<const Eigen::VectorXd>(A.data(), A.size()));
             Eigen::VectorXd Kmabcd = Km * abcd;  // Store the result first
             Eigen::Matrix<double, 3, Eigen::Dynamic> newV = Eigen::Map<const Eigen::Matrix<double, 3, Eigen::Dynamic>>(
                 Kmabcd.data(), 3, dims);
             
             // Compute Euclidean error
-            double newerr = (R.transpose() * newV + mc - P).norm();
+            double newerr = (solR_iter.transpose() * newV + solmc_iter - P).norm();
             
             if (newerr > error && iter > 1) {
                 break;
             }
             
             // Update solution
-            MyProcrustes(P, mP, nP, norm, newV, R, b, mc); 
-            solV = b * newV;
-            solmc = mc;
-            solR = R;
+            MyProcrustes(P, mP, nP, norm, newV, solR_iter, b, solmc_iter); 
+            solV_iter = b * newV;
             error = newerr;
         }
+
+        solV = solV_iter;
+        solR = solR_iter;
+        solmc = solmc_iter;
     }
     
     // Final solution
@@ -334,21 +353,26 @@ void REPPnPEstimator::MyProcrustes(
     
     const int dims = Y.cols();
     
+    // Make working copy of Y
+    Eigen::MatrixXd Y_working = Y;
+    
     // Center Y points
-    Eigen::Vector3d mY = Y.rowwise().mean();
-    Eigen::Matrix<double, 3, Eigen::Dynamic> cY = Y - mY * Eigen::RowVectorXd::Ones(dims);
+    Eigen::Vector3d mY = Y_working.rowwise().mean();
+    Eigen::MatrixXd cY = Y_working - mY * Eigen::RowVectorXd::Ones(dims);
     
     // Normalize centered points
     double ncY = cY.norm();
-    Eigen::Matrix<double, 3, Eigen::Dynamic> tcY = cY / ncY;
+    Eigen::MatrixXd tcY = cY / ncY;
     
     // Compute SVD
     Eigen::Matrix3d A = nP * tcY.transpose();
-    Eigen::JacobiSVD<Eigen::Matrix3d> svd(A, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    Eigen::Matrix3d A_working = A;  // Make working copy for SVD
+    Eigen::JacobiSVD<Eigen::Matrix3d> svd(A_working, Eigen::ComputeFullU | Eigen::ComputeFullV);
     
-    // Compute rotation ensuring det(R) = 1
+    // Compute rotation ensuring det(R) = 1 (matching MATLAB)
+    Eigen::Matrix3d VUt = svd.matrixV() * svd.matrixU().transpose();
     R = svd.matrixV() * 
-        Eigen::Vector3d(1, 1, svd.matrixU().determinant() * svd.matrixV().determinant()).asDiagonal() * 
+        Eigen::Vector3d(1, 1, VUt.determinant()).asDiagonal() * 
         svd.matrixU().transpose();
     
     // Compute scale and translation

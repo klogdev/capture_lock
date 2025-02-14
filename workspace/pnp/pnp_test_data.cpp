@@ -30,7 +30,7 @@ std::unique_ptr<DataGenerator>
 DataGenerator::createDataGenerator(const GeneratorType type) {
     switch (type) {
         case GeneratorType::EPnPdZ:
-            return std::make_unique<BoxCornerEPnPTestDataDz>(BoxCornerEPnPTestDataDz());
+            return std::make_unique<BoxCornerEPnPDataDz>(BoxCornerEPnPDataDz());
         case GeneratorType::EPnPdY:
             return std::make_unique<BoxCornerEPnPTestDataDy>(BoxCornerEPnPTestDataDy());
         case GeneratorType::Outlier:
@@ -47,8 +47,6 @@ DataGenerator::createDataGenerator(const GeneratorType type) {
             return std::make_unique<EPnPSimulatorNoise>(EPnPSimulatorNoise());
         case GeneratorType::EPnPSimNum:
             return std::make_unique<EPnPSimulatorNumPts>(EPnPSimulatorNumPts());
-        case GeneratorType::EPnPSimOutlier:
-            return std::make_unique<EPnPSimulatorOutliers>(EPnPSimulatorOutliers());
         // Handle unsupported types
         default:
             return nullptr;
@@ -56,10 +54,10 @@ DataGenerator::createDataGenerator(const GeneratorType type) {
 }
 
 // set default values for static members
-double BoxCornerEPnPTestDataDz::sigma = 0.0003; // 70dB used by LHM
-void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
-                                       std::vector<std::vector<Eigen::Vector3d>>& points3D,
-                                       std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
+double BoxCornerEPnPDataDz::sigma = 0.0003; // 70dB used by LHM
+void BoxCornerEPnPDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                                   std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
     // set the default intrinsic matrix and Box corners
     Eigen::Matrix3d k; // = Eigen::Matrix3d::Identity();
     GetIntrinsic(k);
@@ -80,8 +78,9 @@ void BoxCornerEPnPTestDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>
             CameraSpaceShift(camera_space_points, curr_trans, shifted);
             // got related noised 2D points
             std::vector<Eigen::Vector2d> curr_points2d;
-            GenOneSetNoise2D(shifted, curr_points2d, k, BoxCornerEPnPTestDataDz::sigma);
+            GenOneSetNoise2D(shifted, curr_points2d, k, BoxCornerEPnPDataDz::sigma);
             // shifted the CoM to overlap with camera's origin
+            // -6 because the box's com in camera space is at (0,0,6)
             std::vector<Eigen::Vector3d> world_pts;
             CameraSpaceShift(shifted, Eigen::Vector3d(0,0,-6-d), world_pts);
             // generate world pts with random rotation

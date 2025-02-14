@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
     if(argc >= 5) {
         sigma = std::stod(argv[4]);
         if(generator_opt == "epnp_dz")
-            BoxCornerEPnPTestDataDz::sigma = sigma;
+            BoxCornerEPnPDataDz::sigma = sigma;
         else if(generator_opt == "epnp_dy")
             BoxCornerEPnPTestDataDy::sigma = sigma;
     }

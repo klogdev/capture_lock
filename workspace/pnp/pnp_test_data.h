@@ -22,9 +22,9 @@ enum class GeneratorType {
 
 inline GeneratorType getGeneratorFromName(const std::string& name) {
     static const std::unordered_map<std::string, GeneratorType> generatorMap = {
-        {"epnp_dz", GeneratorType::EPnPdZ},
+        {"epnp_dz", GeneratorType::EPnPdZ}, // already updated as translation relative to camera origin
         {"epnp_dy", GeneratorType::EPnPdY},
-        {"outliers", GeneratorType::Outlier},
+        {"outliers", GeneratorType::Outlier}, // what we are using now
         {"planar_chk", GeneratorType::PlanarChk},
         {"tum_rgbd", GeneratorType::TUM},
         {"colmap_pair", GeneratorType::COLMAP},
@@ -60,9 +60,9 @@ public:
  * originally definedin camera space; the intrinsic matrix is fixed as
  * f = 800, u, v = 320, 240 as specified in the article section 5.1
 */
-class BoxCornerEPnPTestDataDz: public DataGenerator {
+class BoxCornerEPnPDataDz: public DataGenerator {
 public:
-    BoxCornerEPnPTestDataDz() {};
+    BoxCornerEPnPDataDz() {};
 
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<std::vector<Eigen::Vector3d>>& points3D,
