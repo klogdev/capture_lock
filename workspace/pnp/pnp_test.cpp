@@ -54,7 +54,16 @@ int main(int argc, char** argv) {
 
     // specify the output path for saving metrics
     // here we create new folder for each generator+estimator option
+    std::string outlier_opt = "";
     std::string output = "/tmp3/Pose_PnP/PnP_result/" + generator_opt + "_" + std::to_string(sigma) + "/" + estimator_opt;
+
+    // make the output folder for data from ORBSLAM different if add outlier
+    if(options.use_ransac) {
+        if(generator_opt == "orb_gen") {
+            outlier_opt = "_outlier";
+            output = "/tmp3/Pose_PnP/PnP_result/" + generator_opt + "_" + std::to_string(sigma) + outlier_opt + "/" + estimator_opt;
+        }
+    }
     // Pass these instances to a TestRunner or another part of your application
 
     PnPTestRunner test_runner(std::move(generator), estimator, output, sigma, lhm_type);

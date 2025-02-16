@@ -1,3 +1,5 @@
+include <iostream> 
+#include <string>
 #include <fstream>
 #include <Eigen/Core>
 #include <sys/stat.h>

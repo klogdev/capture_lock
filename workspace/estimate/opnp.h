@@ -37,8 +37,8 @@ public:
      * @brief implement of OPnP
      */
     bool ComputeOPnPPose(const std::vector<Eigen::Vector2d>& points2D,
-                                const std::vector<Eigen::Vector3d>& points3D,
-                                Eigen::Matrix3x4d* proj_matrix);
+                         const std::vector<Eigen::Vector3d>& points3D,
+                         Eigen::Matrix3x4d* proj_matrix);
 
     struct TemplateData {
         uint8_t dim;           // dimension of p-fold solutions (40)

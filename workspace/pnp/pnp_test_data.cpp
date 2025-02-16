@@ -54,7 +54,7 @@ DataGenerator::createDataGenerator(const GeneratorType type) {
 }
 
 // set default values for static members
-double BoxCornerEPnPDataDz::sigma = 0.0003; // 70dB used by LHM
+double BoxCornerEPnPDataDz::sigma = 0.5; 
 void BoxCornerEPnPDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                                    std::vector<std::vector<Eigen::Vector3d>>& points3D,
                                    std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
@@ -64,10 +64,10 @@ void BoxCornerEPnPDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>& po
     std::vector<Eigen::Vector3d> camera_space_points;
     EPnPBoxCorner(camera_space_points);
 
-    int num_samples = 5;
+    int num_samples = 500;
     
     double d_min = 0;
-    double d_max = 150;
+    double d_max = 100;
 
     for(double d = d_min; d <= d_max; d += 5) {
         for(int i = 0; i < num_samples; i++) {
@@ -165,7 +165,7 @@ void OutliersPercentage::generate(std::vector<std::vector<Eigen::Vector2d>>& poi
         for(int j = 0; j < num_samples; j++) {
             // generate one set of camera space points with fixed # 20
             std::vector<Eigen::Vector3d> curr_camera_space;
-            EPnPInsideRand(curr_camera_space, 20);
+            EPnPInsideRand(curr_camera_space, 50);
 
             // generate noised 2d points from camera space points
             std::vector<Eigen::Vector2d> curr_points2d;
@@ -226,11 +226,25 @@ void TumRgbd::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
 }
 
 std::string OrbGenerate::processed_orb = "/tmp3/dataset/tum_rgbd/rgbd_dataset_freiburg1_teddy/AllPairs.txt";
+bool OrbGenerate::add_outliers = false;
+double OrbGenerate::outliers_percent = 0.3; // 30%
 void OrbGenerate::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                            std::vector<std::vector<Eigen::Vector3d>>& points3D,
                            std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
     LoadOrbLoaded(OrbGenerate::processed_orb, points2D,
                   points3D, composed_extrinsic);
+    if (OrbGenerate::add_outliers) {
+        TUMIntrinsic tum_para = TUMIntrinsic();
+        Eigen::Matrix3d k;
+        k << tum_para.fx, 0, tum_para.cx,
+             0, tum_para.fy, tum_para.cy,
+             0, 0, 1;
+        Eigen::Matrix3d k_inv = k.inverse();
+        for(int i = 0; i < points2D.size(); i++) {
+            AddOutlier2D(points2D[i], OrbGenerate::outliers_percent, 640, 480, k_inv);
+        }
+        
+    }
 }
 
 std::string ColmapPair::processed_colmap = "/tmp3/gerrard-hall_COLMAP/processed_pair.txt";

@@ -128,6 +128,9 @@ public:
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
     
     static std::string processed_orb;
+
+    static bool add_outliers;
+    static double outliers_percent;
 };
 
 class ColmapPair: public DataGenerator {

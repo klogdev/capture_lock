@@ -4,7 +4,7 @@
 #include <vector>
 #include <Eigen/Core>
 
-// implement DLS (direct least square via OpenCV)
+// implement UPnP (via OpenCV)
 class UPnPEstimator {
     public:
         // The 2D image feature observations.
