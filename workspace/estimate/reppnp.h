@@ -39,60 +39,8 @@ public:
      */
     bool ComputeREPPnPPose(const std::vector<Eigen::Vector2d>& points2D,
                            const std::vector<Eigen::Vector3d>& points3D,
-                           Eigen::Matrix3x4d* proj_matrix,
-                           double min_error = 0.02);
-    private:
-        void PrepareData(Eigen::MatrixXd& alphas,          
-                        Eigen::Matrix<double, 4, 3>& control_points,
-                        Eigen::MatrixXd& M,
-                        const std::vector<Y_t>& points3D,
-                        const std::vector<X_t>& points2D);
-
-        void ComputeM(Eigen::MatrixXd& M,
-                      const Eigen::VectorXd& U,
-                      const Eigen::MatrixXd& alphas);
-
-        void RobustKernelEstimation(
-                    Eigen::MatrixXd& Km,                // Output: Kernel matrix
-                    std::vector<int>& inliers,          // Output: Indices of inlier points (changed from size_t to int)
-                    int& robust_iters,                  // Output: Number of iterations
-                    const Eigen::MatrixXd& M,           // Input: M matrix
-                    int dims,                           // Input: Kernel dimensions
-                    double min_error);                  // Input: Minimum error threshold
-
-        /**
-         * @brief Compute the pose from the kernel
-         * @param control_points: transposed matrix from DefineControlPoints
-         */
-        bool ComputePoseFromKernel(Eigen::Matrix3d& R,                    
-                                    Eigen::Vector3d& t,                   
-                                    double& error,                         
-                                    const Eigen::Matrix<double, 3, 4>& control_points, 
-                                    const Eigen::MatrixXd& Km,           
-                                    int dims,                             
-                                    bool sol_iter);  
-
-        /**
-         * @brief Procrustes to align points
-         */
-        void MyProcrustes(const Eigen::Matrix<double, 3, Eigen::Dynamic>& P,     // Original points
-                                            const Eigen::Vector3d& mP,                             // Mean of points
-                                            const Eigen::Matrix<double, 3, Eigen::Dynamic>& nP,    // Normalized points
-                                            const double norm,                                     // Norm of centered points
-                                            const Eigen::Matrix<double, 3, Eigen::Dynamic>& Y,     // Points to align with
-                                            Eigen::Matrix3d& R,                                    // Output rotation
-                                            double& b,                                             // Output scale
-                                            Eigen::Matrix<double, 3, Eigen::Dynamic>& mc);         // Output mean-centered                  
-                                        
-        // Define control points
-        void DefineControlPoints(Eigen::Matrix<double, 4, 3>& control_points); 
-
-        // Define alphas
-        void ComputeAlphas(Eigen::MatrixXd& alphas,
-                           const std::vector<Y_t>& points3D,
-                           const Eigen::Matrix<double, 4, 3>& control_points);
-
-
+                           Eigen::Matrix3x4d* proj_matrix);
+    
 };
 
 #endif  // ESTIMATE_REPPNP_H_

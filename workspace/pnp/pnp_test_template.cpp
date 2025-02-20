@@ -138,55 +138,7 @@ bool EstimatorWrapper::runWithRansac(const std::vector<Eigen::Vector2d>& points2
                                      std::vector<Eigen::Matrix3x4d>& estimated_extrinsic,
                                      std::vector<double>* residuals) {
     switch (type_)
-    {
-        case EstimatorType::EPnP: {
-            colmap::RANSACOptions options;
-            options.max_error = 1e-5;
-            options.min_inlier_ratio = 0.02;
-            options.max_num_trials = 10000;
-            colmap::RANSAC<EPNPEstimator_> ransac(options);
-            const auto report = ransac.Estimate(points2D, points3D);
-
-            std::cout << "current w/ ransac & epnp estimate" << std::endl;
-
-            if(report.success == true) {
-                std::cout << "current ransac passed" << std::endl; 
-            }
-            else {
-                std::cout << "current ransac failed" << std::endl; 
-            }
-
-            estimated_extrinsic = {report.model};
-            if (residuals) {
-                EPNPEstimator_::Residuals(points2D, points3D, report.model, residuals);
-            }
-            break;
-        }
-        case EstimatorType::DLS: {
-            colmap::RANSACOptions options;
-            options.max_error = 1e-5;
-            options.min_inlier_ratio = 0.02;
-            options.max_num_trials = 10000;
-            colmap::RANSAC<DLSEstimator> ransac(options);
-            const auto report = ransac.Estimate(points2D, points3D);
-
-            std::cout << "current w/ ransac & dls estimate" << std::endl;
-            std::cout << "current ransac option inside estimator is: " << options_.use_ransac << std::endl;
-
-
-            if(report.success == true) {
-                std::cout << "current ransac passed" << std::endl; 
-            }
-            else {
-                std::cout << "current ransac failed" << std::endl; 
-            }
-
-            estimated_extrinsic = {report.model};
-            if (residuals) {
-                DLSEstimator::Residuals(points2D, points3D, report.model, residuals);
-            }
-            break;
-        }
+    {   
         case EstimatorType::LHM: {
             colmap::RANSACOptions options;
             options.max_error = 1e-5;

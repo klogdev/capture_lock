@@ -51,7 +51,7 @@ target_include_directories(
   reppnp PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}" 
   "${OpenCV_INCLUDE_DIRS}")
 target_link_libraries(
-  reppnp PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${OpenCV_LIBRARIES})
+  reppnp PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${OpenCV_LIBRARIES} reppnp_raw)
 
 add_library(posit STATIC
 posit.h
@@ -109,6 +109,42 @@ target_include_directories(
   lsq PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
   lsq PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
+
+# reppnp related utility lib
+add_library(reppnp_raw STATIC
+reppnp_raw.h
+reppnp_raw.cpp
+)
+target_include_directories(
+  reppnp_raw PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  reppnp_raw PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} scaled_transform)
+
+add_library(transform_interface STATIC
+  transform_interface.h
+  )
+  target_include_directories(
+  transform_interface PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+  target_link_libraries(
+  transform_interface PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
+
+add_library(transform STATIC
+transform.h
+transform.cpp
+)
+target_include_directories(
+  transform PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  transform PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} transform_interface)
+
+add_library(scaled_transform STATIC
+  scaled_transform.h
+  scaled_transform.cpp
+  )
+  target_include_directories(
+  scaled_transform PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+  target_link_libraries(
+  scaled_transform PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} transform)
 
 # add_library(epipole_estimate STATIC
 # epipole_estimator.h
