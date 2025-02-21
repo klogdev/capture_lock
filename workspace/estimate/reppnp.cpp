@@ -47,9 +47,10 @@ bool REPPnPEstimator::ComputeREPPnPPose(
         return false;
     }
 
-    // Convert to REPPnP format
-    REPPnP::Coordinates2D_t i_P(2, points2D.size());
-    REPPnP::Coordinates3D_t w_P(3, points3D.size());
+    // Preallocate memory for REPPnP matrices
+    const size_t n_points = points2D.size();
+    REPPnP::Coordinates2D_t i_P(2, n_points);
+    REPPnP::Coordinates3D_t w_P(3, n_points);
     
     for (size_t i = 0; i < points2D.size(); ++i) {
         i_P.col(i) = points2D[i];
@@ -64,7 +65,7 @@ bool REPPnPEstimator::ComputeREPPnPPose(
     // You can customize options here if needed:
     // opts.dim_kernel = 4;
     // opts.refine = true;
-    // opts.max_algebraic_error = 0.0175;
+    opts.max_algebraic_error = 0.01;
 
     try {
         // Run REPPnP
@@ -83,6 +84,10 @@ bool REPPnPEstimator::ComputeREPPnPPose(
         proj_matrix->block<3,1>(0,3) = t;
 
         return true;
+    }
+    catch (const std::bad_alloc& e) {
+        std::cerr << "Memory allocation failed in REPPnP: " << e.what() << std::endl;
+        return false;
     }
     catch (const REPPnP::REPPnPException& e) {
         // Handle any REPPnP-specific exceptions
