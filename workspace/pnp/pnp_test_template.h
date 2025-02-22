@@ -20,10 +20,11 @@ using M_t = Eigen::Matrix3x4d;
 
 
 enum class EstimatorType {EPnP, DLS, UPnP, LHM, DRaM_LHM, DRaM_GN, 
-                POSIT, SQPnP, REPPnP, EPnP_Colmap};
+                POSIT, SQPnP, REPPnP, EPnP_Colmap, P3P};
 
 inline EstimatorType getEstimatorFromName(const std::string& name) {
     static const std::unordered_map<std::string, EstimatorType> estimatorMap = {
+        {"p3p", EstimatorType::P3P},
         {"dram_lhm", EstimatorType::DRaM_LHM},
         {"dram_gn", EstimatorType::DRaM_GN},
         {"epnp", EstimatorType::EPnP},

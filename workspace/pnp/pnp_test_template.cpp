@@ -189,6 +189,27 @@ bool EstimatorWrapper::runWithRansac(const std::vector<Eigen::Vector2d>& points2
             }
             break;
         }
+        case EstimatorType::P3P: {
+            colmap::RANSACOptions options;
+            options.max_error = 1e-5;
+            options.min_inlier_ratio = 0.02;
+            options.max_num_trials = 10000;
+            colmap::RANSAC<colmap::P3PEstimator> ransac(options);
+            const auto report = ransac.Estimate(points2D, points3D);
+
+            if(report.success == true) {
+                std::cout << "current ransac passed" << std::endl; 
+            }
+            else {
+                std::cout << "current ransac failed" << std::endl; 
+            }
+
+            estimated_extrinsic = {report.model};
+            if (residuals) {
+                colmap::P3PEstimator::Residuals(points2D, points3D, report.model, residuals);
+            }
+            break;
+        }
         default:
             std::cerr << "unsupported type of PnP estimator!" << std::endl;
             break;

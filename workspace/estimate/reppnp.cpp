@@ -65,7 +65,7 @@ bool REPPnPEstimator::ComputeREPPnPPose(
     // You can customize options here if needed:
     // opts.dim_kernel = 4;
     // opts.refine = true;
-    opts.max_algebraic_error = 0.01;
+    opts.max_algebraic_error = 0.0175;
 
     try {
         // Run REPPnP
