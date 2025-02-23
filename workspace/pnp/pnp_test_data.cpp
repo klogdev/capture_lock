@@ -304,7 +304,7 @@ void EPnPSimulatorNoise::generate(std::vector<std::vector<Eigen::Vector2d>>& poi
 }
 
 int EPnPSimulatorNumPts::max_pts = 20;
-int EPnPSimulatorNumPts::min_pts = 4;
+int EPnPSimulatorNumPts::min_pts = 5;
 double EPnPSimulatorNumPts::sigma = 5.0;
 void EPnPSimulatorNumPts::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                                    std::vector<std::vector<Eigen::Vector3d>>& points3D,
