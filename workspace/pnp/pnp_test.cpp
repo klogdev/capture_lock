@@ -30,6 +30,9 @@ int main(int argc, char** argv) {
             BoxCornerEPnPDataDz::sigma = sigma;
         else if(generator_opt == "epnp_dy")
             BoxCornerEPnPTestDataDy::sigma = sigma;
+        else if(generator_opt == "orb_gen")
+            // we directly use the arg as the path
+            OrbGenerate::processed_orb = argv[4];
     }
     
     bool lhm_type = false;
