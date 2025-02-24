@@ -24,15 +24,28 @@ int main(int argc, char** argv) {
     // so we set it as -1 as a dummy value
     double sigma = -1.0;
 
+    // Handle the 4th argument differently based on generator type
     if(argc >= 5) {
-        sigma = std::stod(argv[4]);
-        if(generator_opt == "epnp_dz")
-            BoxCornerEPnPDataDz::sigma = sigma;
-        else if(generator_opt == "epnp_dy")
-            BoxCornerEPnPTestDataDy::sigma = sigma;
-        else if(generator_opt == "orb_gen")
-            // we directly use the arg as the path
+        if(generator_opt == "orb_gen") {
+            // For orb_gen, use the argument directly as path
             OrbGenerate::processed_orb = argv[4];
+        } else if(generator_opt == "epnp_dz" || generator_opt == "epnp_dy") {
+            // For other generators that need numeric sigma
+            try {
+                double sigma = std::stod(argv[4]);
+                if(generator_opt == "epnp_dz") {
+                    BoxCornerEPnPDataDz::sigma = sigma;
+                } else if(generator_opt == "epnp_dy") {
+                    BoxCornerEPnPTestDataDy::sigma = sigma;
+                }
+            } catch(const std::invalid_argument& e) {
+                std::cerr << "Error: Expected numeric value for sigma with " << generator_opt << std::endl;
+                return 1;
+            } catch(const std::out_of_range& e) {
+                std::cerr << "Error: Sigma value out of range" << std::endl;
+                return 1;
+            }
+        }
     }
     
     bool lhm_type = false;
@@ -74,6 +87,3 @@ int main(int argc, char** argv) {
     
     return 0;
 }
-
-
-
