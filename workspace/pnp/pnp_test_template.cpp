@@ -139,28 +139,11 @@ bool EstimatorWrapper::runWithRansac(const std::vector<Eigen::Vector2d>& points2
                                      std::vector<double>* residuals) {
     switch (type_)
     {   
-        case EstimatorType::LHM: {
-            colmap::RANSACOptions options;
-            options.max_error = 1e-5;
-            options.min_inlier_ratio = 0.02;
-            options.max_num_trials = 10000;
-            colmap::RANSAC<LHMEstimator> ransac(options);
-            const auto report = ransac.Estimate(points2D, points3D);
-
-            std::cout << "current w/ ransac & lhm estimate" << std::endl;
-            std::cout << "current ransac option inside estimator is: " << options_.use_ransac << std::endl;
-
-
-            if(report.success == true) {
-                std::cout << "current ransac passed" << std::endl; 
-            }
-            else {
-                std::cout << "current ransac failed" << std::endl; 
-            }
-
-            estimated_extrinsic = {report.model};
-            if (residuals) {
-                LHMEstimator::Residuals(points2D, points3D, report.model, residuals);
+        case EstimatorType::REPPnP: {
+            REPPnPEstimator estimator;
+            estimated_extrinsic = estimator.Estimate(points2D, points3D);
+            if(residuals) {
+                estimator.Residuals(points2D, points3D, estimated_extrinsic[0], residuals);
             }
             break;
         }
