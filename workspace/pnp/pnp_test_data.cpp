@@ -165,7 +165,7 @@ void OutliersPercentage::generate(std::vector<std::vector<Eigen::Vector2d>>& poi
         for(int j = 0; j < num_samples; j++) {
             // generate one set of camera space points with fixed # 20
             std::vector<Eigen::Vector3d> curr_camera_space;
-            EPnPInsideRand(curr_camera_space, 50);
+            EPnPInsideRand(curr_camera_space, 20);
 
             // generate noised 2d points from camera space points
             std::vector<Eigen::Vector2d> curr_points2d;
