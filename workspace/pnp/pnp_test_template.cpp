@@ -153,8 +153,8 @@ bool EstimatorWrapper::runWithRansac(const std::vector<Eigen::Vector2d>& points2
             LHMEstimator::options_.lhm_iter = 0;
             
             colmap::RANSACOptions options;
-            options.max_error = 1e-5;
-            options.min_inlier_ratio = 0.02;
+            options.max_error = 1e-4;
+            options.min_inlier_ratio = 0.2;
             options.max_num_trials = 10000;
             colmap::RANSAC<LHMEstimator> ransac(options);
             const auto report = ransac.Estimate(points2D, points3D);
@@ -174,8 +174,8 @@ bool EstimatorWrapper::runWithRansac(const std::vector<Eigen::Vector2d>& points2
         }
         case EstimatorType::P3P: {
             colmap::RANSACOptions options;
-            options.max_error = 1e-3;
-            options.min_inlier_ratio = 0.1;
+            options.max_error = 1e-4;
+            options.min_inlier_ratio = 0.2;
             options.max_num_trials = 10000;
             colmap::RANSAC<colmap::P3PEstimator> ransac(options);
             const auto report = ransac.Estimate(points2D, points3D);
@@ -209,8 +209,8 @@ bool EstimatorWrapper::runWithLoRansac(const std::vector<Eigen::Vector2d>& point
     {
         case EstimatorType::EPnP: {
             colmap::RANSACOptions options;
-            options.max_error = 1e-3;
-            options.min_inlier_ratio = 0.1;
+            options.max_error = 1e-4;
+            options.min_inlier_ratio = 0.2;
             options.max_num_trials = 10000;
             colmap::LORANSAC<colmap::P3PEstimator, EPNPEstimator_> ransac(options);
             const auto report = ransac.Estimate(points2D, points3D);
@@ -286,8 +286,8 @@ bool EstimatorWrapper::runWithLoRansac(const std::vector<Eigen::Vector2d>& point
             LHMEstimator::options_.lhm_iter = 20;
             
             colmap::RANSACOptions options;
-            options.max_error = 1e-3;
-            options.min_inlier_ratio = 0.1;
+            options.max_error = 1e-4;
+            options.min_inlier_ratio = 0.2;
             options.max_num_trials = 10000;
             colmap::LORANSAC<colmap::P3PEstimator, LHMEstimator> ransac(options);
             const auto report = ransac.Estimate(points2D, points3D);

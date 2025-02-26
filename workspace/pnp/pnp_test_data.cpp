@@ -169,7 +169,7 @@ void OutliersPercentage::generate(std::vector<std::vector<Eigen::Vector2d>>& poi
 
             // generate noised 2d points from camera space points
             std::vector<Eigen::Vector2d> curr_points2d;
-            GenOneSetNoise2D(curr_camera_space, curr_points2d, k, 5.0);
+            GenOneSetNoise2D(curr_camera_space, curr_points2d, k, 2.0);
             AddOutlier2D(curr_points2d, i, 640, 480, k_inv);
 
             Eigen::Vector3d curr_trans;
