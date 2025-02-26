@@ -283,6 +283,7 @@ bool EstimatorWrapper::runWithLoRansac(const std::vector<Eigen::Vector2d>& point
         case EstimatorType::DRaM_LHM: {
             LHMEstimator::options_.rot_init_est = "dram";
             LHMEstimator::options_.optim_option = "lhm";
+            LHMEstimator::options_.lhm_iter = 20;
             
             colmap::RANSACOptions options;
             options.max_error = 1e-3;
