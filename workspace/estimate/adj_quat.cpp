@@ -4,8 +4,8 @@
 #include <iostream>
 
 void MakeDeterminants2D(const std::vector<Eigen::Vector3d>& points3D, 
-                      const std::vector<Eigen::Vector2d>& points2D, 
-                      std::vector<double>& dets) {
+                        const std::vector<Eigen::Vector2d>& points2D, 
+                        std::vector<double>& dets) {
     // Ensure dets is empty or has the right size
     dets.clear();
     dets.reserve(10);
