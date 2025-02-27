@@ -19,7 +19,7 @@ using Y_t = Eigen::Vector3d;
 using M_t = Eigen::Matrix3x4d;
 
 
-enum class EstimatorType {EPnP, DLS, UPnP, LHM, DRaM_LHM, DRaM_GN, 
+enum class EstimatorType {EPnP, DLS, UPnP, LHM, DRaM_LHM, DRaM_GN, DRaM_CL,
                 POSIT, SQPnP, REPPnP, EPnP_Colmap, P3P};
 
 inline EstimatorType getEstimatorFromName(const std::string& name) {
@@ -27,6 +27,7 @@ inline EstimatorType getEstimatorFromName(const std::string& name) {
         {"p3p", EstimatorType::P3P},
         {"dram_lhm", EstimatorType::DRaM_LHM},
         {"dram_gn", EstimatorType::DRaM_GN},
+        {"dram_cl", EstimatorType::DRaM_CL},
         {"epnp", EstimatorType::EPnP},
         {"upnp", EstimatorType::UPnP},
         {"sqpnp", EstimatorType::SQPnP},

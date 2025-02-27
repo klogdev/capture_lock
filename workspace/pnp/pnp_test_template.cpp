@@ -97,7 +97,7 @@ bool EstimatorWrapper::runStandalone(const std::vector<Eigen::Vector2d>& points2
         case EstimatorType::DRaM_LHM: {
             LHMEstimator::options_.rot_init_est = "dram";
             LHMEstimator::options_.optim_option = "lhm";
-            LHMEstimator::options_.lhm_iter = 20;
+            LHMEstimator::options_.lhm_iter = 30;
 
             LHMEstimator estimator;
             estimated_extrinsic = estimator.Estimate(points2D, points3D);
@@ -109,6 +109,17 @@ bool EstimatorWrapper::runStandalone(const std::vector<Eigen::Vector2d>& points2
         case EstimatorType::DRaM_GN: {
             LHMEstimator::options_.rot_init_est = "dram";
             LHMEstimator::options_.optim_option = "gn";
+
+            LHMEstimator estimator;
+            estimated_extrinsic = estimator.Estimate(points2D, points3D);
+            if (residuals) {
+                estimator.Residuals(points2D, points3D, estimated_extrinsic[0], residuals);
+            }
+            break;
+        }
+        case EstimatorType::DRaM_CL: {
+            LHMEstimator::options_.rot_init_est = "dram";
+            LHMEstimator::options_.optim_option = "cl";
 
             LHMEstimator estimator;
             estimated_extrinsic = estimator.Estimate(points2D, points3D);

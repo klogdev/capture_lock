@@ -23,7 +23,8 @@ struct LHMOptions
     // or standard SVD et.al.
     std::string rot_init_est = "horn";
 
-    // optimization method for the iteration, can be "lhm" or "gn"
+    // optimization method for the iteration, can be "lhm", "col" (collinearity)
+    // or "gn" (gauss-newton)
     std::string optim_option = "lhm";
 };
 
