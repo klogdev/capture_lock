@@ -265,7 +265,7 @@ void EPnPSimulatorNoise::generate(std::vector<std::vector<Eigen::Vector2d>>& poi
     int num_pts = 6;
     Eigen::Matrix3d k_inv = k.inverse();
 
-    int num_sample = 200;
+    int num_sample = 500;
     for(double i = EPnPSimulatorNoise::sigma_s; i <= EPnPSimulatorNoise::sigma_e; i += 1.0) {
         for(int j = 0; j < num_sample; j++) {
             std::vector<Eigen::Vector3d> curr_camera_space;
