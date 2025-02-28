@@ -230,6 +230,7 @@ bool OrbGenerate::add_outliers = false;
 double OrbGenerate::outliers_percent = 0.3; // 30%
 int OrbGenerate::num_repeat = 20;
 int OrbGenerate::num_each_frame = 50;
+int OrbGenerate::freigburg_seq_num = 1;
 void OrbGenerate::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                            std::vector<std::vector<Eigen::Vector3d>>& points3D,
                            std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
@@ -237,7 +238,7 @@ void OrbGenerate::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
     std::vector<std::vector<Eigen::Vector3d>> points3D_raw;
     std::vector<Eigen::Matrix3x4d> composed_extrinsic_raw;
     LoadOrbLoaded(OrbGenerate::processed_orb, points2D_raw,
-                  points3D_raw, composed_extrinsic_raw);
+                  points3D_raw, composed_extrinsic_raw, OrbGenerate::freigburg_seq_num);
 
     for (int i = 0; i < num_repeat; i++) {
         for (int j = 0; j < points2D_raw.size(); j++) {

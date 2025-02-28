@@ -13,13 +13,14 @@
 void LoadOrbLoaded(const std::string& filename,
                    std::vector<std::vector<Eigen::Vector2d>>& points2D,
                    std::vector<std::vector<Eigen::Vector3d>>& points3D,
-                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) {
+                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic,
+                   int seq_num=1) {
     std::ifstream file(filename);
     if (!file.is_open()) {
         throw std::runtime_error("Failed to open file: " + filename);
     }
 
-    TUMIntrinsic intri = TUMIntrinsic();
+    TUMIntrinsic intri = TUMIntrinsic(seq_num);
 
     std::string line;
     while (std::getline(file, line)) {

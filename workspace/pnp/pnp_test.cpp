@@ -47,6 +47,16 @@ int main(int argc, char** argv) {
             }
         }
     }
+
+    if(argc >= 6) {
+        if(generator_opt != "orb_gen") {
+            std::cerr << "Error: Expected 'orb_gen' generator type for argument more than 5" << std::endl;
+            return 1;
+        }
+        OrbGenerate::num_each_frame = std::stoi(argv[5]);
+        OrbGenerate::num_repeat = std::stoi(argv[6]);
+        OrbGenerate::freigburg_seq_num = std::stoi(argv[7]);
+    }
     
     bool lhm_type = false;
     if(estimator_opt == "lhm" || estimator_opt == "dram_lhm") {

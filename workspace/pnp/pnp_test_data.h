@@ -133,6 +133,7 @@ public:
     static double outliers_percent;
     static int num_repeat; // repeat for every frame
     static int num_each_frame; // number of points to be sampled in each frame
+    static int freigburg_seq_num;
 };
 
 class ColmapPair: public DataGenerator {

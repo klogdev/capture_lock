@@ -17,12 +17,34 @@
  * @brief assign precalibrated intrinsic paramaters
  * check https://cvg.cit.tum.de/data/datasets/rgbd-dataset/file_formats
  */
-struct TUMIntrinsic {
-    double fx = 517.3;  // Focal length in x
-    double fy = 516.5;  
-    double cx = 318.6;  // Optical center x
-    double cy = 255.3; 
-    double scale = 5000.0; // scale constant for scale
+class TUMIntrinsic {
+public:
+    TUMIntrinsic(int sequence_num = 1) {
+        switch(sequence_num) {
+            case 1:  // fr1
+                fx = 517.3; fy = 516.5;
+                cx = 318.6; cy = 255.3;
+                scale = 5000.0;
+                break;
+            case 2:  // fr2
+                fx = 520.9; fy = 521.0;
+                cx = 325.1; cy = 249.7;
+                scale = 5208.0;
+                break;
+            default:
+                std::cerr << "Warning: Unknown sequence number " << sequence_num 
+                         << ". Using fr1 parameters." << std::endl;
+                fx = 517.3; fy = 516.5;
+                cx = 318.6; cy = 255.3;
+                scale = 5000.0;
+        }
+    }
+
+    double fx;  // Focal length in x
+    double fy;  // Focal length in y
+    double cx;  // Optical center x
+    double cy;  // Optical center y
+    double scale; // scale constant for depth
 };
 
 /**

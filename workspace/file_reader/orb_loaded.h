@@ -7,6 +7,7 @@
 void LoadOrbLoaded(const std::string& filename,
                    std::vector<std::vector<Eigen::Vector2d>>& points2D,
                    std::vector<std::vector<Eigen::Vector3d>>& points3D,
-                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic);
+                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic,
+                   int seq_num=1);
 
 #endif // FILE_READER_ORB_LOADED_H_
