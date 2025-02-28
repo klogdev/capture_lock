@@ -244,7 +244,7 @@ void OrbGenerate::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
             std::vector<Eigen::Vector2d> curr_points2D;
             std::vector<Eigen::Vector3d> curr_points3D;
             // generate one set of 2d points and 3d points
-            unordered_set<int> idx_set;
+            std::unordered_set<int> idx_set;
             int k = 0;
             while (k < num_each_frame) {
                 int rand = GenerateRandomInt(0, points2D_raw[j].size() - 1);
