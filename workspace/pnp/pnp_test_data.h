@@ -131,6 +131,8 @@ public:
 
     static bool add_outliers;
     static double outliers_percent;
+    static int num_repeat; // repeat for every frame
+    static int num_each_frame; // number of points to be sampled in each frame
 };
 
 class ColmapPair: public DataGenerator {

@@ -25,6 +25,10 @@ Eigen::Vector4d GenRandomRot();
 double RandomUniform(double x_ini, double x_end);
 
 /**
+ * @brief generate integerrandom data from a uniform distribution
+ */
+int GenerateRandomInt(int x_ini, int x_end);
+/**
  * @brief generate random data from a gaussian distribution
  * with mean and std
 */

@@ -38,6 +38,14 @@ double RandomUniform(double x_ini, double x_end) {
     return x;
 }
 
+int GenerateRandomInt(int x_ini, int x_end) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distr(x_ini, x_end);
+
+    return distr(gen);
+}
+
 double RandomGaussian(double mean, double std) {
     std::random_device rd; // Seed with a real random value, if available
     std::mt19937 gen(rd()); // Standard mersenne_twister_engine seeded with rd()

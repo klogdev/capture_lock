@@ -228,11 +228,37 @@ void TumRgbd::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
 std::string OrbGenerate::processed_orb = "/tmp3/dataset/tum_rgbd/rgbd_dataset_freiburg1_teddy/AllPairs.txt";
 bool OrbGenerate::add_outliers = false;
 double OrbGenerate::outliers_percent = 0.3; // 30%
+int OrbGenerate::num_repeat = 50;
+int OrbGenerate::num_each_frame = 25;
 void OrbGenerate::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                            std::vector<std::vector<Eigen::Vector3d>>& points3D,
                            std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
-    LoadOrbLoaded(OrbGenerate::processed_orb, points2D,
-                  points3D, composed_extrinsic);
+    std::vector<std::vector<Eigen::Vector2d>> points2D_raw;
+    std::vector<std::vector<Eigen::Vector3d>> points3D_raw;
+    std::vector<Eigen::Matrix3x4d> composed_extrinsic_raw;
+    LoadOrbLoaded(OrbGenerate::processed_orb, points2D_raw,
+                  points3D_raw, composed_extrinsic_raw);
+
+    for (int i = 0; i < num_repeat; i++) {
+        for (int j = 0; j < points2D_raw.size(); j++) {
+            std::vector<Eigen::Vector2d> curr_points2D;
+            std::vector<Eigen::Vector3d> curr_points3D;
+            // generate one set of 2d points and 3d points
+            unordered_set<int> idx_set;
+            int k = 0;
+            while (k < num_each_frame) {
+                int rand = GenerateRandomInt(0, points2D_raw[j].size() - 1);
+                if (idx_set.count(rand) != 0) continue;
+                idx_set.insert(rand);
+                curr_points2D.push_back(points2D_raw[j][rand]);
+                curr_points3D.push_back(points3D_raw[j][rand]);
+                k++;
+            }
+            points2D.push_back(curr_points2D);
+            points3D.push_back(curr_points3D);
+            composed_extrinsic.push_back(composed_extrinsic_raw[j]);
+        }
+    }
     if (OrbGenerate::add_outliers) {
         TUMIntrinsic tum_para = TUMIntrinsic();
         Eigen::Matrix3d k;
