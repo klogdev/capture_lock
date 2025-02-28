@@ -229,7 +229,7 @@ std::string OrbGenerate::processed_orb = "/tmp3/dataset/tum_rgbd/rgbd_dataset_fr
 bool OrbGenerate::add_outliers = false;
 double OrbGenerate::outliers_percent = 0.3; // 30%
 int OrbGenerate::num_repeat = 50;
-int OrbGenerate::num_each_frame = 25;
+int OrbGenerate::num_each_frame = 35;
 void OrbGenerate::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                            std::vector<std::vector<Eigen::Vector3d>>& points3D,
                            std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
