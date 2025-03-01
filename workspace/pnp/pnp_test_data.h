@@ -30,8 +30,7 @@ inline GeneratorType getGeneratorFromName(const std::string& name) {
         {"colmap_pair", GeneratorType::COLMAP},
         {"orb_gen", GeneratorType::ORB},
         {"epnp_sim_noise", GeneratorType::EPnPSimNoise},
-        {"epnp_sim_num", GeneratorType::EPnPSimNum},
-        {"epnp_sim_outlier", GeneratorType::EPnPSimOutlier}
+        {"epnp_sim_num", GeneratorType::EPnPSimNum}
     };
 
     auto it = generatorMap.find(name);
@@ -133,7 +132,7 @@ public:
     static double outliers_percent;
     static int num_repeat; // repeat for every frame
     static int num_each_frame; // number of points to be sampled in each frame
-    static int freigburg_seq_num;
+    static int seq_num; // can be tum, freiburg1, freiburg2 or euroc mav's v01
 };
 
 class ColmapPair: public DataGenerator {
@@ -158,8 +157,8 @@ public:
                   std::vector<std::vector<Eigen::Vector3d>>& points3D,
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
 
-    static double sigma_s;
-    static double sigma_e;
+    static double vertices_s; // number of vertices out of the plane
+    static double vertices_e;
     static bool tilt;
 };
 
@@ -187,19 +186,5 @@ public:
     static int min_pts;
     static int max_pts;
 };
-
-class EPnPSimulatorOutliers: public DataGenerator {
-public:
-    EPnPSimulatorOutliers() {};
-
-    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
-                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
-                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
-
-    static double sigma;
-    static int min_pts;
-    static int max_pts;
-};
-
 
 #endif // PNP_PNP_TEST_DATA_H_

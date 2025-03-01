@@ -230,7 +230,7 @@ bool OrbGenerate::add_outliers = false;
 double OrbGenerate::outliers_percent = 0.3; // 30%
 int OrbGenerate::num_repeat = 20;
 int OrbGenerate::num_each_frame = 50;
-int OrbGenerate::freigburg_seq_num = 1;
+int OrbGenerate::seq_num = 1;
 void OrbGenerate::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                            std::vector<std::vector<Eigen::Vector3d>>& points3D,
                            std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
@@ -238,7 +238,7 @@ void OrbGenerate::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
     std::vector<std::vector<Eigen::Vector3d>> points3D_raw;
     std::vector<Eigen::Matrix3x4d> composed_extrinsic_raw;
     LoadOrbLoaded(OrbGenerate::processed_orb, points2D_raw,
-                  points3D_raw, composed_extrinsic_raw, OrbGenerate::freigburg_seq_num);
+                  points3D_raw, composed_extrinsic_raw, OrbGenerate::seq_num);
 
     for (int i = 0; i < num_repeat; i++) {
         for (int j = 0; j < points2D_raw.size(); j++) {
@@ -378,58 +378,10 @@ void EPnPSimulatorNumPts::generate(std::vector<std::vector<Eigen::Vector2d>>& po
     }
 }
 
-int EPnPSimulatorOutliers::max_pts = 50;
-int EPnPSimulatorOutliers::min_pts = 5;
-double EPnPSimulatorOutliers::sigma = 5.0;
-void EPnPSimulatorOutliers::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
-                                     std::vector<std::vector<Eigen::Vector3d>>& points3D,
-                                     std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
-    Eigen::Matrix3d k;
-    GetIntrinsic(k);
-    Eigen::Matrix3d k_inv = k.inverse();
 
-    int num_sample = 500;
-    for(int i = EPnPSimulatorOutliers::min_pts; i <= EPnPSimulatorOutliers::max_pts; i++) {
-        for(int j = 0; j < num_sample; j++) {
-            std::vector<Eigen::Vector3d> curr_camera_space;
-            EPnPInsideRand(curr_camera_space, i);
-            // obtain the projected points as usual
-            std::vector<Eigen::Vector2d> curr_points2d;
-            GenOneSetNoise2D(curr_camera_space, curr_points2d, k, EPnPSimulatorOutliers::sigma);
-            AddOutlier2D(curr_points2d, 0.25, 640, 480, k_inv);
-            // shift the cloud to (0,0,0) via regarding CoM of cloud
-            // as the world's origin
-            Eigen::Vector3d curr_trans;
-            CalculateCoM(curr_camera_space, curr_trans);
-            std::vector<Eigen::Vector3d> shifted_camera;
-            CameraSpaceShift(curr_camera_space, -curr_trans, shifted_camera);
-
-            Eigen::Matrix3d curr_rot;
-            EPnPRandomRot(curr_rot);
-
-            std::vector<Eigen::Vector3d> curr_points3d;
-            const colmap::SimilarityTransform3 orig_tform(1, colmap::RotationMatrixToQuaternion(curr_rot.transpose()),
-                                                Eigen::Vector3d(0,0,0));
-            // generate scene points
-            for (size_t i = 0; i < shifted_camera.size(); i++) {
-                Eigen::Vector3d point3D_world = shifted_camera[i];
-                orig_tform.TransformPoint(&point3D_world);
-                curr_points3d.push_back(point3D_world);
-            }
-            // EPnP generate all scene points from a single camera points set
-            points2D.push_back(curr_points2d);
-            points3D.push_back(curr_points3d);
-            Eigen::Matrix3x4d curr_gt;
-            curr_gt.block<3, 3>(0, 0) = curr_rot; 
-            curr_gt.col(3) = curr_trans; 
-            composed_extrinsic.push_back(curr_gt);            
-        }
-    }
-}
-
-double PlanarCase::sigma_s = 0;
-double PlanarCase::sigma_e = 15;
-bool PlanarCase::tilt = true;
+double PlanarCase::vertices_s = 1;
+double PlanarCase::vertices_e = 10;
+bool PlanarCase::tilt = false;
 void PlanarCase::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                           std::vector<std::vector<Eigen::Vector3d>>& points3D,
                           std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
@@ -437,15 +389,19 @@ void PlanarCase::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
     GetIntrinsic(k);
     Eigen::Matrix3d k_inv = k.inverse();
 
-    int num_sample = 50;
-    for(int i = PlanarCase::sigma_s; i <= PlanarCase::sigma_e; i++) {
+    int num_sample = 500;
+    for(int i = PlanarCase::vertices_s; i <= PlanarCase::vertices_e; i++) {
         for(int j = 0; j < num_sample; j++) {
             std::vector<Eigen::Vector3d> curr_camera_space;
-            EPnPPlanarRand(curr_camera_space, 10);
+            EPnPPlanarRand(curr_camera_space, 50 - i); // total 50 points, remove i out of plane points
+            std::vector<Eigen::Vector3d> curr_out_of_plane;
+            EPnPInsideRand(curr_out_of_plane, i);
+            curr_camera_space.insert(curr_camera_space.end(), curr_out_of_plane.begin(), curr_out_of_plane.end());
+
             if(PlanarCase::tilt) PlanarTilt(curr_camera_space);
             // obtain the projected points as usual
             std::vector<Eigen::Vector2d> curr_points2d;
-            GenOneSetNoise2D(curr_camera_space, curr_points2d, k, i);
+            GenOneSetNoise2D(curr_camera_space, curr_points2d, k, 1);
             // shift the cloud to (0,0,0) via regarding CoM of cloud
             // as the world's origin
             Eigen::Vector3d curr_trans;

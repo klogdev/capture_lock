@@ -55,7 +55,7 @@ int main(int argc, char** argv) {
         }
         OrbGenerate::num_each_frame = std::stoi(argv[5]);
         OrbGenerate::num_repeat = std::stoi(argv[6]);
-        OrbGenerate::freigburg_seq_num = std::stoi(argv[7]);
+        OrbGenerate::seq_num = std::stoi(argv[7]);
     }
     
     bool lhm_type = false;

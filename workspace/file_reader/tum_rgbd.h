@@ -31,6 +31,10 @@ public:
                 cx = 325.1; cy = 249.7;
                 scale = 5208.0;
                 break;
+            case 3: // euroc mav, v01, stereo
+                fx = 435.2; fy = 435.2;
+                cx = 367.5; cy = 252.2;
+                break;
             default:
                 std::cerr << "Warning: Unknown sequence number " << sequence_num 
                          << ". Using fr1 parameters." << std::endl;
