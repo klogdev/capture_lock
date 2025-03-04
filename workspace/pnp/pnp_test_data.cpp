@@ -37,6 +37,8 @@ DataGenerator::createDataGenerator(const GeneratorType type) {
             return std::make_unique<OutliersPercentage>(OutliersPercentage());
         case GeneratorType::PlanarChk:
             return std::make_unique<PlanarCase>(PlanarCase());
+        case GeneratorType::PlanarPtb:
+            return std::make_unique<PlanarPerturb>(PlanarPerturb());
         case GeneratorType::TUM:
             return std::make_unique<TumRgbd>(TumRgbd());
         case GeneratorType::COLMAP:
@@ -54,7 +56,7 @@ DataGenerator::createDataGenerator(const GeneratorType type) {
 }
 
 // set default values for static members
-double BoxCornerEPnPDataDz::sigma = 0.5; 
+double BoxCornerEPnPDataDz::sigma = 5.0; 
 void BoxCornerEPnPDataDz::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                                    std::vector<std::vector<Eigen::Vector3d>>& points3D,
                                    std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
@@ -399,6 +401,58 @@ void PlanarCase::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
             curr_camera_space.insert(curr_camera_space.end(), curr_out_of_plane.begin(), curr_out_of_plane.end());
 
             if(PlanarCase::tilt) PlanarTilt(curr_camera_space);
+            // obtain the projected points as usual
+            std::vector<Eigen::Vector2d> curr_points2d;
+            GenOneSetNoise2D(curr_camera_space, curr_points2d, k, 1);
+            // shift the cloud to (0,0,0) via regarding CoM of cloud
+            // as the world's origin
+            Eigen::Vector3d curr_trans;
+            CalculateCoM(curr_camera_space, curr_trans);
+            std::vector<Eigen::Vector3d> shifted_camera;
+            CameraSpaceShift(curr_camera_space, -curr_trans, shifted_camera);
+
+            Eigen::Matrix3d curr_rot;
+            EPnPRandomRot(curr_rot);
+
+            std::vector<Eigen::Vector3d> curr_points3d;
+            const colmap::SimilarityTransform3 orig_tform(1, colmap::RotationMatrixToQuaternion(curr_rot.transpose()),
+                                                Eigen::Vector3d(0,0,0));
+            // generate scene points
+            for (size_t i = 0; i < shifted_camera.size(); i++) {
+                Eigen::Vector3d point3D_world = shifted_camera[i];
+                orig_tform.TransformPoint(&point3D_world);
+                curr_points3d.push_back(point3D_world);
+            }
+            // EPnP generate all scene points from a single camera points set
+            points2D.push_back(curr_points2d);
+            points3D.push_back(curr_points3d);
+            Eigen::Matrix3x4d curr_gt;
+            curr_gt.block<3, 3>(0, 0) = curr_rot; 
+            curr_gt.col(3) = curr_trans; 
+            composed_extrinsic.push_back(curr_gt);            
+        }
+    }
+}
+
+double PlanarPerturb::sigma_s = 0.02;
+double PlanarPerturb::sigma_e = 0.5;
+bool PlanarPerturb::tilt = false;
+void PlanarPerturb::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                          std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                          std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
+    Eigen::Matrix3d k;
+    GetIntrinsic(k);
+    Eigen::Matrix3d k_inv = k.inverse();
+
+    int num_sample = 500;
+    for(double i = PlanarPerturb::sigma_s; i <= PlanarPerturb::sigma_e; i += 0.02) {
+        for(int j = 0; j < num_sample; j++) {
+            std::vector<Eigen::Vector3d> curr_camera_space;
+            EPnPPlanarRand(curr_camera_space, 30); // total 30 points
+
+            if(PlanarPerturb::tilt) PlanarTilt(curr_camera_space);
+            // perturb 3d points
+            Perturbation3D(curr_camera_space, i);
             // obtain the projected points as usual
             std::vector<Eigen::Vector2d> curr_points2d;
             GenOneSetNoise2D(curr_camera_space, curr_points2d, k, 1);

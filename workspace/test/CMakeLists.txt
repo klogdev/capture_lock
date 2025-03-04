@@ -3,6 +3,7 @@ link_directories("../calib_loader")
 link_directories("/usr/local/lib/colmap/")
 link_directories("../file_reader")
 link_directories("../estimate")
+link_directories("../pnp")
 link_directories("../")
 include_directories(${WORKSPACE_DIR})
 
@@ -12,6 +13,13 @@ add_executable(col_pair_test colmap_pair_test.cpp)
   target_link_libraries(
     col_pair_test PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES}
     colmap_pair)
+
+add_executable(dram_det_test dram_det_test.cpp)
+target_include_directories(
+  dram_det_test PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  dram_det_test PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} pnp_data adj_quat)
+    
 
 add_library(tum_test STATIC
 tum_rgbd_test.h

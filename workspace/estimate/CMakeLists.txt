@@ -90,7 +90,7 @@ adj_quat.cpp
 target_include_directories(
   adj_quat PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  adj_quat PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES})
+  adj_quat PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} math_help)
 
 add_library(seq_quad STATIC
 seq_quad.h

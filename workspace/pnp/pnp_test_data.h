@@ -16,7 +16,8 @@
 #include "file_reader/tum_rgbd.h"
 
 enum class GeneratorType {
-    EPnPdZ, EPnPdY, Outlier, PlanarChk, TUM, COLMAP, ORB,
+    EPnPdZ, EPnPdY, Outlier, PlanarChk, PlanarPtb, 
+    TUM, COLMAP, ORB,
     EPnPSimNoise, EPnPSimNum, EPnPSimOutlier
 };
 
@@ -26,6 +27,7 @@ inline GeneratorType getGeneratorFromName(const std::string& name) {
         {"epnp_dy", GeneratorType::EPnPdY},
         {"outliers", GeneratorType::Outlier}, // what we are using now
         {"planar_chk", GeneratorType::PlanarChk},
+        {"planar_ptb", GeneratorType::PlanarPtb},
         {"tum_rgbd", GeneratorType::TUM},
         {"colmap_pair", GeneratorType::COLMAP},
         {"orb_gen", GeneratorType::ORB},
@@ -145,9 +147,11 @@ class ColmapPair: public DataGenerator {
 };
 
 /**
- * @brief sanity test with box corners or nearly planar cases
- * in this case we add noise directly to the 3D points
- * @arg option: the option to test planar or box corners
+ * @brief sanity test with nearly planar cases
+ * in this case we keep constant number of points, usually 50
+ * then move part of point out of the plane, the number are ranges
+ * from 1 to 10
+ * @arg vertices_s: the start number of vertices out of the plane
  */
 class PlanarCase: public DataGenerator {
 public:
@@ -159,6 +163,24 @@ public:
 
     static double vertices_s; // number of vertices out of the plane
     static double vertices_e;
+    static bool tilt;
+};
+
+/**
+ * @brief sanity test with box corners or nearly planar cases
+ * in this case we add noise directly to the 3D points
+ * @arg option: the option to test planar or box corners
+ */
+class PlanarPerturb: public DataGenerator {
+public:
+    PlanarPerturb() {};
+
+    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
+
+    static double sigma_s; // number of vertices out of the plane
+    static double sigma_e;
     static bool tilt;
 };
 

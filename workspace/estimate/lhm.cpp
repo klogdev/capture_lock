@@ -347,6 +347,9 @@ bool LHMEstimator::WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>&
     }
 
     bool bi_correct = BarItzhackOptRot(shifted_pts, projected_pts, rot_opt);
+    if (!bi_correct) {
+        return WeakPerspectiveQuat(points3D0, points3D1, rot_opt, trans_init);
+    }
     if (gt_pose_ != nullptr) {
         Eigen::Vector4d curr_opt = colmap::RotationMatrixToQuaternion(rot_opt);
         Eigen::Vector4d curr_gt = colmap::RotationMatrixToQuaternion(gt_pose_->block<3, 3>(0, 0));

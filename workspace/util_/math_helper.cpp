@@ -10,6 +10,58 @@
 
 #include "util/types.h"
 
+void SelectHighVariancePoints(const std::vector<Eigen::Vector3d>& points3D,
+                              const std::vector<Eigen::Vector2d>& points2D,
+                              std::vector<Eigen::Vector3d>& selected_points3D,
+                              std::vector<Eigen::Vector2d>& selected_points2D) {
+    // Calculate centroid
+    Eigen::Vector3d centroid = Eigen::Vector3d::Zero();
+    for (const auto& p : points3D) {
+        centroid += p;
+    }
+    centroid /= points3D.size();
+
+    // Build the covariance matrix
+    Eigen::Matrix3d covariance = Eigen::Matrix3d::Zero();
+    for (const auto& p : points3D) {
+        Eigen::Vector3d centered = p - centroid;
+        covariance += centered * centered.transpose();
+    }
+    covariance /= points3D.size();
+
+    // Find the normal of the best-fit plane (eigenvector of smallest eigenvalue)
+    Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> eigensolver(covariance);
+    Eigen::Vector3d normal = eigensolver.eigenvectors().col(0); // smallest eigenvalue's vector
+
+    // Calculate distance from each point to the best-fit plane
+    std::vector<std::pair<double, size_t>> distances; // distance, index
+    for (size_t i = 0; i < points3D.size(); ++i) {
+        Eigen::Vector3d centered = points3D[i] - centroid;
+        // Use absolute value of distance to plane
+        double distance = std::abs(centered.dot(normal));
+        distances.push_back({distance, i});
+    }
+
+    // Sort points by distance to plane
+    std::sort(distances.begin(), distances.end(),
+              [](const auto& a, const auto& b) { return a.first > b.first; });
+
+    // Select points with largest deviation from the plane
+    // Use a more balanced selection: mix some points close to plane and some far from plane
+    size_t num_points = std::max(size_t(4), points3D.size() * 3 / 10);
+    selected_points3D.clear();
+    selected_points2D.clear();
+    selected_points3D.reserve(num_points);
+    selected_points2D.reserve(num_points);
+
+    // Add points with largest deviation
+    for (size_t i = 0; i < num_points && i < distances.size(); ++i) {
+        size_t idx = distances[i].second;
+        selected_points3D.push_back(points3D[idx]);
+        selected_points2D.push_back(points2D[idx]);
+    }
+}
+
 Eigen::Vector4d GenRandomRot() {
     std::random_device rd;
     std::mt19937 gen(rd());

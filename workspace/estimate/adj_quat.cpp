@@ -2,10 +2,12 @@
 #include <vector>
 #include <numeric>
 #include <iostream>
+#include "util_/math_helper.h"
 
 void MakeDeterminants2D(const std::vector<Eigen::Vector3d>& points3D, 
                         const std::vector<Eigen::Vector2d>& points2D, 
-                        std::vector<double>& dets) {
+                        std::vector<double>& dets,
+                        double& eigenvalue_ratio) {
     // Ensure dets is empty or has the right size
     dets.clear();
     dets.reserve(10);
@@ -70,13 +72,23 @@ void MakeDeterminants2D(const std::vector<Eigen::Vector3d>& points3D,
     dets.push_back(mat8.determinant());
     dets.push_back(mat9.determinant());
     dets.push_back(mat10.determinant());
+
+    // Check eigenvalue ratio of mat1
+    Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> eigensolver(mat1);
+    if (eigensolver.info() == Eigen::Success) {
+        double smallest_eigenvalue = eigensolver.eigenvalues()(0); // eigenvalues are sorted in ascending order
+        double largest_eigenvalue = eigensolver.eigenvalues()(2);
+        eigenvalue_ratio = std::abs(smallest_eigenvalue / largest_eigenvalue);
+    }
 }
 
 void MakeRTilde(const std::vector<Eigen::Vector3d>& points3D, 
                 const std::vector<Eigen::Vector2d>& points2D,
                 Eigen::Matrix3d& r_tilde) {
     std::vector<double> dets;
-    MakeDeterminants2D(points3D, points2D, dets);
+    double eigenvalue_ratio;
+
+    MakeDeterminants2D(points3D, points2D, dets, eigenvalue_ratio);
 
     r_tilde << dets[6] / dets[0], -dets[3] / dets[0], dets[1] / dets[0],
                dets[7] / dets[0], -dets[4] / dets[0], dets[2] / dets[0],
@@ -85,9 +97,9 @@ void MakeRTilde(const std::vector<Eigen::Vector3d>& points3D,
 
 void MMatrix(const std::vector<Eigen::Vector3d>& points3D, 
              const std::vector<Eigen::Vector2d>& points2D,
-             Eigen::Matrix4d& M) {
-    std::vector<double> dets; // this BI correction still need DRaM, but not for R tilde?
-    MakeDeterminants2D(points3D, points2D, dets);
+             Eigen::Matrix4d& M, double& eigenvalue_ratio) {
+    std::vector<double> dets; // this BI correction still need DRaM, but not for R tilde
+    MakeDeterminants2D(points3D, points2D, dets, eigenvalue_ratio);
 
     M << dets[6] - dets[4] + dets[9], -(dets[2] - dets[8]), -(dets[5] - dets[1]), -(-dets[3] - dets[7]),
         -(dets[2] - dets[8]), dets[6] + dets[4] - dets[9], -dets[3] + dets[7], dets[5] + dets[1],
@@ -99,7 +111,6 @@ void MMatrix(const std::vector<Eigen::Vector3d>& points3D,
     //     M /= dets[0];
     // } else {
     //     // Handle the zero division case, possibly set M to zero or an identity matrix, or handle as per your application's needs
-    //     M.setZero(); // Example: Setting M to zero
     //     std::cerr << "cannot divided by zero when constructing M" << std::endl;
     // }
 }
@@ -137,7 +148,13 @@ bool BarItzhackOptRot(const std::vector<Eigen::Vector3d>& points3D,
                       const std::vector<Eigen::Vector2d>& points2D,
                       Eigen::Matrix3d& opt_rot) {
     Eigen::Matrix4d M;
-    MMatrix(points3D, points2D, M);
+    double eigenvalue_ratio;
+    MMatrix(points3D, points2D, M, eigenvalue_ratio);
+
+    if (eigenvalue_ratio < 2.4e-2) {
+        std::cerr << "Warning: Planar case detected. Eigenvalue ratio: " << eigenvalue_ratio << std::endl;
+        return false;
+    }
 
     // Eigenvalue decomposition of M
     Eigen::SelfAdjointEigenSolver<Eigen::Matrix4d> eigensolver(M);

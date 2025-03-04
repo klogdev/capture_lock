@@ -10,7 +10,8 @@
 */
 void MakeDeterminants2D(const std::vector<Eigen::Vector3d>& points3D, 
                         const std::vector<Eigen::Vector2d>& points2D, 
-                        std::vector<double>& dets);
+                        std::vector<double>& dets,
+                        double& eigenvalue_ratio);
 
 /**
  * @brief the R_tilde matrix from the DRaM
@@ -24,7 +25,7 @@ void MakeRTilde(const std::vector<Eigen::Vector3d>& points3D,
 */
 void MMatrix(const std::vector<Eigen::Vector3d>& points3D, 
              const std::vector<Eigen::Vector2d>& points2D,
-             Eigen::Matrix4d& M);
+             Eigen::Matrix4d& M, double& eigenvalue_ratio);
 
 /**
  * @brief compute adjugate by cofactor matrix
