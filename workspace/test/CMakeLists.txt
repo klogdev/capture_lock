@@ -18,8 +18,7 @@ add_executable(dram_det_test dram_det_test.cpp)
 target_include_directories(
   dram_det_test PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" "${COLMAP_INCLUDE_DIRS}")
 target_link_libraries(
-  dram_det_test PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} pnp_data adj_quat)
-    
+  dram_det_test PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} pnp_data adj_quat)    
 
 add_library(tum_test STATIC
 tum_rgbd_test.h

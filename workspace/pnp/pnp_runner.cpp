@@ -110,7 +110,6 @@ void PnPTestRunner::run_test() {
         cosine_diff_data.push_back(cosine_diff);
     }
     std::string curr_sigma = std::to_string(sigma_);
-    std::cout << "no segfault before saving" << std::endl;
     // save data
     save1DVec(frobenius_data, output_path_ + "_frobenius_" + ".txt");
     save1DVec(time_data, output_path_ + "_durations_" + ".txt");
@@ -118,8 +117,6 @@ void PnPTestRunner::run_test() {
     save1DVec(trans_data, output_path_ + "_trans_" + ".txt");
     save1DVec(cosine_diff_data, output_path_ + "_cos_diff_" + ".txt");
     save1DVec(iter_data, output_path_ + "_iters_" + ".txt");
-
-    std::cout << "no segfault before 2d saving" << std::endl;
 
     // save all reprojection errors,
     // for the run with RANSAC, we need to pick reasonable residuals with inlier masks

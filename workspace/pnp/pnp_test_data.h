@@ -18,7 +18,8 @@
 enum class GeneratorType {
     EPnPdZ, EPnPdY, Outlier, PlanarChk, PlanarPtb, 
     TUM, COLMAP, ORB,
-    EPnPSimNoise, EPnPSimNum, EPnPSimOutlier
+    EPnPSimNoise, EPnPSimNum, EPnPSimOutlier,
+    POSITCube
 };
 
 inline GeneratorType getGeneratorFromName(const std::string& name) {
@@ -32,7 +33,8 @@ inline GeneratorType getGeneratorFromName(const std::string& name) {
         {"colmap_pair", GeneratorType::COLMAP},
         {"orb_gen", GeneratorType::ORB},
         {"epnp_sim_noise", GeneratorType::EPnPSimNoise},
-        {"epnp_sim_num", GeneratorType::EPnPSimNum}
+        {"epnp_sim_num", GeneratorType::EPnPSimNum},
+        {"posit_cube", GeneratorType::POSITCube}
     };
 
     auto it = generatorMap.find(name);
@@ -54,6 +56,17 @@ public:
     static std::unique_ptr<DataGenerator> createDataGenerator(const GeneratorType type);
     virtual ~DataGenerator() = default;
 };
+
+class PositCube : public DataGenerator
+{
+public:
+    PositCube() {};
+
+    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
+};
+
 
 /**
  * @brief data generator that 

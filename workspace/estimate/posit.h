@@ -34,12 +34,13 @@ class POSITEstimator {
                               const std::vector<Y_t>& points3D,
                               const M_t& proj_matrix, std::vector<double>* residuals);
         /**
-         * implement POSIST's pose estimation based on
+         * implement POSIT's pose estimation based on
          * https://github.com/opencv/opencv/wiki/Posit
          */
         bool ComputePOSITPose(const std::vector<Eigen::Vector2d>& points2D,
                               const std::vector<Eigen::Vector3d>& points3D,
                               Eigen::Matrix3x4d* proj_matrix);
+
 };
 
 #endif  // ESTIMATE_POSIT_H_

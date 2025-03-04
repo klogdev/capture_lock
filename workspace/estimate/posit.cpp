@@ -20,87 +20,134 @@ std::vector<POSITEstimator::M_t> POSITEstimator::Estimate(
     return std::vector<POSITEstimator::M_t>({proj_matrix});
 }
 
+
 bool POSITEstimator::ComputePOSITPose(const std::vector<Eigen::Vector2d>& points2D,
                                       const std::vector<Eigen::Vector3d>& points3D,
                                       Eigen::Matrix3x4d* proj_matrix) {
-    if (points2D.size() < 2 || points3D.size() < 2 || points2D.size() != points3D.size()) {
-        throw std::runtime_error("Invalid input data.");
+    if (points2D.size() != points3D.size() || points2D.size() < 4) {
+        return false; // POSIT requires at least 4 points
     }
 
-    // Calculate object matrix
-    Eigen::MatrixX3d pointsMatrix(points3D.size(), 3);
-
-    // Fill the matrix with object points
-    for (int i = 0; i < points3D.size(); ++i) {
-        pointsMatrix.row(i) = points3D[i].transpose();
+    int num_points = points2D.size();
+    
+    // Create object matrix (3xN)
+    Eigen::MatrixXd object_matrix = Eigen::MatrixXd::Zero(3, num_points);
+    for (int i = 0; i < num_points; ++i) {
+        object_matrix.col(i) = points3D[i];
+    }
+    
+    // Compute object vectors relative to first point (3xN)
+    Eigen::MatrixXd object_vectors = object_matrix.colwise() - object_matrix.col(0);
+    
+    // Compute pseudo-inverse of object vectors (Nx3)
+    Eigen::MatrixXd object_pinv = object_vectors.completeOrthogonalDecomposition().pseudoInverse();
+    
+    // Initialize image points (2xN)
+    Eigen::MatrixXd image_vectors = Eigen::MatrixXd::Zero(2, num_points);
+    Eigen::MatrixXd old_sop_image_points = Eigen::MatrixXd::Zero(2, num_points);
+    
+    for (int i = 0; i < num_points; ++i) {
+        old_sop_image_points.col(i) = points2D[i];
     }
 
-    // Compute the pseudoinverse of the matrix
-    Eigen::Matrix3d objectMatrix = (pointsMatrix.transpose() * pointsMatrix).inverse() * pointsMatrix.transpose();
-
-    // Initialize variables
+    const int MAX_ITERATIONS = 20;
+    const double CONVERGENCE_THRESHOLD = 1.0;
+    
+    int count = 0;
+    bool converged = false;
     Eigen::Matrix3d rotation;
     Eigen::Vector3d translation;
-    double scale;
+    double image_difference = std::numeric_limits<double>::max();
 
-    // Compute initial vectors from the first point to the others in both spaces
-    std::vector<Eigen::Vector3d> objectVectors, imageVectors;
-    for (size_t i = 1; i < points3D.size(); ++i) {
-        objectVectors.push_back(points3D[i] - points3D[0]);
-        // Convert 2D points to 3D by appending 1 for homogeneous coordinates
-        imageVectors.push_back(Eigen::Vector3d(points2D[i][0], points2D[i][1], 1.0));
-    }
-
-    // Convert the first 2D point to 3D for homogeneous coordinates
-    Eigen::Vector3d firstImagePoint(points2D[0][0], points2D[0][1], 1.0);
-    translation = firstImagePoint; // Simplified initialization
-
-    // Iterative process
-    bool converged = false;
-    double delta = 0.0;
-    const double threshold = 0.01;
-    int iteration = 0;
-    const int max_iterations = 100;  // Add maximum iterations
-
-
-    std::cout << "Starting POSIT iterations..." << std::endl;
-
-    while (!converged && iteration < max_iterations) {
-        iteration++;
-
-        // Calculate rotation assuming objectMatrix is defined
-        Eigen::Matrix3d objectMatrix; // Define or initialize objectMatrix appropriately
-        rotation.col(0) = objectMatrix * imageVectors[0].normalized();
-        rotation.col(1) = objectMatrix * imageVectors[1].normalized();
-        rotation.col(2) = rotation.col(0).cross(rotation.col(1));
-
-        // Normalize the columns of the rotation matrix
-        rotation.col(0).normalize();
-        rotation.col(1).normalize();
-        rotation.col(2).normalize();
-
-        // Compute new translation and scale
-        scale = (rotation.col(0).norm() + rotation.col(1).norm()) / 2.0;
-        translation = firstImagePoint / scale;
-
-        // Check for convergence
-        delta = (rotation * objectVectors[0] + translation - firstImagePoint).norm();
-
-        std::cout << "Iteration " << iteration << ": delta = " << delta << std::endl;
-
-        if (delta < threshold) {
-            converged = true;
+    while (!converged && count < MAX_ITERATIONS) {
+        if (count == 0) {
+            // Initialize image_vectors (2xN)
+            for (int i = 0; i < num_points; ++i) {
+                image_vectors.col(i) = points2D[i] - points2D[0];
+            }
+        } else {
+            if (std::abs(translation(2)) < 1e-10) {
+                std::cout << "Warning: Z translation too close to zero" << std::endl;
+                return false;
+            }
+            
+            // Compute scale factors for image points
+            Eigen::VectorXd diff = (object_vectors.transpose() * rotation.row(2).transpose()) / translation(2);
+            Eigen::MatrixXd sop_image_points = Eigen::MatrixXd::Zero(2, num_points);
+            
+            for (int i = 0; i < num_points; ++i) {
+                sop_image_points.col(i) = points2D[i] + Eigen::Vector2d(diff(i), diff(i));
+            }
+            
+            image_difference = (sop_image_points - old_sop_image_points).norm();
+            if (std::isnan(image_difference)) {
+                std::cout << "Warning: Numerical instability detected" << std::endl;
+                return false;
+            }
+            
+            old_sop_image_points = sop_image_points;
+            image_vectors = sop_image_points.colwise() - sop_image_points.col(0);
         }
+
+        // transformed_vectors should be 3x2
+        Eigen::MatrixXd transformed_vectors = object_pinv.transpose() * image_vectors.transpose();
+        
+        // Extract 3D vectors
+        Eigen::Vector3d ivect = transformed_vectors.col(0);
+        Eigen::Vector3d jvect = transformed_vectors.col(1);
+        
+        // Debug output
+        std::cout << "\nDebug values:" << std::endl;
+        std::cout << "image_vectors shape: " << image_vectors.rows() << "x" << image_vectors.cols() << std::endl;
+        std::cout << "object_pinv shape: " << object_pinv.rows() << "x" << object_pinv.cols() << std::endl;
+        std::cout << "transformed_vectors shape: " << transformed_vectors.rows() << "x" << transformed_vectors.cols() << std::endl;
+        std::cout << "transformed_vectors:\n" << transformed_vectors << std::endl;
+        std::cout << "ivect: " << ivect.transpose() << std::endl;
+        std::cout << "jvect: " << jvect.transpose() << std::endl;
+        
+        double i_square = ivect.dot(ivect);
+        double j_square = jvect.dot(jvect);
+        double ij = ivect.dot(jvect);
+        
+        std::cout << "i_square: " << i_square << " j_square: " << j_square << " ij: " << ij << std::endl;
+        
+        if (i_square < 0 || j_square < 0) {
+            std::cout << "Warning: Invalid scale factors (negative values)" << std::endl;
+            return false;
+        }
+        
+        double scale1 = std::sqrt(i_square);
+        double scale2 = std::sqrt(j_square);
+                
+        if (scale1 < 1e-6 || scale2 < 1e-6) {
+            std::cout << "Warning: Scale factors too close to zero (< 1e-6)" << std::endl;
+            return false;
+        }
+        
+        Eigen::Vector3d row1 = ivect / scale1;
+        Eigen::Vector3d row2 = jvect / scale2;
+        Eigen::Vector3d row3 = row1.cross(row2);
+        
+        rotation.row(0) = row1;
+        rotation.row(1) = row2;
+        rotation.row(2) = row3;
+        
+        double scale = (scale1 + scale2) / 2.0;
+        translation = Eigen::Vector3d(points2D[0].x(), points2D[0].y(), 1.0) / scale;
+        
+        converged = (count > 0) && (image_difference < CONVERGENCE_THRESHOLD);
+        count++;
+        std::cout << "Iteration: " << count << " Image difference: " << image_difference << std::endl;
     }
-
-    if(!converged) {
-        std::cout << "POSIT estimation failed to converge." << std::endl;
+    
+    if (count >= MAX_ITERATIONS) {
+        std::cout << "Warning: Maximum iterations reached without convergence" << std::endl;
+        return false;
     }
-
-    // Compose final pose
-    proj_matrix->block<3,3>(0,0) = rotation;
-    proj_matrix->block<3,1>(0,3) = translation;
-
+    
+    proj_matrix->block<3, 3>(0, 0) = rotation;
+    proj_matrix->col(3) = translation;
+    
     return true;
 }
 

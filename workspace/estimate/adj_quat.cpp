@@ -151,10 +151,10 @@ bool BarItzhackOptRot(const std::vector<Eigen::Vector3d>& points3D,
     double eigenvalue_ratio;
     MMatrix(points3D, points2D, M, eigenvalue_ratio);
 
-    if (eigenvalue_ratio < 2.4e-2) {
-        std::cerr << "Warning: Planar case detected. Eigenvalue ratio: " << eigenvalue_ratio << std::endl;
-        return false;
-    }
+    // if (eigenvalue_ratio < 2.4e-2) {
+    //     std::cerr << "Warning: Planar case detected. Eigenvalue ratio: " << eigenvalue_ratio << std::endl;
+    //     return false;
+    // }
 
     // Eigenvalue decomposition of M
     Eigen::SelfAdjointEigenSolver<Eigen::Matrix4d> eigensolver(M);

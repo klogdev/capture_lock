@@ -49,10 +49,66 @@ DataGenerator::createDataGenerator(const GeneratorType type) {
             return std::make_unique<EPnPSimulatorNoise>(EPnPSimulatorNoise());
         case GeneratorType::EPnPSimNum:
             return std::make_unique<EPnPSimulatorNumPts>(EPnPSimulatorNumPts());
+        case GeneratorType::POSITCube:
+            return std::make_unique<PositCube>(PositCube());
         // Handle unsupported types
         default:
             return nullptr;
     }
+}
+
+void PositCube::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
+                        std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                        std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
+    // Define test data
+    const double focal_length = 760.0;
+    
+    // Single set of 3D points of the cube
+    std::vector<Eigen::Vector3d> cube_3d = {
+        Eigen::Vector3d(0, 0, 0),
+        Eigen::Vector3d(10, 0, 0),
+        Eigen::Vector3d(10, 10, 0),
+        Eigen::Vector3d(0, 10, 0),
+        Eigen::Vector3d(0, 0, 10),
+        Eigen::Vector3d(10, 0, 10),
+        Eigen::Vector3d(10, 10, 10),
+        Eigen::Vector3d(0, 10, 10)
+    };
+
+    // Single set of 2D image points (normalized by dividing by focal length)
+    std::vector<Eigen::Vector2d> cube_2d = {
+        Eigen::Vector2d(0.0 / focal_length, 0.0 / focal_length),
+        Eigen::Vector2d(80.0 / focal_length, -93.0 / focal_length),
+        Eigen::Vector2d(245.0 / focal_length, -77.0 / focal_length),
+        Eigen::Vector2d(185.0 / focal_length, 32.0 / focal_length),
+        Eigen::Vector2d(32.0 / focal_length, 135.0 / focal_length),
+        Eigen::Vector2d(99.0 / focal_length, 35.0 / focal_length),
+        Eigen::Vector2d(247.0 / focal_length, 62.0 / focal_length),
+        Eigen::Vector2d(195.0 / focal_length, 179.0 / focal_length)
+    };
+
+    // Ground truth rotation matrix
+    Eigen::Matrix3d R;
+    R << 0.38074924, 0.91705712, 0.11847469,
+         -0.58652078, 0.17730644, 0.79028843,
+         0.70373331, -0.37038959, 0.60538235;
+
+    // Ground truth translation vector
+    Eigen::Vector3d t(0.0, 0.0, 41.91170542);
+
+    // Compose the projection matrix [R|t]
+    Eigen::Matrix3x4d proj_matrix;
+    proj_matrix.block<3,3>(0,0) = R;
+    proj_matrix.col(3) = t;
+
+    // Clear and add single test case
+    points2D.clear();
+    points3D.clear();
+    composed_extrinsic.clear();
+    
+    points2D.push_back(cube_2d);
+    points3D.push_back(cube_3d);
+    composed_extrinsic.push_back(proj_matrix);
 }
 
 // set default values for static members
@@ -298,7 +354,7 @@ void EPnPSimulatorNoise::generate(std::vector<std::vector<Eigen::Vector2d>>& poi
     for(double i = EPnPSimulatorNoise::sigma_s; i <= EPnPSimulatorNoise::sigma_e; i += 1.0) {
         for(int j = 0; j < num_sample; j++) {
             std::vector<Eigen::Vector3d> curr_camera_space;
-            EPnPInsideRand(curr_camera_space, 6);
+            EPnPInsideRand(curr_camera_space, 8);
             // obtain the projected points as usual
             std::vector<Eigen::Vector2d> curr_points2d;
             GenOneSetNoise2D(curr_camera_space, curr_points2d, k, i);
