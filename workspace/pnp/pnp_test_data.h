@@ -16,7 +16,7 @@
 #include "file_reader/tum_rgbd.h"
 
 enum class GeneratorType {
-    EPnPdZ, EPnPdY, Outlier, PlanarChk, PlanarPtb, 
+    EPnPdZ, EPnPdY, Outlier, PlanarChk, PlanarPtb, BoxPtb,
     TUM, COLMAP, ORB,
     EPnPSimNoise, EPnPSimNum, EPnPSimOutlier,
     POSITCube
@@ -29,6 +29,7 @@ inline GeneratorType getGeneratorFromName(const std::string& name) {
         {"outliers", GeneratorType::Outlier}, // what we are using now
         {"planar_chk", GeneratorType::PlanarChk},
         {"planar_ptb", GeneratorType::PlanarPtb},
+        {"box_ptb", GeneratorType::BoxPtb},
         {"tum_rgbd", GeneratorType::TUM},
         {"colmap_pair", GeneratorType::COLMAP},
         {"orb_gen", GeneratorType::ORB},
@@ -180,7 +181,7 @@ public:
 };
 
 /**
- * @brief sanity test with box corners or nearly planar cases
+ * @brief sanity test with nearly planar cases
  * in this case we add noise directly to the 3D points
  * @arg option: the option to test planar or box corners
  */
@@ -195,6 +196,23 @@ public:
     static double sigma_s; // number of vertices out of the plane
     static double sigma_e;
     static bool tilt;
+};
+
+/**
+ * @brief sanity test with box corners cases
+ * in this case we add noise directly to the 3D points
+ * @arg option: the option to test planar or box corners
+ */
+class BoxPerturb: public DataGenerator {
+public:
+    BoxPerturb() {};
+
+    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
+
+    static double sigma_s; // number of vertices out of the plane
+    static double sigma_e;
 };
 
 class EPnPSimulatorNoise: public DataGenerator {

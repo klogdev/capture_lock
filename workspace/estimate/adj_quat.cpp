@@ -74,12 +74,18 @@ void MakeDeterminants2D(const std::vector<Eigen::Vector3d>& points3D,
     dets.push_back(mat10.determinant());
 
     // Check eigenvalue ratio of mat1
+    // Compute eigenvalues
     Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> eigensolver(mat1);
-    if (eigensolver.info() == Eigen::Success) {
-        double smallest_eigenvalue = eigensolver.eigenvalues()(0); // eigenvalues are sorted in ascending order
-        double largest_eigenvalue = eigensolver.eigenvalues()(2);
-        eigenvalue_ratio = std::abs(smallest_eigenvalue / largest_eigenvalue);
-    }
+    double smallest_eigenvalue = eigensolver.eigenvalues()(0);
+    double largest_eigenvalue = eigensolver.eigenvalues()(2);
+    eigenvalue_ratio = std::abs(smallest_eigenvalue / largest_eigenvalue);
+
+    // Adaptive regularization
+    // double alpha = 1e-4;
+    // double lambda_reg = alpha * (largest_eigenvalue / (smallest_eigenvalue + 1e-10)); // Prevents division by zero
+
+    // // Regularize mat1
+    // mat1 += lambda_reg * Eigen::Matrix3d::Identity();
 }
 
 void MakeRTilde(const std::vector<Eigen::Vector3d>& points3D, 
@@ -109,9 +115,9 @@ void MMatrix(const std::vector<Eigen::Vector3d>& points3D,
     // Ensure d1 is not zero to avoid division by zero
     // if (std::abs(dets[0]) > std::numeric_limits<double>::epsilon()) {
     //     M /= dets[0];
-    // } else {
-    //     // Handle the zero division case, possibly set M to zero or an identity matrix, or handle as per your application's needs
-    //     std::cerr << "cannot divided by zero when constructing M" << std::endl;
+    // }
+    // else {
+    //     std::cerr << "Error: d1 is zero!" << std::endl;
     // }
 }
 
@@ -151,10 +157,10 @@ bool BarItzhackOptRot(const std::vector<Eigen::Vector3d>& points3D,
     double eigenvalue_ratio;
     MMatrix(points3D, points2D, M, eigenvalue_ratio);
 
-    // if (eigenvalue_ratio < 2.4e-2) {
-    //     std::cerr << "Warning: Planar case detected. Eigenvalue ratio: " << eigenvalue_ratio << std::endl;
-    //     return false;
-    // }
+    if (eigenvalue_ratio < 2.4e-2) {
+        std::cerr << "Warning: Planar case detected. Eigenvalue ratio: " << eigenvalue_ratio << std::endl;
+        return false;
+    }
 
     // Eigenvalue decomposition of M
     Eigen::SelfAdjointEigenSolver<Eigen::Matrix4d> eigensolver(M);

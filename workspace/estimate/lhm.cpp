@@ -39,8 +39,8 @@ std::vector<LHMEstimator::M_t> LHMEstimator::Estimate(
 }
 
 void LHMEstimator::Residuals(const std::vector<X_t>& points2D,
-                      const std::vector<Y_t>& points3D,
-                      const M_t& proj_matrix, std::vector<double>* residuals) {
+                             const std::vector<Y_t>& points3D,
+                             const M_t& proj_matrix, std::vector<double>* residuals) {
     colmap::ComputeSquaredReprojectionError(points2D, points3D, proj_matrix, residuals);
 }
 
@@ -347,25 +347,22 @@ bool LHMEstimator::WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>&
     }
 
     bool bi_correct = BarItzhackOptRot(shifted_pts, projected_pts, rot_opt);
-    // if (!bi_correct) {
-    //     return WeakPerspectiveQuat(points3D0, points3D1, rot_opt, trans_init);
-    // }
+
+    if (!bi_correct) {
+        // low eigenvalue ratio raises
+        bool weak_correct = WeakPerspectiveQuat(points3D0, points3D1, rot_opt, trans_init);
+        return weak_correct;
+    }
+
     if (gt_pose_ != nullptr) {
         Eigen::Vector4d curr_opt = colmap::RotationMatrixToQuaternion(rot_opt);
         Eigen::Vector4d curr_gt = colmap::RotationMatrixToQuaternion(gt_pose_->block<3, 3>(0, 0));
         double first_quat = RelativeQuatErr(curr_opt, curr_gt);
-        // std::cout << "current g.t. pose inside LHM: " << std::endl;
-        // std::cout << *gt_pose_ << std::endl; 
-        // std::cout << "first estimated quaternion error of Horn: " << std::endl;
-        // std::cout << boost::format("%.15f") % first_quat << std::endl;
+        
         LHMEstimator::setFirstRelaQuat(first_quat);
     }
 
-    if(bi_correct)
-        return true;
-    else    
-        std::cerr << "Bar-Itzhack correction failed!" << std::endl;
-        return false;
+    return true;
 }
 
 void LHMEstimator::GetCentroid(const std::vector<Eigen::Vector3d>& points3D0,

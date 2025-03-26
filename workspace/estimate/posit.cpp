@@ -79,11 +79,21 @@ bool POSITEstimator::ComputePOSITPose(const std::vector<Eigen::Vector2d>& points
                 sop_image_points.col(i) = points2D[i] + Eigen::Vector2d(diff(i), diff(i));
             }
             
-            image_difference = (sop_image_points - old_sop_image_points).norm();
+            // Match Python's difference calculation:
+            // np.sum(np.abs(np.round(sop_image_points) - np.round(old_sop_image_points)))
+            image_difference = 0.0;
+            for (int i = 0; i < sop_image_points.rows(); ++i) {
+                for (int j = 0; j < sop_image_points.cols(); ++j) {
+                    image_difference += std::abs(std::round(sop_image_points(i,j)) - std::round(old_sop_image_points(i,j)));
+                }
+            }
+            
             if (std::isnan(image_difference)) {
                 std::cout << "Warning: Numerical instability detected" << std::endl;
                 return false;
             }
+            
+            std::cout << "Rounded image difference: " << image_difference << std::endl;
             
             old_sop_image_points = sop_image_points;
             image_vectors = sop_image_points.colwise() - sop_image_points.col(0);
