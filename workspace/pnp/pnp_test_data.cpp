@@ -306,14 +306,14 @@ void OrbGenerate::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
             std::vector<Eigen::Vector3d> curr_points3D;
             // generate one set of 2d points and 3d points
             std::unordered_set<int> idx_set;
-            int k = 0;
-            while (k < num_each_frame) {
+            int cnt = 0;
+            while (cnt < num_each_frame) {
                 int rand = GenerateRandomInt(0, points2D_raw[j].size() - 1);
                 if (idx_set.count(rand) != 0) continue;
                 idx_set.insert(rand);
                 curr_points2D.push_back(points2D_raw[j][rand]);
                 curr_points3D.push_back(points3D_raw[j][rand]);
-                k++;
+                cnt++;
             }
             points2D.push_back(curr_points2D);
             points3D.push_back(curr_points3D);
@@ -334,12 +334,51 @@ void OrbGenerate::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
     }
 }
 
-std::string ColmapPair::processed_colmap = "/tmp3/gerrard-hall_COLMAP/processed_pair.txt";
+std::string ColmapPair::processed_colmap = "/tmp3/dataset/co3d/broccoli/34_colmap/processed_pair.txt";
+double ColmapPair::radius_small = 0.06;
+double ColmapPair::radius_large = 0.15;
+int ColmapPair::num_repeat = 20;
+int ColmapPair::num_each_frame = 10;
 void ColmapPair::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                           std::vector<std::vector<Eigen::Vector3d>>& points3D,
                           std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
-    LoadColmapPairs(ColmapPair::processed_colmap, points2D,
-                    points3D, composed_extrinsic);
+    std::vector<std::vector<Eigen::Vector2d>> points2D_raw;
+    std::vector<std::vector<Eigen::Vector3d>> points3D_raw;
+    std::vector<Eigen::Matrix3x4d> composed_extrinsic_raw;
+    LoadColmapPairs(ColmapPair::processed_colmap, points2D_raw,
+                    points3D_raw, composed_extrinsic_raw);
+    for(double i = ColmapPair::radius_small; i < ColmapPair::radius_large; i += 0.03) {
+        for(int k = 0; k < ColmapPair::num_repeat; k++) {
+            for(int j = 0; j < points2D_raw.size(); j++) {
+                std::vector<Eigen::Vector2d> filtered_points2D;
+                std::vector<Eigen::Vector3d> filtered_points3D;
+                FilterByNormalizedRadius(points2D_raw[j], points3D_raw[j], filtered_points2D, filtered_points3D, i);
+                if (filtered_points2D.size() < ColmapPair::num_each_frame) {
+                    std::cout << "Filtered points size " << filtered_points2D.size() << 
+                                        " is not enough to generate " << ColmapPair::num_each_frame << 
+                                        " points with radius " << i << std::endl;
+                    continue;
+                }
+
+                // generate one set of 2d points and 3d points
+                std::vector<Eigen::Vector2d> curr_points2D;
+                std::vector<Eigen::Vector3d> curr_points3D;
+                std::unordered_set<int> idx_set;
+                int cnt = 0;
+                while (cnt < ColmapPair::num_each_frame) {
+                    int rand = GenerateRandomInt(0, filtered_points2D.size() - 1);
+                    if (idx_set.count(rand) != 0) continue;
+                    idx_set.insert(rand);
+                    curr_points2D.push_back(filtered_points2D[rand]);
+                    curr_points3D.push_back(filtered_points3D[rand]);
+                    cnt++;
+                }
+                points2D.push_back(curr_points2D);
+                points3D.push_back(curr_points3D);
+                composed_extrinsic.push_back(composed_extrinsic_raw[j]);
+            }
+        }
+    }
 }
 
 double EPnPSimulatorNoise::sigma_s = 1.0;

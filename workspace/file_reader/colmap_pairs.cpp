@@ -89,3 +89,19 @@ void printData(const std::vector<std::vector<Eigen::Vector2d>>& points2D,
         std::cout << "-------------------------------------" << std::endl;
     }
 }
+
+void FilterByNormalizedRadius (
+    const std::vector<Eigen::Vector2d>& all_points2D,
+    const std::vector<Eigen::Vector3d>& all_points3D,
+    std::vector<Eigen::Vector2d>& filtered_points2D,
+    std::vector<Eigen::Vector3d>& filtered_points3D,
+    double radius) {
+    for (size_t i = 0; i < all_points2D.size(); ++i) {
+        const Eigen::Vector2d& p = all_points2D[i];
+        if (p.norm() <= radius) {
+            filtered_points2D.push_back(p);
+            filtered_points3D.push_back(all_points3D[i]);
+        }
+    }
+}
+

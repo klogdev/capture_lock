@@ -151,6 +151,14 @@ public:
     static int seq_num; // can be tum, freiburg1, freiburg2 or euroc mav's v01
 };
 
+/**
+ * @brief we have separate colmap generated data
+ * cause we preprocessed the 2d-3d pairs with undistorted & normalized 
+ * image coordinates
+ * @arg processed_colmap: the path to the processed colmap data
+ * @arg radius: the radius from principal point (normalized, i.e. 0, 0) 
+ * to filter the points
+ */
 class ColmapPair: public DataGenerator {
 
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
@@ -158,6 +166,10 @@ class ColmapPair: public DataGenerator {
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
 
     static std::string processed_colmap;
+    static double radius_small; 
+    static double radius_large;
+    static int num_repeat;
+    static int num_each_frame;
 };
 
 /**
