@@ -45,6 +45,7 @@ bool EstimatorWrapper::runStandalone(const std::vector<Eigen::Vector2d>& points2
     switch (type_) {
         case EstimatorType::EPnP: {
             EPNPEstimator_ estimator;
+            EPNPEstimator_::num_iterations = 10;
             estimated_extrinsic = estimator.Estimate(points2D, points3D);
             if (residuals) {
                 estimator.Residuals(points2D, points3D, estimated_extrinsic[0], residuals);

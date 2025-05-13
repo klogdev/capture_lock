@@ -334,11 +334,11 @@ void OrbGenerate::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
     }
 }
 
-std::string ColmapPair::processed_colmap = "/tmp3/dataset/co3d/broccoli/34_colmap/processed_pair.txt";
-double ColmapPair::radius_small = 0.06;
-double ColmapPair::radius_large = 0.15;
+std::string ColmapPair::processed_colmap = "/tmp3/dataset/co3d/broccoli/63_47_colmap/processed_pair.txt";
+double ColmapPair::radius_small = 0.04;
+double ColmapPair::radius_large = 0.20;
 int ColmapPair::num_repeat = 20;
-int ColmapPair::num_each_frame = 10;
+int ColmapPair::num_each_frame = 15;
 void ColmapPair::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                           std::vector<std::vector<Eigen::Vector3d>>& points3D,
                           std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
@@ -347,12 +347,28 @@ void ColmapPair::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
     std::vector<Eigen::Matrix3x4d> composed_extrinsic_raw;
     LoadColmapPairs(ColmapPair::processed_colmap, points2D_raw,
                     points3D_raw, composed_extrinsic_raw);
-    for(double i = ColmapPair::radius_small; i < ColmapPair::radius_large; i += 0.03) {
+    std::vector<int> valid_frame_indices;
+    double smallest_radius = ColmapPair::radius_small;
+    
+    for (int j = 0; j < points2D_raw.size(); j++) {
+        std::vector<Eigen::Vector2d> filtered_points2D;
+        std::vector<Eigen::Vector3d> filtered_points3D;
+        FilterByNormalizedRadius(points2D_raw[j], points3D_raw[j], filtered_points2D, filtered_points3D, smallest_radius);
+        
+        if (filtered_points2D.size() >= ColmapPair::num_each_frame) {
+            valid_frame_indices.push_back(j);
+        }
+    }
+
+    std::cout << "Valid frame indices size: " << valid_frame_indices.size() << std::endl;
+                    
+    for(double i = ColmapPair::radius_small; i <= ColmapPair::radius_large; i += 0.04) {
         for(int k = 0; k < ColmapPair::num_repeat; k++) {
-            for(int j = 0; j < points2D_raw.size(); j++) {
+            for(int j = 0; j < valid_frame_indices.size(); j++) {
+                int idx = valid_frame_indices[j];
                 std::vector<Eigen::Vector2d> filtered_points2D;
                 std::vector<Eigen::Vector3d> filtered_points3D;
-                FilterByNormalizedRadius(points2D_raw[j], points3D_raw[j], filtered_points2D, filtered_points3D, i);
+                FilterByNormalizedRadius(points2D_raw[idx], points3D_raw[idx], filtered_points2D, filtered_points3D, i);
                 if (filtered_points2D.size() < ColmapPair::num_each_frame) {
                     std::cout << "Filtered points size " << filtered_points2D.size() << 
                                         " is not enough to generate " << ColmapPair::num_each_frame << 
@@ -375,7 +391,7 @@ void ColmapPair::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
                 }
                 points2D.push_back(curr_points2D);
                 points3D.push_back(curr_points3D);
-                composed_extrinsic.push_back(composed_extrinsic_raw[j]);
+                composed_extrinsic.push_back(composed_extrinsic_raw[idx]);
             }
         }
     }

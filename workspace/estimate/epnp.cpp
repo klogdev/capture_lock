@@ -4,6 +4,8 @@
 
 #include "estimate/epnp.h"
 
+int EPNPEstimator_::num_iterations = 0;
+
 std::vector<EPNPEstimator_::M_t> EPNPEstimator_::Estimate(
     const std::vector<X_t>& points2D, const std::vector<Y_t>& points3D) {
   CHECK_GE(points2D.size(), 4);
@@ -291,7 +293,7 @@ void EPNPEstimator_::RunGaussNewton(const Eigen::Matrix<double, 6, 10>& L6x10,
   Eigen::Matrix<double, 6, 4> A;
   Eigen::Matrix<double, 6, 1> b;
 
-  const int kNumIterations = 10;
+  const int kNumIterations = EPNPEstimator_::num_iterations;
   for (int k = 0; k < kNumIterations; ++k) {
     for (int i = 0; i < 6; ++i) {
       A(i, 0) = 2 * L6x10(i, 0) * (*betas)[0] + L6x10(i, 1) * (*betas)[1] +

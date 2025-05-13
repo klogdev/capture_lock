@@ -157,10 +157,10 @@ bool BarItzhackOptRot(const std::vector<Eigen::Vector3d>& points3D,
     double eigenvalue_ratio;
     MMatrix(points3D, points2D, M, eigenvalue_ratio);
 
-    if (eigenvalue_ratio < 2.4e-2) {
-        std::cerr << "Warning: Planar case detected. Eigenvalue ratio: " << eigenvalue_ratio << std::endl;
-        return false;
-    }
+    // if (eigenvalue_ratio < 2.4e-2) {
+    //     std::cerr << "Warning: Planar case detected. Eigenvalue ratio: " << eigenvalue_ratio << std::endl;
+    //     return false;
+    // }
 
     // Eigenvalue decomposition of M
     Eigen::SelfAdjointEigenSolver<Eigen::Matrix4d> eigensolver(M);
@@ -193,6 +193,12 @@ bool BarItzhackOptRot(const std::vector<Eigen::Vector3d>& points3D,
     // Converting quaternion to rotation matrix
     Eigen::Quaterniond quat(quat_estimate(0), quat_estimate(1), quat_estimate(2), quat_estimate(3));
     opt_rot = quat.toRotationMatrix();
+
+    double ortho_error = (opt_rot.transpose() * opt_rot - Eigen::Matrix3d::Identity()).norm();
+    if (ortho_error > 1e-2) {
+        std::cerr << "Warning: Estimated rotation is not orthogonal! Error: " << ortho_error << std::endl;
+        return false;
+    }
 
     return true;
 }

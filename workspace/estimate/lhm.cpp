@@ -9,6 +9,7 @@
 #include "estimate/lhm.h"
 #include "estimate/least_sqr_pnp.h"
 #include "estimate/adj_quat.h"
+#include "estimate/epnp.h"
 #include "util_/math_helper.h"
 
 #include "base/projection.h"
@@ -349,9 +350,15 @@ bool LHMEstimator::WeakPerspectiveDRaMInit2D(const std::vector<Eigen::Vector3d>&
     bool bi_correct = BarItzhackOptRot(shifted_pts, projected_pts, rot_opt);
 
     if (!bi_correct) {
-        // low eigenvalue ratio raises
-        bool weak_correct = WeakPerspectiveQuat(points3D0, points3D1, rot_opt, trans_init);
-        return weak_correct;
+        // near planar case raises from low eigenvalue ratio or non-orthogonal rotation
+        // bool weak_correct = WeakPerspectiveQuat(points3D0, points3D1, rot_opt, trans_init);
+        EPNPEstimator_ estimator;
+        EPNPEstimator_::num_iterations = 0;
+        std::vector<Eigen::Matrix3x4d> estimated_extrinsic = estimator.Estimate(projected_pts, shifted_pts);
+        rot_opt = estimated_extrinsic[0].block<3, 3>(0, 0);
+        trans_init = estimated_extrinsic[0].block<3, 1>(0, 3);
+
+        return true;
     }
 
     if (gt_pose_ != nullptr) {

@@ -135,8 +135,6 @@ class LHMEstimator {
          */
         static std::vector<double> cos_diffs;
 
-        static int num_iters;
-
         /**
          * @brief append current relative quaternion error to
          * the static container

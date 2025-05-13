@@ -42,6 +42,8 @@ class EPNPEstimator_ {
                         const std::vector<Y_t>& points3D,
                         const M_t& proj_matrix, std::vector<double>* residuals);
 
+  static int num_iterations;
+
  private:
   bool ComputePose(const std::vector<Eigen::Vector2d>& points2D,
                    const std::vector<Eigen::Vector3d>& points3D,
