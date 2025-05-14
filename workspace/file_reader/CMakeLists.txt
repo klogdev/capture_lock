@@ -25,6 +25,18 @@ target_link_libraries(
   colmap_pair PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES} 
   ${OpenCV_LIBRARIES} file_save) 
 
+add_library(use_geo STATIC
+use_geo.h
+use_geo.cpp
+)
+target_include_directories(
+  use_geo PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}" 
+  "${OpenCV_INCLUDE_DIRS}" "${COLMAP_INCLUDE_DIRS}")
+target_link_libraries(
+  use_geo PUBLIC Eigen3::Eigen ${COLMAP_LIBRARIES} ${absl_LIBRARIES} 
+  ${OpenCV_LIBRARIES} file_save) 
+  
+
 add_library(orb_load STATIC
 orb_loaded.h
 orb_loaded.cpp

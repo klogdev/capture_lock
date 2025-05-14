@@ -19,7 +19,7 @@ enum class GeneratorType {
     EPnPdZ, EPnPdY, Outlier, PlanarChk, PlanarPtb, BoxPtb,
     TUM, COLMAP, ORB,
     EPnPSimNoise, EPnPSimNum, EPnPSimOutlier,
-    POSITCube
+    POSITCube, UseGeo
 };
 
 inline GeneratorType getGeneratorFromName(const std::string& name) {
@@ -35,7 +35,8 @@ inline GeneratorType getGeneratorFromName(const std::string& name) {
         {"orb_gen", GeneratorType::ORB},
         {"epnp_sim_noise", GeneratorType::EPnPSimNoise},
         {"epnp_sim_num", GeneratorType::EPnPSimNum},
-        {"posit_cube", GeneratorType::POSITCube}
+        {"posit_cube", GeneratorType::POSITCube},
+        {"usegeo", GeneratorType::UseGeo}
     };
 
     auto it = generatorMap.find(name);
@@ -94,7 +95,6 @@ public:
                   std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
     static double sigma;
 };
-
 
 /**
  * @brief varying percentage of outliers with fixed number
@@ -160,6 +160,8 @@ public:
  * to filter the points
  */
 class ColmapPair: public DataGenerator {
+public:
+    ColmapPair() {};
 
     void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                   std::vector<std::vector<Eigen::Vector3d>>& points3D,
@@ -168,6 +170,22 @@ class ColmapPair: public DataGenerator {
     static std::string processed_colmap;
     static double radius_small; 
     static double radius_large;
+    static int num_repeat;
+    static int num_each_frame;
+};
+
+/**
+ * @brief 
+ */
+class UseGeo: public DataGenerator {
+public:
+    UseGeo() {};
+
+    void generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                  std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                  std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const override;
+
+    static std::string processed_usegeo;
     static int num_repeat;
     static int num_each_frame;
 };

@@ -25,6 +25,7 @@
 #include "file_reader/tum_rgbd.h"
 #include "file_reader/colmap_pairs.h"
 #include "file_reader/orb_loaded.h"
+#include "file_reader/use_geo.h"
 
 std::unique_ptr<DataGenerator> 
 DataGenerator::createDataGenerator(const GeneratorType type) {
@@ -53,6 +54,8 @@ DataGenerator::createDataGenerator(const GeneratorType type) {
             return std::make_unique<EPnPSimulatorNumPts>(EPnPSimulatorNumPts());
         case GeneratorType::POSITCube:
             return std::make_unique<PositCube>(PositCube());
+        case GeneratorType::UseGeo:
+            return std::make_unique<UseGeo>(UseGeo());
         // Handle unsupported types
         default:
             return nullptr;
@@ -289,7 +292,7 @@ std::string OrbGenerate::processed_orb = "/tmp3/dataset/tum_rgbd/rgbd_dataset_fr
 bool OrbGenerate::add_outliers = false;
 double OrbGenerate::outliers_percent = 0.3; // 30%
 int OrbGenerate::num_repeat = 20;
-int OrbGenerate::num_each_frame = 50;
+int OrbGenerate::num_each_frame = 10;
 int OrbGenerate::seq_num = 1;
 void OrbGenerate::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                            std::vector<std::vector<Eigen::Vector3d>>& points3D,
@@ -334,7 +337,7 @@ void OrbGenerate::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
     }
 }
 
-std::string ColmapPair::processed_colmap = "/tmp3/dataset/co3d/broccoli/63_47_colmap/processed_pair.txt";
+std::string ColmapPair::processed_colmap = "/tmp3/dataset/co3d/broccoli/63_46_colmap/processed_pair.txt";
 double ColmapPair::radius_small = 0.04;
 double ColmapPair::radius_large = 0.20;
 int ColmapPair::num_repeat = 20;
@@ -396,6 +399,40 @@ void ColmapPair::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
         }
     }
 }
+
+std::string UseGeo::processed_usegeo = "/tmp3/dataset/usegeo/processed_usegeo.txt";
+int UseGeo::num_repeat = 20;
+int UseGeo::num_each_frame = 50;
+void UseGeo::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
+                          std::vector<std::vector<Eigen::Vector3d>>& points3D,
+                          std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
+    std::vector<std::vector<Eigen::Vector2d>> points2D_raw;
+    std::vector<std::vector<Eigen::Vector3d>> points3D_raw;
+    std::vector<Eigen::Matrix3x4d> composed_extrinsic_raw;
+    LoadUseGeo(UseGeo::processed_usegeo, points2D_raw, points3D_raw, composed_extrinsic_raw);
+
+    for(int i = 0; i < num_repeat; i++) {
+        for(int j = 0; j < points2D_raw.size(); j++) {
+            std::vector<Eigen::Vector2d> curr_points2D;
+            std::vector<Eigen::Vector3d> curr_points3D;
+            // generate one set of 2d points and 3d points
+            std::unordered_set<int> idx_set;
+            int cnt = 0;
+            while (cnt < num_each_frame) {
+                int rand = GenerateRandomInt(0, points2D_raw[j].size() - 1);
+                if (idx_set.count(rand) != 0) continue;
+                idx_set.insert(rand);
+                curr_points2D.push_back(points2D_raw[j][rand]);
+                curr_points3D.push_back(points3D_raw[j][rand]);
+                cnt++;
+            }
+            points2D.push_back(curr_points2D);
+            points3D.push_back(curr_points3D);
+            composed_extrinsic.push_back(composed_extrinsic_raw[j]);
+        }
+    }
+}
+
 
 double EPnPSimulatorNoise::sigma_s = 1.0;
 double EPnPSimulatorNoise::sigma_e = 15.0;
