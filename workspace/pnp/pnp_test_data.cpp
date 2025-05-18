@@ -337,11 +337,11 @@ void OrbGenerate::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D,
     }
 }
 
-std::string ColmapPair::processed_colmap = "/tmp3/dataset/co3d/broccoli/63_46_colmap/processed_pair.txt";
-double ColmapPair::radius_small = 0.04;
-double ColmapPair::radius_large = 0.20;
+std::string ColmapPair::processed_colmap = "/tmp3/dataset/co3d/broccoli/63_47_colmap/processed_pair.txt";
+double ColmapPair::radius_small = 0.6;
+double ColmapPair::radius_large = 0.6;
 int ColmapPair::num_repeat = 20;
-int ColmapPair::num_each_frame = 15;
+int ColmapPair::num_each_frame = 20;
 void ColmapPair::generate(std::vector<std::vector<Eigen::Vector2d>>& points2D, 
                           std::vector<std::vector<Eigen::Vector3d>>& points3D,
                           std::vector<Eigen::Matrix3x4d>& composed_extrinsic) const {
